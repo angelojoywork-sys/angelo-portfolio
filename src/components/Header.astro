@@ -9,10 +9,13 @@ const showThinking = page === 'home' || page === 'experiments';
 
 <header class="site-header">
   <a href="/" class="brand" aria-label={`${site.data.name}, home`}>
-    <span class="brand-name" aria-hidden="true">{[...site.data.name].map((c, i) => {
-      const g = c === ' ' ? '\u00a0' : c;
-      return <span class="ch" style={`--i:${i}`}><span>{g}</span><span>{g}</span></span>;
-    })}</span>
+    <span class="brand-name" aria-hidden="true">{site.data.name}</span>
+    <svg class="smile" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <circle cx="12" cy="12" r="11" fill="var(--accent)" />
+      <ellipse class="eye" cx="8.5" cy="9.5" rx="1.5" ry="2" fill="#fff" />
+      <ellipse class="eye" cx="15.5" cy="9.5" rx="1.5" ry="2" fill="#fff" />
+      <path d="M7 14.5c1.2 2.4 3 3.3 5 3.3s3.8-.9 5-3.3" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" />
+    </svg>
     <span class="visually-hidden">{site.data.name}</span>
   </a>
 
@@ -80,21 +83,23 @@ const showThinking = page === 'home' || page === 'experiments';
   .nav-link { position: relative; color: var(--fg); }
   .nav-link::after { content: ''; position: absolute; left: 0; right: 0; bottom: -3px; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: right; transition: transform 0.35s var(--ease); }
   .nav-link:hover::after, .nav-link.active::after { transform: scaleX(1); transform-origin: left; }
+  .nav-link::after { background: var(--accent); box-shadow: 0 0 8px var(--accent-glow); }
 
   button.nav-link { font: inherit; font-size: 14px; padding: 0; }
 
-  /* Name: letters rise in from a clipped baseline on load, then on hover each
-     one rolls up and an identical copy rolls in from below, left to right. */
-  .brand-name { display: inline-flex; }
-  .ch { position: relative; display: inline-block; overflow: clip; line-height: 1.25; height: 1.25em; }
-  .ch > span { display: block; transition: transform .55s var(--ease), color .3s; transition-delay: calc(var(--i) * 22ms); }
-  .ch > span:first-child { animation: ch-rise .7s var(--ease) backwards; animation-delay: calc(120ms + var(--i) * 30ms); }
-  .ch > span + span { position: absolute; inset: 100% 0 auto 0; }
-  .brand:is(:hover, :focus-visible) .ch > span { transform: translateY(-100%); }
-  @keyframes ch-rise { from { transform: translateY(110%); } }
+  /* Name: a gentle rise on load; on hover a small smiley springs in beside it and winks once. */
+  .brand { gap: 8px; }
+  .brand-name { display: inline-block; animation: name-rise .7s var(--ease) 120ms backwards; }
+  .smile { flex: none; opacity: 0; transform: scale(.2) rotate(-40deg); transition: opacity .2s, transform .5s cubic-bezier(.34, 1.56, .64, 1); }
+  .smile .eye { transform-box: fill-box; transform-origin: center; }
+  .brand:is(:hover, :focus-visible) .smile { opacity: 1; transform: none; }
+  .brand:is(:hover, :focus-visible) .smile .eye:last-of-type { animation: wink .45s .35s ease-in-out; }
+  @keyframes name-rise { from { opacity: 0; transform: translateY(6px); } }
+  @keyframes wink { 50% { transform: scaleY(.1); } }
   @media (prefers-reduced-motion: reduce) {
-    .ch > span:first-child { animation: none; }
-    .brand:is(:hover, :focus-visible) .ch > span { transform: none; color: var(--accent); }
+    .brand-name { animation: none; }
+    .smile { transform: none; transition: opacity .2s; }
+    .brand:is(:hover, :focus-visible) .smile .eye:last-of-type { animation: none; }
   }
 
   .theme-toggle { position: relative; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; color: var(--fg); transition: background .2s; }

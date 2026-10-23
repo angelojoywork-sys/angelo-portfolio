@@ -62,7 +62,9 @@ export async function getItems(kind: Kind): Promise<Item[]> {
       all.find((m) => m.file === coverName) ??
       all.find((m) => /^cover\./i.test(m.file)) ??
       all.find((m) => m.kind === 'image');
-    const gallery = all.filter((m) => m !== cover);
+    // Images the write-up already places inline shouldn't repeat in the gallery.
+    const body = entry.body ?? '';
+    const gallery = all.filter((m) => m !== cover && !body.includes(m.file));
     return {
       kind,
       slug,

@@ -9,7 +9,8 @@
   --muted: #75736d;
   --faint: #a9a7a0;
   --line: #d9d7d0;
-  --accent: #ff4f1f;
+  --accent: #2F6BFF;
+  --accent-glow: color-mix(in srgb, var(--accent) 45%, transparent);
   --accent-ink: #fff;
   --shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 8px 24px rgb(0 0 0 / 0.08);
 
@@ -30,7 +31,7 @@
   --muted: #8d8b85;
   --faint: #5b5a55;
   --line: #262624;
-  --accent: #ff6a3d;
+  --accent: #4D82FF;
   --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.5);
   color-scheme: dark;
 }
@@ -67,7 +68,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .u:hover { text-decoration-color: currentColor; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-.page { padding: calc(var(--header-h) + 24px) var(--gutter) 0; min-height: 100svh; display: flex; flex-direction: column; }
+.page { position: relative; z-index: 1; padding: calc(var(--header-h) + 24px) var(--gutter) 0; min-height: 100svh; display: flex; flex-direction: column; }
 .page > main { flex: 1; }
 
 /* Media placeholder tint while images load */

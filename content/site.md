@@ -6,7 +6,7 @@
 
 name: Angelo Joy
 role: Digital & Graphic Designer
-location: Based in Ireland · working worldwide
+location: Based in Ireland
 timezone: Europe/Dublin   # for the live clock in the footer (e.g. Europe/London, America/New_York)
 available: Open for freelance & full-time
 email: angelojoyirl@gmail.com

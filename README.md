@@ -57,7 +57,7 @@ tools: [Illustrator, InDesign]
 disciplines: [graphic]          # graphic | digital | motion | video | ai  (see site.md)
 cover: cover.jpg
 note: Started from the bean bag stencil.   # optional, appears in "Show the thinking" mode
-embed: https://vimeo.com/123456789          # optional, YouTube or Vimeo, shown at the top
+embed: https://vimeo.com/123456789          # optional, one link or a list; shown above the gallery
 link: { label: "Visit the site", url: "https://example.com" }   # optional
 captions:                                   # optional, per image
   01.jpg: Packaging range, 2026
@@ -70,6 +70,25 @@ The story of the project goes here. Plain paragraphs are fine.
 ## Headings work too
 
 So do **bold**, *italics* and [links](https://example.com).
+
+### Mixing text, images and video
+
+Put images and videos exactly where you want them in the text:
+
+```md
+Some words about the brief.
+
+![Packaging range, 2026](02.jpg)
+
+More words.
+
+https://vimeo.com/123456789/abcdef1234
+```
+
+- `![Caption](02.jpg)` places `02.jpg` from the project folder (no `./` needed).
+- A Vimeo or YouTube link alone on its own line becomes a 16:9 player.
+  Unlisted Vimeo links (`vimeo.com/123456789/abcdef1234`) work.
+- Images placed in the text are not repeated in the gallery. Any others still appear after the story.
 ```
 
 Leave any optional line blank or delete it and the site just skips it.

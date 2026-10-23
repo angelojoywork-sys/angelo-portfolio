@@ -1,7 +1,6 @@
 ---
 import { getSite } from '../lib/content';
 const site = await getSite();
-const updated = new Date().toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
 ---
 
 <footer class="site-footer">
@@ -11,7 +10,6 @@ const updated = new Date().toLocaleDateString('en-GB', { month: 'short', year: '
   </div>
   <div class="meta label">
     <span>Local time <time class="clock" data-tz={site.data.timezone}>--:--</time></span>
-    <span>Updated {updated}</span>
     <span>© {new Date().getFullYear()}</span>
   </div>
 </footer>
@@ -24,11 +22,16 @@ const updated = new Date().toLocaleDateString('en-GB', { month: 'short', year: '
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
+    align-items: center;
     gap: 12px 32px;
     font-size: 13px;
+    line-height: 20px;
   }
-  .contact { display: flex; flex-wrap: wrap; gap: 8px 24px; }
-  .meta { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: center; }
+  .contact, .meta { display: flex; flex-wrap: wrap; gap: 4px 24px; align-items: center; line-height: 20px; }
+  .meta { font-size: 11px; }
+  .contact a { font-size: 13px; line-height: 20px; text-underline-offset: 4px; }
+  .contact .u:hover { text-decoration-color: var(--accent); text-shadow: 0 0 14px var(--accent-glow); }
+  @media (max-width: 720px) { .site-footer { flex-direction: column; align-items: flex-start; } }
   @media (max-width: 720px) { .site-footer { padding-bottom: 88px; } }
 </style>
 

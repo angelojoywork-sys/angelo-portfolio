@@ -44,7 +44,7 @@ const entry = z.object({
   cover: z.string().nullish(),
   captions: z.record(z.string()).default({}),
   link: z.object({ label: z.string(), url: z.string() }).nullish(),
-  embed: z.string().nullish(),
+  embed: z.union([z.string(), z.array(z.string())]).nullish(),
   note: z.string().nullish(),
   order: z.number().default(100),
   draft: z.boolean().default(false),

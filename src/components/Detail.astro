@@ -3,6 +3,7 @@ import { Image } from 'astro:assets';
 import { render } from 'astro:content';
 import type { Item, Media } from '../lib/content';
 import { getSite } from '../lib/content';
+import { embedUrl } from '../lib/embed.mjs';
 
 interface Props { item: Item; next: Item; prev: Item; backLabel: string; backHref: string }
 const { item, next, prev, backLabel, backHref } = Astro.props;
@@ -21,13 +22,7 @@ const meta = [
 
 const disc = d.disciplines.map((k) => site.data.disciplines[k] ?? k);
 
-function embedUrl(url: string) {
-  const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([\w-]{6,})/);
-  if (yt) return `https://www.youtube-nocookie.com/embed/${yt[1]}`;
-  const vm = url.match(/vimeo\.com\/(\d+)/);
-  if (vm) return `https://player.vimeo.com/video/${vm[1]}?dnt=1`;
-  return url;
-}
+const embeds = ([] as string[]).concat(d.embed ?? []);
 const media: Media[] = [item.cover, ...item.gallery].filter(Boolean) as Media[];
 ---
 
@@ -37,21 +32,22 @@ const media: Media[] = [item.cover, ...item.gallery].filter(Boolean) as Media[];
   <header class="head">
     <p class="label kicker">{item.number} · {disc.join(' · ')}</p>
     <h1 class="title">{d.title}</h1>
-    <div class="body">
-      <p class="lede">{d.summary}</p>
-      <Content />
-      {d.link && <p><a href={d.link.url} class="ext" target="_blank" rel="noopener">{d.link.label} <span aria-hidden="true">↗</span></a></p>}
-    </div>
+    <p class="lede">{d.summary}</p>
 
     <dl class="meta">
       {meta.map(([k, v]) => <div><dt>{k}</dt><dd>{v}</dd></div>)}
     </dl>
   </header>
 
+  <div class="story">
+    <Content />
+    {d.link && <p><a href={d.link.url} class="ext" target="_blank" rel="noopener">{d.link.label} <span aria-hidden="true">↗</span></a></p>}
+  </div>
+
   <div class="gallery">
-    {d.embed && (
-      <figure class="frame embed"><iframe src={embedUrl(d.embed)} title={`${d.title} video`} loading="lazy" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></figure>
-    )}
+    {embeds.map((e, i) => (
+      <figure class="frame embed"><iframe src={embedUrl(e)} title={`${d.title} video ${i + 1}`} loading="lazy" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></figure>
+    ))}
     {media.map((m, i) => (
       <figure class="fig">
         <div class="frame">
@@ -94,12 +90,18 @@ const media: Media[] = [item.cover, ...item.gallery].filter(Boolean) as Media[];
   .head { padding: clamp(32px, 6vh, 72px) 0 clamp(32px, 5vh, 56px); display: grid; gap: 28px; }
   .kicker { color: var(--faint); }
   .title { margin: -12px 0 0; font-size: clamp(40px, 6.4vw, 88px); line-height: 0.98; letter-spacing: -0.05em; font-weight: 450; text-wrap: balance; }
-  .body { max-width: 62ch; color: var(--muted); font-size: 16px; line-height: 1.6; }
-  .body .lede { color: var(--fg); font-size: 19px; line-height: 1.45; letter-spacing: -0.01em; margin-top: 0; }
-  .body :global(h2) { color: var(--fg); font-size: 15px; font-weight: 550; margin: 2em 0 0.4em; letter-spacing: -0.01em; }
-  .body :global(p) { margin: 0 0 1em; }
-  .body :global(a) { color: var(--fg); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--faint); }
-  .body :global(ul) { padding-left: 1.2em; }
+  .lede { margin: 0; max-width: 40ch; color: var(--fg); font-size: 19px; line-height: 1.45; letter-spacing: -0.01em; }
+  /* Story: text at reading width, images and video full width */
+  .story { color: var(--muted); font-size: 16px; line-height: 1.6; margin-bottom: clamp(24px, 4vw, 48px); }
+  .story > :global(*) { max-width: 640px; }
+  .story :global(h2) { color: var(--fg); font-size: 15px; font-weight: 550; margin: 2em 0 0.4em; letter-spacing: -0.01em; }
+  .story :global(p) { margin: 0 0 1em; }
+  .story :global(a) { color: var(--fg); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--faint); }
+  .story :global(ul) { padding-left: 1.2em; }
+  .story > :global(p:has(img)), .story > :global(figure) { max-width: none; margin: clamp(20px, 3vw, 36px) 0; }
+  .story :global(img) { width: 100%; height: auto; border-radius: 2px; }
+  .story :global(.embed) { margin: clamp(20px, 3vw, 36px) 0; aspect-ratio: 16 / 9; background: var(--surface); border-radius: 2px; overflow: hidden; }
+  .story :global(.embed iframe) { width: 100%; height: 100%; border: 0; display: block; }
   .ext { display: inline-flex; gap: 6px; font-weight: 550; text-decoration: none !important; border-bottom: 1px solid var(--fg); padding-bottom: 1px; }
   .meta { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 20px 32px; margin: 12px 0 0; padding-top: 24px; border-top: 1px solid var(--line); }
   .meta dt { font-weight: 550; font-size: 14px; }

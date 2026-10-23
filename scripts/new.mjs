@@ -43,13 +43,23 @@ tools: []
 disciplines: [${disciplines.split(',').map((s) => s.trim()).filter(Boolean).join(', ')}]
 cover: cover.jpg
 # note: A behind-the-scenes thought, shown in "Show the thinking" mode.
-# embed: https://vimeo.com/123456789
+# embed: [https://vimeo.com/123456789]   # optional, extra videos shown above the gallery
 # link: { label: "Visit the site", url: "https://..." }
 order: ${Number(next) * 10}
 draft: false
 ---
 
-Write about the project here.
+Write about the project here. Text, images and videos can be mixed in any order.
+
+![Caption for the image](01.jpg)
+
+More text goes here, between the images.
+
+Paste a Vimeo or YouTube link on its own line to get a player (unlisted links work too):
+
+https://vimeo.com/123456789
+
+Any image not placed like this still appears after the story, in filename order.
 `
 );
 

@@ -45,6 +45,14 @@ const experiments = await getItems('experiments');
     const chips = [...home.querySelectorAll<HTMLButtonElement>('.chip')];
     let pinned = '';
 
+    // Hovering the lead-in line hints that the sentences after it are interactive
+    const intro = home.querySelector<HTMLElement>('.intro');
+    sents.forEach((s, i) => s.style.setProperty('--n', String(i)));
+    home.querySelectorAll<HTMLElement>('.sent.lead').forEach((l) => {
+      l.addEventListener('pointerenter', () => intro?.classList.add('hint'));
+      l.addEventListener('pointerleave', () => intro?.classList.remove('hint'));
+    });
+
     const keysOf = (el: HTMLElement, attr: string) => (el.getAttribute(attr) || '').split(' ').filter(Boolean);
 
     function apply(keys: string[]) {
