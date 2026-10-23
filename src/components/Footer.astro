@@ -4,7 +4,7 @@ const site = await getSite();
 const updated = new Date().toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
 ---
 
-<footer class="site-footer" data-note-on="footer">
+<footer class="site-footer">
   <div class="contact">
     <a href={`mailto:${site.data.email}`} class="u">{site.data.email}</a>
     {site.data.links.map((l) => <a href={l.url} class="u" target={l.url.startsWith('http') ? '_blank' : undefined} rel="noopener">{l.label}</a>)}

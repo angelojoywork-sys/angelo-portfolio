@@ -11,9 +11,9 @@ const d = site.data;
   <div class="info">
     <section class="bio">
       <p class="label">Info</p>
-      <h1 data-spec="H1">{d.name}</h1>
+      <h1>{d.name}</h1>
       <p class="role">{d.role}{d.location && <> · {d.location}</>}</p>
-      <div class="text" data-spec="Body" data-spec-text="p"><Content /></div>
+      <div class="text"><Content /></div>
     </section>
 
     <aside class="cols">

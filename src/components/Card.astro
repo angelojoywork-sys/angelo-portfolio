@@ -13,7 +13,7 @@ const sizes = '(max-width: 720px) 100vw, (max-width: 1200px) 30vw, 22vw';
   data-disc={item.data.disciplines.join(' ')}
   data-card-note={showNote ? item.data.note : undefined}
 >
-  <div class="frame media" data-spec={item.number === '01' ? 'Cover · 4:3' : undefined} data-spec-kind="box">
+  <div class="frame media">
     {item.cover?.kind === 'image' && (
       <Image src={item.cover.image} alt={item.data.title} widths={[480, 800, 1200]} sizes={sizes} loading={eager ? 'eager' : 'lazy'} class="cover" transition:name={`media-${item.kind}-${item.slug}`} />
     )}

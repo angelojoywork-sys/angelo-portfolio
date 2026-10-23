@@ -1,6 +1,6 @@
 ---
-// "Reveal my thinking" mode: a design-tool overlay with the layout grid,
-// live type specs and your own process notes pinned onto the page.
+// "Reveal my thinking" mode: a design-tool overlay with the layout grid and
+// the notes pinned onto project / experiment cards. Home and Experiments only.
 import { getSite } from '../lib/content';
 const site = await getSite();
 const initial = site.data.name.trim().charAt(0).toUpperCase();
@@ -11,7 +11,7 @@ const first = site.data.name.split(' ')[0];
   {Array.from({ length: 12 }, () => <span></span>)}
   <p class="th-grid-label">12 col · <span class="th-gutter"></span> gutter</p>
 </div>
-<script type="application/json" id="th-notes" set:html={JSON.stringify({ notes: site.data.notes, initial, first })} />
+<script type="application/json" id="th-notes" set:html={JSON.stringify({ initial, first })} />
 
 <style is:global>
   .th-grid {
@@ -28,29 +28,11 @@ const first = site.data.name.split(' ')[0];
   }
   .th-grid span { background: color-mix(in srgb, var(--accent) 6%, transparent); border-inline: 1px solid color-mix(in srgb, var(--accent) 14%, transparent); transform: scaleY(0); transform-origin: top; transition: transform 0.6s var(--ease); }
   .th-grid-label { position: absolute; right: var(--gutter); top: calc(var(--header-h) + 4px); margin: 0; font: 10px/1 var(--mono); color: var(--accent); background: var(--bg); padding: 3px 5px; }
-  html.thinking .th-grid { opacity: 1; }
-  html.thinking .th-grid span { transform: scaleY(1); }
+  html.thinking body:is([data-page='home'], [data-page='experiments']) .th-grid { opacity: 1; }
+  html.thinking body:is([data-page='home'], [data-page='experiments']) .th-grid span { transform: scaleY(1); }
   html.thinking .th-grid span:nth-child(n) { transition-delay: calc(var(--i, 0) * 25ms); }
 
-  html.thinking :where([data-spec], [data-note-on], [data-card-note]):not(.site-header) { position: relative; }
-  html.thinking [data-spec] { outline: 1px dashed color-mix(in srgb, var(--accent) 55%, transparent); outline-offset: 4px; transition: outline-color .2s; }
-  html.thinking [data-spec]:hover { outline: 1px solid var(--accent); }
-
-  .th-gen { font-family: var(--mono); font-size: 10px; line-height: 1; letter-spacing: 0; text-transform: none; font-weight: 400; }
-  .th-spec {
-    position: absolute; left: -4px; bottom: calc(100% + 6px);
-    white-space: nowrap; color: var(--accent-ink); background: var(--accent);
-    padding: 3px 5px; border-radius: 2px; z-index: 5; pointer-events: none;
-    animation: th-in 0.35s var(--ease) both;
-  }
-  .th-measure {
-    position: absolute; left: 0; right: 0; top: calc(100% + 14px); height: 9px;
-    border-inline: 1px solid var(--accent); pointer-events: none; z-index: 4;
-    animation: th-in 0.35s var(--ease) both;
-  }
-  .th-measure::before { content: ''; position: absolute; left: 0; right: 0; top: 4px; border-top: 1px solid var(--accent); }
-  .th-measure b { position: absolute; left: 50%; top: -1px; transform: translateX(-50%); background: var(--bg); color: var(--accent); padding: 0 5px; font-weight: 400; white-space: nowrap; }
-  .site-header .th-spec { bottom: auto; top: calc(100% + 4px); }
+  html.thinking [data-card-note] { position: relative; }
 
   .th-pin { position: absolute; top: -10px; right: -12px; z-index: 30; animation: th-pop 0.45s var(--ease) both; }
   .th-pin + .th-pin { right: 20px; }
@@ -72,31 +54,14 @@ const first = site.data.name.split(' ')[0];
   .th-tip small { display: block; font: 10px/1 var(--mono); opacity: 0.6; margin-bottom: 6px; }
   .th-pin:hover .th-tip, .th-pin:focus .th-tip { opacity: 1; transform: none; }
 
-  @keyframes th-in { from { opacity: 0; transform: translateY(3px); } }
   @keyframes th-pop { from { opacity: 0; transform: scale(0.4); } }
 </style>
 
 <script>
-  type Note = { on: string; text: string };
-  let data: { notes: Note[]; initial: string; first: string } = { notes: [], initial: '', first: '' };
+  let data: { initial: string; first: string } = { initial: '', first: '' };
 
   function clear() {
     document.querySelectorAll('.th-gen').forEach((n) => n.remove());
-  }
-
-  function spec(el: HTMLElement) {
-    const name = el.dataset.spec!;
-    const textEl = (el.dataset.specText ? el.querySelector<HTMLElement>(el.dataset.specText) : null) ?? el;
-    if (el.dataset.specKind === 'box') {
-      const r = el.getBoundingClientRect();
-      return `${name} · ${Math.round(r.width)}×${Math.round(r.height)}`;
-    }
-    const cs = getComputedStyle(textEl);
-    const fam = cs.fontFamily.split(',')[0].replace(/["']/g, '').replace(' Variable', '');
-    const size = parseFloat(cs.fontSize);
-    const lh = cs.lineHeight === 'normal' ? Math.round(size * 1.2) : Math.round(parseFloat(cs.lineHeight));
-    const ls = cs.letterSpacing === 'normal' ? '0' : (parseFloat(cs.letterSpacing) / size).toFixed(2) + 'em';
-    return `${name} · ${fam} ${cs.fontWeight} · ${Math.round(size)}/${lh} · ${ls}`;
   }
 
   function pin(host: HTMLElement, text: string, i: number, n: number) {
@@ -113,41 +78,10 @@ const first = site.data.name.split(' ')[0];
   function build() {
     clear();
     if (!document.documentElement.classList.contains('thinking')) return;
+    if (!['home', 'experiments'].includes(document.body.dataset.page ?? '')) return;
     const g = document.querySelector('.th-gutter');
     if (g) g.textContent = Math.round(parseFloat(getComputedStyle(document.querySelector('.th-grid')!).columnGap)) + 'px';
     document.querySelectorAll<HTMLElement>('.th-grid span').forEach((s, i) => s.style.setProperty('--i', String(i)));
-
-    document.querySelectorAll<HTMLElement>('[data-spec]').forEach((el) => {
-      if (!el.offsetParent && el.tagName !== 'HEADER') return;
-      const s = document.createElement('span');
-      s.className = 'th-spec th-gen';
-      s.textContent = spec(el);
-      el.append(s);
-    });
-
-    document.querySelectorAll<HTMLElement>('[data-measure]').forEach((el) => {
-      if (!el.offsetParent) return;
-      const cs = getComputedStyle(el);
-      const w = el.clientWidth;
-      const chars = Math.round(w / (parseFloat(cs.fontSize) * 0.5));
-      const m = document.createElement('span');
-      m.className = 'th-measure th-gen';
-      m.innerHTML = `<b>${Math.round(w)}px · ~${chars} chars a line</b>`;
-      el.append(m);
-    });
-
-    const groups = new Map<string, Note[]>();
-    data.notes.forEach((n) => groups.set(n.on, [...(groups.get(n.on) ?? []), n]));
-    const total = data.notes.length;
-    let idx = 0;
-    const order = data.notes.map((n) => n.on).filter((v, i, a) => a.indexOf(v) === i);
-    order.forEach((on) => {
-      const host = document.querySelector<HTMLElement>(`[data-note-on="${on}"]`);
-      (groups.get(on) ?? []).forEach((n) => {
-        if (host && (host.offsetParent || host.tagName === 'HEADER')) pin(host, n.text, idx, total);
-        idx++;
-      });
-    });
 
     const cards = [...document.querySelectorAll<HTMLElement>('[data-card-note]')].filter((c) => c.offsetParent);
     cards.forEach((c, i) => pin(c, c.dataset.cardNote!, i, cards.length));

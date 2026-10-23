@@ -12,7 +12,7 @@ const site = defineCollection({
     name: z.string(),
     role: z.string(),
     location: z.string().optional(),
-    timezone: z.string().default('Asia/Kolkata'),
+    timezone: z.string().default('Europe/Dublin'),
     available: z.string().optional(),
     email: z.string(),
     photo: z.string().optional(),
@@ -26,9 +26,6 @@ const site = defineCollection({
       })
     ),
     spatialTitle: z.string(),
-    notes: z
-      .array(z.object({ on: z.string(), text: z.string() }))
-      .default([]),
     clients: z.array(z.string()).default([]),
     services: z.array(z.string()).default([]),
   }),

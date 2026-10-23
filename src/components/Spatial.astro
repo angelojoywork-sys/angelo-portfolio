@@ -39,9 +39,17 @@ const legend = Object.entries(site.data.disciplines)
   <p class="hint label"><span class="fine">Drag to rotate · scroll to immerse</span><span class="touch">Drag to rotate · pinch to immerse · tap to open</span></p>
 
   <div class="caption">
-    <h1 class="stitle" data-spec="Display">{site.data.spatialTitle}</h1>
+    <h1 class="stitle">{site.data.spatialTitle}</h1>
     <p class="sub"><span class="fine">Hover a piece to see what it's connected to</span><span class="touch">Tap a piece to open it</span></p>
   </div>
+
+  <div class="fcap">
+    <p class="fc-meta label"><span class="fc-count"></span><span class="fc-type"></span></p>
+    <h2 class="fc-title"></h2>
+    <a class="fc-open" href="/" tabindex="-1">Open project <span aria-hidden="true">→</span></a>
+    <p class="fc-hint label"><span class="fine">Drag sideways to browse · up/down to zoom out</span><span class="touch">Swipe to browse</span></p>
+  </div>
+  <p class="visually-hidden fc-live" aria-live="polite"></p>
 
   <ul class="legend" aria-label="Disciplines">
     {legend.map((l) => <li><button type="button" data-k={l.k}><span class="sw"></span>{l.v}<span class="label">{String(l.n).padStart(2, '0')}</span></button></li>)}
@@ -81,6 +89,8 @@ const legend = Object.entries(site.data.disciplines)
   .nodes :global(a.rel) { box-shadow: 0 0 0 1px var(--accent); }
   .nodes :global(a.dimmed) { filter: grayscale(1) opacity(0.2); }
   .nodes :global(a:focus-visible) { outline-offset: 2px; }
+  .nodes :global(a.focus) { cursor: pointer; box-shadow: var(--shadow); }
+  .spatial.focused .nodes :global(a:not(.focus)) { pointer-events: none; }
 
   .tip { position: absolute; left: 0; top: 0; pointer-events: none; background: var(--fg); color: var(--bg); padding: 7px 10px; border-radius: 6px; font-size: 13px; line-height: 1.25; opacity: 0; transition: opacity .2s; white-space: nowrap; z-index: 99999; }
   .tip b { display: block; font-weight: 550; }
@@ -94,6 +104,20 @@ const legend = Object.entries(site.data.disciplines)
   .spatial.zoomed .caption { opacity: 0; transform: translateY(12px); }
   .stitle { margin: 0; font-size: clamp(28px, 3.4vw, 52px); line-height: 1; letter-spacing: -0.045em; font-weight: 450; text-wrap: balance; }
   .sub { margin: 14px 0 0; color: var(--muted); }
+
+  /* focus mode: one project fills the view, its caption replaces the headline */
+  .fcap { position: absolute; left: var(--gutter); bottom: clamp(24px, 5vh, 56px); z-index: 2000; max-width: min(560px, 80vw); pointer-events: none; opacity: 0; transform: translateY(12px); transition: opacity .45s var(--ease), transform .6s var(--ease); }
+  .spatial.focused .fcap { opacity: 1; transform: none; }
+  .spatial.focused .fc-open { pointer-events: auto; }
+  .fc-meta { display: flex; gap: 14px; margin: 0 0 10px; }
+  .fc-count { color: var(--fg); font-variant-numeric: tabular-nums; }
+  .fc-title { margin: 0; font-size: clamp(24px, 2.6vw, 40px); line-height: 1.05; letter-spacing: -0.035em; font-weight: 450; text-wrap: balance; }
+  .fc-title.in, .fc-meta.in { animation: fc-in .5s var(--ease) both; }
+  @keyframes fc-in { from { opacity: 0; transform: translateY(6px); } }
+  .fc-open { display: inline-block; margin-top: 14px; font-size: 14px; padding-bottom: 2px; border-bottom: 1px solid currentColor; }
+  .fc-open span { display: inline-block; transition: transform .3s var(--ease); }
+  .fc-open:hover span { transform: translateX(3px); }
+  .fc-hint { margin: 18px 0 0; }
 
   .legend { position: absolute; right: var(--gutter); bottom: clamp(24px, 5vh, 56px); list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; align-items: flex-end; transition: opacity .45s var(--ease); }
   .spatial.zoomed .legend { opacity: 0; pointer-events: none; }
@@ -114,12 +138,14 @@ const legend = Object.entries(site.data.disciplines)
   .ruler-mark em { position: absolute; right: 38px; top: -6px; font-style: normal; transition: color .2s; }
   .ruler:hover .ruler-mark em, .ruler.active .ruler-mark em { color: var(--fg); }
 
+  @media (prefers-reduced-motion: reduce) { .fc-title.in, .fc-meta.in { animation: none; } }
   .touch { display: none; }
   @media (hover: none) { .fine { display: none; } .touch { display: inline; } }
   @media (max-width: 720px) {
     .legend { display: none; }
     .hint { bottom: calc(76px + env(safe-area-inset-bottom)); }
     .caption { bottom: calc(112px + env(safe-area-inset-bottom)); }
+    .fcap { bottom: calc(76px + env(safe-area-inset-bottom)); }
     .ruler { right: 0; padding: 16px 10px 16px 28px; }
     .ruler-track { gap: 5px; }
     .ruler i { width: 6px; }
@@ -150,6 +176,11 @@ const legend = Object.entries(site.data.disciplines)
     const track = root.querySelector<HTMLElement>('.ruler-track')!;
     const caption = root.querySelector<HTMLElement>('.caption')!;
     const title = root.querySelector<HTMLElement>('.stitle')!;
+    const fcap = root.querySelector<HTMLElement>('.fcap')!;
+    const fcMeta = fcap.querySelector<HTMLElement>('.fc-meta')!;
+    const fcTitle = fcap.querySelector<HTMLElement>('.fc-title')!;
+    const fcOpen = fcap.querySelector<HTMLAnchorElement>('.fc-open')!;
+    const live = root.querySelector<HTMLElement>('.fc-live')!;
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const NS = 'http://www.w3.org/2000/svg';
     // stage, ruler and legend outlive a mount, so their listeners are dropped on unmount
@@ -159,7 +190,8 @@ const legend = Object.entries(site.data.disciplines)
     const N = data.length;
     const golden = Math.PI * (3 - Math.sqrt(5));
     const pts = data.map((d, i) => {
-      const y = N === 1 ? 0 : 1 - (i / (N - 1)) * 2;
+      // offset by half a step so no node sits on a pole, where the Y-spin can't move it
+      const y = 1 - ((i + 0.5) / N) * 2;
       const r = Math.sqrt(1 - y * y);
       const th = golden * i;
       return { x: Math.cos(th) * r, y, z: Math.sin(th) * r };
@@ -174,6 +206,11 @@ const legend = Object.entries(site.data.disciplines)
       layer.append(a);
       return a;
     });
+
+    // one entry per project (its cover node), in Index order
+    const projects: number[] = [];
+    data.forEach((d, i) => { if (!data.slice(0, i).some((o) => o.slug === d.slug)) projects.push(i); });
+    const P = projects.length;
 
     const orbitPaths = [0, 1, 2].map(() => {
       const p = document.createElementNS(NS, 'path');
@@ -192,6 +229,15 @@ const legend = Object.entries(site.data.disciplines)
     const sizes: number[] = data.map(() => 0);
     const proj: { x: number; y: number; s: number; z: number }[] = data.map(() => ({ x: 0, y: 0, s: 1, z: 0 }));
 
+    // focus: the third stage of immersion, one project centred. fw blends each node
+    // from its globe spot into the focus slot; ox is its sideways offset (drag / swipe).
+    let focus = -1;
+    const fw: number[] = data.map(() => 0);
+    const ox: number[] = data.map(() => 0);
+    let axis: '' | 'x' | 'rot' = '', startX = 0, startY = 0, flick = 0;
+    let wheelLock = 0, wheelX = 0, wheelT = 0;
+    const focusNode = () => (focus < 0 ? -1 : projects[focus]);
+
     const resize = () => {
       W = stage.clientWidth; H = stage.clientHeight;
       CY = H * (W < 720 ? 0.44 : 0.45);
@@ -205,6 +251,52 @@ const legend = Object.entries(site.data.disciplines)
 
     const setImm = (v: number) => { immT = clamp01(v); };
     const used = () => root.classList.add('used');
+
+    function showFocus(dir: number) {
+      const i = projects[focus], d = data[i];
+      fcMeta.querySelector('.fc-count')!.textContent = `${String(focus + 1).padStart(2, '0')} / ${String(P).padStart(2, '0')}`;
+      fcMeta.querySelector('.fc-type')!.textContent = (d.kind === 'experiments' ? 'Experiment · ' : '') + d.type;
+      fcTitle.textContent = d.title;
+      fcOpen.href = d.url;
+      fcOpen.tabIndex = 0;
+      [fcMeta, fcTitle].forEach((el) => { el.classList.remove('in'); void el.offsetWidth; el.classList.add('in'); });
+      live.textContent = `${d.title}, ${focus + 1} of ${P}`;
+      if (dir) ox[i] = dir * W * 0.3;
+    }
+
+    function enterFocus() {
+      if (focus >= 0 || !P) return;
+      // the cover nearest the centre of the screen (and not about to pass the lens)
+      let best = 0, bestScore = Infinity;
+      projects.forEach((i, j) => {
+        const p = proj[i];
+        if (D - p.z < 0.3) return;
+        const score = Math.hypot(p.x - W / 2, p.y - CY) / Math.max(1, R) - p.s * 0.2;
+        if (score < bestScore) { bestScore = score; best = j; }
+      });
+      focus = best;
+      setImm(1);
+      setHover(-1);
+      vx = vy = 0;
+      root.classList.add('focused');
+      showFocus(0);
+      used();
+    }
+
+    function exitFocus(to = 0.75) {
+      if (focus < 0) return;
+      focus = -1;
+      root.classList.remove('focused');
+      fcOpen.tabIndex = -1;
+      live.textContent = '';
+      setImm(to);
+    }
+
+    function step(dir: number) {
+      if (focus < 0 || !P) return;
+      focus = (focus + dir + P) % P;
+      showFocus(dir);
+    }
 
     function project(x: number, y: number, z: number) {
       const cy = Math.cos(rotY), sy = Math.sin(rotY), cx = Math.cos(rotX), sx = Math.sin(rotX);
@@ -236,13 +328,35 @@ const legend = Object.entries(site.data.disciplines)
       D = lerp(2.6, 0.55, ease);
       F = lerp(2.6, 1.5, ease);
 
-      if (!dragging) {
+      const fn = focusNode();
+      if (fn >= 0) {
+        // turn the globe so the focused node sits straight ahead, at (0, 0, -1)
+        const q = pts[fn];
+        const rho = Math.hypot(q.x, q.z);
+        const ty = Math.PI - Math.atan2(q.x, q.z), tx = Math.atan2(-q.y, rho);
+        const dY = Math.atan2(Math.sin(ty - rotY), Math.cos(ty - rotY));
+        const k = reduce ? 1 : 1 - Math.exp(-dt * 5);
+        rotY += dY * k; rotX += (tx - rotX) * k;
+        vx = vy = 0;
+      } else if (!dragging) {
         if (hovered < 0 && !legendKey && !reduce) vy += (0.0016 * (1 - ease * 0.9) - vy) * 0.02;
         else vy *= 0.9;
         vx *= 0.94;
         rotY += vy; rotX += vx;
-        rotX = Math.max(-1.2, Math.min(1.2, rotX));
+        // soft clamp, so leaving focus near a pole doesn't snap
+        rotX += (Math.max(-1.2, Math.min(1.2, rotX)) - rotX) * 0.15;
       }
+
+      let fmax = 0;
+      for (let i = 0; i < N; i++) {
+        const target = i === fn ? 1 : 0;
+        if (reduce) fw[i] += Math.max(-4 * dt, Math.min(4 * dt, target - fw[i]));
+        else fw[i] += (target - fw[i]) * (1 - Math.exp(-dt * 7));
+        if (Math.abs(target - fw[i]) < 0.001) fw[i] = target;
+        if (!(axis === 'x' && i === fn)) ox[i] = reduce ? 0 : ox[i] * Math.exp(-dt * 9);
+        fmax = Math.max(fmax, fw[i]);
+      }
+      const dim = lerp(1, 0.08, fmax);
 
       const rel = related(hovered);
       const base = Math.min(96, Math.max(48, R * 0.25)) * lerp(1, 1.5, ease);
@@ -253,18 +367,31 @@ const legend = Object.entries(site.data.disciplines)
         const d = data[i];
         const el = els[i];
         const gap = D - p.z;
-        if (gap < 0.05) { el.style.visibility = 'hidden'; continue; }
+        const f = fw[i];
+        if (gap < 0.05 && f < 0.001) { el.style.visibility = 'hidden'; continue; }
         el.style.visibility = '';
-        const w = Math.min(maxW, base * p.s * Math.sqrt(d.ar) * 0.9);
-        const h = w / d.ar;
         const depth = clamp01((p.z + 1) / 2);
         const near = clamp01((gap - 0.08) / 0.4); // fade out as a node approaches the lens
+        // a node behind the lens has no globe spot to blend from, so it grows in place
+        const behind = gap < 0.05;
+        let w = behind ? 0 : Math.min(maxW, base * p.s * Math.sqrt(d.ar) * 0.9);
+        let x = behind ? W / 2 : p.x, y = behind ? CY : p.y;
+        let op = behind ? 0 : lerp(0.2 + depth * 0.8, 0.65 + depth * 0.35, ease) * near * dim;
+        if (f > 0) {
+          const sw = Math.min(W * 0.62, H * 0.6 * d.ar);
+          w = lerp(w, sw, f);
+          x = lerp(x, W / 2 + ox[i], f);
+          y = lerp(y, CY, f);
+          op = lerp(op, 1, f);
+        }
+        const h = w / d.ar;
         sizes[i] = w;
         el.style.width = w + 'px';
         el.style.height = h + 'px';
-        el.style.transform = `translate3d(${p.x - w / 2}px, ${p.y - h / 2}px, 0)`;
-        el.style.zIndex = String(Math.round(depth * 1000));
-        el.style.opacity = String(lerp(0.2 + depth * 0.8, 0.65 + depth * 0.35, ease) * near);
+        el.style.transform = `translate3d(${x - w / 2}px, ${y - h / 2}px, 0)`;
+        el.style.zIndex = String(f > 0.01 ? 1600 + Math.round(f * 100) : Math.round(depth * 1000));
+        el.style.opacity = String(op);
+        el.classList.toggle('focus', i === fn && f > 0.5);
         const lit = rel ? rel[i] > 0 : legendKey ? d.disc.includes(legendKey) : true;
         el.classList.toggle('dimmed', !lit);
         el.classList.toggle('rel', !!rel && rel[i] === 2 && i !== hovered);
@@ -325,13 +452,14 @@ const legend = Object.entries(site.data.disciplines)
     }
 
     els.forEach((el, i) => {
-      el.addEventListener('pointerenter', () => !dragging && !pointers.size && setHover(i));
+      el.addEventListener('pointerenter', () => focus < 0 && !dragging && !pointers.size && setHover(i));
       el.addEventListener('pointerleave', () => !dragging && setHover(-1));
-      el.addEventListener('focus', () => setHover(i));
+      el.addEventListener('focus', () => focus < 0 && setHover(i));
       el.addEventListener('blur', () => setHover(-1));
       el.addEventListener('click', (e) => {
         e.preventDefault();
         if (moved > 5) return;
+        if (focus >= 0 && i !== focusNode()) return;
         navigate(data[i].url);
       });
     });
@@ -346,10 +474,11 @@ const legend = Object.entries(site.data.disciplines)
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       if (pointers.size === 1) {
         dragging = true; moved = 0; lastX = e.clientX; lastY = e.clientY; lastT = performance.now();
+        startX = e.clientX; startY = e.clientY; axis = '';
         vx = vy = 0;
         stage.classList.add('dragging');
       } else if (pointers.size === 2) {
-        dragging = false; moved = 999;
+        dragging = false; moved = 999; axis = '';
         stage.classList.remove('dragging');
         setHover(-1);
         pinch0 = pinchDist(); pinchImm0 = immT;
@@ -360,13 +489,33 @@ const legend = Object.entries(site.data.disciplines)
       const p = pointers.get(e.pointerId);
       if (p) { p.x = e.clientX; p.y = e.clientY; }
       if (pointers.size >= 2) {
-        setImm(pinchImm0 + Math.log(pinchDist() / pinch0) * 0.9);
+        const v = pinchImm0 + Math.log(pinchDist() / pinch0) * 0.9;
+        if (focus < 0 && v > 1.15) enterFocus();
+        else if (focus >= 0 && v < 0.85) exitFocus(v);
+        else if (focus < 0) setImm(v);
         used();
         return;
       }
       if (!dragging) return;
       const dx = e.clientX - lastX, dy = e.clientY - lastY;
       moved += Math.abs(dx) + Math.abs(dy);
+      if (focus >= 0 && axis !== 'rot') {
+        // focused: sideways drags browse projects, up/down zooms back out
+        const tx = e.clientX - startX, ty = e.clientY - startY;
+        if (!axis && Math.hypot(tx, ty) > 8) axis = Math.abs(tx) > Math.abs(ty) ? 'x' : 'rot';
+        if (axis === 'rot') exitFocus();
+        else {
+          if (axis === 'x') {
+            try { stage.setPointerCapture(e.pointerId); } catch {}
+            ox[focusNode()] = tx;
+            const now = performance.now();
+            flick = dx / Math.max(8, now - lastT); // px per ms
+            lastT = now;
+          }
+          lastX = e.clientX; lastY = e.clientY;
+          return;
+        }
+      }
       if (moved > 5) { setHover(-1); used(); try { stage.setPointerCapture(e.pointerId); } catch {} }
       const k = 0.005 * lerp(1, 0.45, ease); // calmer look-around when inside
       rotY += dx * k; rotX += dy * k;
@@ -375,7 +524,14 @@ const legend = Object.entries(site.data.disciplines)
       lastX = e.clientX; lastY = e.clientY; lastT = now;
     };
     const onUp = (e: PointerEvent) => {
+      if (!pointers.has(e.pointerId)) return;
       pointers.delete(e.pointerId);
+      if (focus >= 0 && axis === 'x') {
+        const tx = ox[focusNode()];
+        if (Math.abs(tx) > 60 || Math.abs(flick) > 0.5) step(tx < 0 ? 1 : -1);
+        flick = 0;
+      }
+      axis = '';
       dragging = false; stage.classList.remove('dragging');
     };
     window.addEventListener('pointermove', onMove);
@@ -385,13 +541,37 @@ const legend = Object.entries(site.data.disciplines)
     stage.addEventListener('wheel', (e) => {
       e.preventDefault();
       const dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
-      setImm(immT - dy * (e.ctrlKey ? 0.01 : 0.0012));
+      const dx = e.deltaMode === 1 ? e.deltaX * 16 : e.deltaX;
+      const now = performance.now();
+      // after a step, swallow the rest of that gesture (trackpad inertia) until it goes quiet
+      if (now < wheelLock) { wheelLock = now + 160; return; }
+      if (now - wheelT > 200) wheelX = 0;
+      wheelT = now;
       used();
+      if (focus >= 0) {
+        if (Math.abs(dx) > Math.abs(dy)) {
+          wheelX += dx;
+          if (Math.abs(wheelX) > 40) { step(wheelX > 0 ? 1 : -1); wheelX = 0; wheelLock = now + 160; }
+        } else if (dy > 4) { exitFocus(); wheelLock = now + 160; }
+        return;
+      }
+      if (dy < 0 && immT >= 1 && imm > 0.95) { enterFocus(); wheelLock = now + 160; return; }
+      setImm(immT - dy * (e.ctrlKey ? 0.01 : 0.0012));
     }, { passive: false, signal: ac.signal });
 
     stage.addEventListener('keydown', (e) => {
       const k = e.key;
-      if (k === 'ArrowLeft') vy -= 0.02; else if (k === 'ArrowRight') vy += 0.02;
+      if (focus >= 0) {
+        if (k === 'ArrowLeft') step(-1);
+        else if (k === 'ArrowRight') step(1);
+        else if (k === 'ArrowUp' || k === 'ArrowDown' || k === 'Escape' || k === '-') exitFocus();
+        else if (k === 'Enter') navigate(data[focusNode()].url);
+        else return;
+        e.preventDefault();
+        return;
+      }
+      if ((k === '+' || k === '=') && immT >= 1) enterFocus();
+      else if (k === 'ArrowLeft') vy -= 0.02; else if (k === 'ArrowRight') vy += 0.02;
       else if (k === 'ArrowUp') vx -= 0.02; else if (k === 'ArrowDown') vx += 0.02;
       else if (k === '+' || k === '=') setImm(immT + 0.15);
       else if (k === '-') setImm(immT - 0.15);
@@ -402,7 +582,10 @@ const legend = Object.entries(site.data.disciplines)
     // Immerse ruler: drag the marker (up = in), click a tick, or use the keyboard
     const fromY = (y: number) => {
       const r = track.getBoundingClientRect();
-      setImm(1 - (y - r.top) / r.height);
+      const v = 1 - (y - r.top) / r.height;
+      if (focus >= 0) { if (v < 0.95) exitFocus(v); }
+      else if (v >= 0.99) enterFocus();
+      else setImm(v);
       used();
     };
     let rulerId = -1;
@@ -420,6 +603,9 @@ const legend = Object.entries(site.data.disciplines)
     ruler.addEventListener('pointercancel', rulerUp, sig);
     ruler.addEventListener('keydown', (e) => {
       const k = e.key;
+      const up = k === 'ArrowUp' || k === 'ArrowRight' || k === 'PageUp' || k === 'End';
+      if (focus >= 0 && !up && k !== 'Tab') { exitFocus(); e.preventDefault(); return; }
+      if (focus < 0 && up && immT >= 1) { enterFocus(); e.preventDefault(); return; }
       if (k === 'ArrowUp' || k === 'ArrowRight' || k === 'PageUp') setImm(immT + (k === 'PageUp' ? 0.25 : 0.05));
       else if (k === 'ArrowDown' || k === 'ArrowLeft' || k === 'PageDown') setImm(immT - (k === 'PageDown' ? 0.25 : 0.05));
       else if (k === 'Home') setImm(0);
@@ -446,7 +632,9 @@ const legend = Object.entries(site.data.disciplines)
       window.removeEventListener('pointercancel', onUp);
       layer.textContent = '';
       orbits.textContent = '';
-      root.classList.remove('zoomed', 'used');
+      root.classList.remove('zoomed', 'used', 'focused');
+      fcOpen.tabIndex = -1;
+      live.textContent = '';
       root.style.removeProperty('--imm');
     };
   }

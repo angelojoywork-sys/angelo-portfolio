@@ -11,7 +11,7 @@ const previews = await Promise.all(
 const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w) => w.data.disciplines.includes(k)));
 ---
 
-<section class="work" data-note-on="work" aria-label="Selected work">
+<section class="work" aria-label="Selected work">
   <div class="bar">
     <h2 class="label">Selected work <span class="count">({String(work.length).padStart(2, '0')})</span></h2>
     <div class="chips" role="group" aria-label="Filter by discipline">

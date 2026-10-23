@@ -4,12 +4,15 @@ interface Props { page: string }
 const { page } = Astro.props;
 const site = await getSite();
 const isHome = page === 'home';
+const showThinking = page === 'home' || page === 'experiments';
 ---
 
-<header class="site-header" data-spec="Header" data-spec-kind="box" data-note-on="header">
+<header class="site-header">
   <a href="/" class="brand" aria-label={`${site.data.name}, home`}>
-    <span class="dot" aria-hidden="true"></span>
-    <span class="brand-name" aria-hidden="true">{[...site.data.name].map((c, i) => <span class="ch" style={`--i:${i}`}>{c === ' ' ? ' ' : c}</span>)}</span>
+    <span class="brand-name" aria-hidden="true">{[...site.data.name].map((c, i) => {
+      const g = c === ' ' ? '\u00a0' : c;
+      return <span class="ch" style={`--i:${i}`}><span>{g}</span><span>{g}</span></span>;
+    })}</span>
     <span class="visually-hidden">{site.data.name}</span>
   </a>
 
@@ -27,11 +30,11 @@ const isHome = page === 'home';
       <svg class="sun" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>
       <svg class="moon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>
     </button>
-    <button class="think-toggle" type="button" aria-pressed="false" title="Reveal my thinking (T)">
+    {showThinking && <button class="think-toggle" type="button" aria-pressed="false" title="Reveal my thinking (T)">
       <span class="switch" aria-hidden="true"><span></span></span>
       <span class="think-label">Reveal my thinking</span>
       <kbd>T</kbd>
-    </button>
+    </button>}
   </nav>
 </header>
 
@@ -49,9 +52,7 @@ const isHome = page === 'home';
     backdrop-filter: blur(14px) saturate(1.2);
     -webkit-backdrop-filter: blur(14px) saturate(1.2);
   }
-  .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 550; letter-spacing: -0.01em; justify-self: start; }
-  .dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 3px color-mix(in srgb, #22c55e 22%, transparent); animation: pulse 2.4s var(--ease) infinite; }
-  @keyframes pulse { 50% { box-shadow: 0 0 0 6px color-mix(in srgb, #22c55e 0%, transparent); } }
+  .brand { display: inline-flex; align-items: center; font-weight: 550; letter-spacing: -0.01em; justify-self: start; }
 
   .views {
     position: relative;
@@ -82,10 +83,19 @@ const isHome = page === 'home';
 
   button.nav-link { font: inherit; font-size: 14px; padding: 0; }
 
-  /* Name micro-interaction: letters hop in a wave, the dot speeds up */
-  .ch { display: inline-block; transition: transform .45s var(--ease); transition-delay: calc(var(--i) * 28ms); }
-  .brand:hover .ch { transform: translateY(-3px); }
-  .brand:hover .dot { animation-duration: 0.9s; }
+  /* Name: letters rise in from a clipped baseline on load, then on hover each
+     one rolls up and an identical copy rolls in from below, left to right. */
+  .brand-name { display: inline-flex; }
+  .ch { position: relative; display: inline-block; overflow: clip; line-height: 1.25; height: 1.25em; }
+  .ch > span { display: block; transition: transform .55s var(--ease), color .3s; transition-delay: calc(var(--i) * 22ms); }
+  .ch > span:first-child { animation: ch-rise .7s var(--ease) backwards; animation-delay: calc(120ms + var(--i) * 30ms); }
+  .ch > span + span { position: absolute; inset: 100% 0 auto 0; }
+  .brand:is(:hover, :focus-visible) .ch > span { transform: translateY(-100%); }
+  @keyframes ch-rise { from { transform: translateY(110%); } }
+  @media (prefers-reduced-motion: reduce) {
+    .ch > span:first-child { animation: none; }
+    .brand:is(:hover, :focus-visible) .ch > span { transform: none; color: var(--accent); }
+  }
 
   .theme-toggle { position: relative; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; color: var(--fg); transition: background .2s; }
   .theme-toggle:hover { background: var(--surface); }
@@ -97,7 +107,6 @@ const isHome = page === 'home';
   /* Spatial owns the whole screen, so the thinking overlay steps aside */
   :global(body.spatial-on) .think-toggle { display: none; }
   :global(body.spatial-on .th-grid), :global(body.spatial-on .th-gen) { display: none; }
-  :global(body.spatial-on [data-spec]) { outline: none !important; }
   .think-toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); padding: 5px 8px 5px 6px; border-radius: 999px; border: 1px solid var(--line); transition: border-color .2s, color .2s; }
   .think-toggle:hover { color: var(--fg); border-color: var(--faint); }
   .switch { width: 26px; height: 15px; border-radius: 999px; background: var(--line); position: relative; transition: background 0.25s; }
@@ -168,7 +177,7 @@ const isHome = page === 'home';
       const dark = document.documentElement.getAttribute('data-theme') !== 'dark';
       if (dark) document.documentElement.setAttribute('data-theme', 'dark');
       else document.documentElement.removeAttribute('data-theme');
-      try { localStorage.setItem('theme', dark ? 'dark' : 'light'); } catch {}
+      try { sessionStorage.setItem('theme', dark ? 'dark' : 'light'); } catch {}
       syncTheme();
       return;
     }
@@ -178,6 +187,7 @@ const isHome = page === 'home';
   document.addEventListener('keydown', (e) => {
     if (e.key.toLowerCase() !== 't' || e.metaKey || e.ctrlKey || e.altKey) return;
     if (document.body.classList.contains('spatial-on')) return;
+    if (!document.querySelector('.think-toggle')) return;
     const tag = (e.target as HTMLElement).tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA') return;
     setThinking(!document.documentElement.classList.contains('thinking'));

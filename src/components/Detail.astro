@@ -36,8 +36,8 @@ const media: Media[] = [item.cover, ...item.gallery].filter(Boolean) as Media[];
 
   <header class="head">
     <p class="label kicker">{item.number} · {disc.join(' · ')}</p>
-    <h1 class="title" data-spec="H1">{d.title}</h1>
-    <div class="body" data-spec="Body" data-spec-text="p">
+    <h1 class="title">{d.title}</h1>
+    <div class="body">
       <p class="lede">{d.summary}</p>
       <Content />
       {d.link && <p><a href={d.link.url} class="ext" target="_blank" rel="noopener">{d.link.label} <span aria-hidden="true">↗</span></a></p>}

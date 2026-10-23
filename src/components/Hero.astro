@@ -13,7 +13,7 @@ const sentences = site.data.intro.map((s) => {
 ---
 
 <section class="hero" aria-label="About">
-  <p class="intro" data-spec="Intro" data-note-on="intro" data-measure>
+  <p class="intro">
     {sentences.map((s) =>
       s.toLab ? (
         <a href="/experiments/" class:list={['sent', 'lab', { key: s.key }]} data-hl={s.keys.join(' ')}>{s.text}<span class="arrow" aria-hidden="true">↗</span></a>

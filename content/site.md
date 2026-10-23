@@ -6,8 +6,8 @@
 
 name: Angelo Joy
 role: Digital & Graphic Designer
-location: Based in India · working worldwide
-timezone: Asia/Kolkata   # for the live clock in the footer (e.g. Europe/London, America/New_York)
+location: Based in Ireland · working worldwide
+timezone: Europe/Dublin   # for the live clock in the footer (e.g. Europe/London, America/New_York)
 available: Open for freelance & full-time
 email: angelojoyirl@gmail.com
 # Portrait for the About pop-up (file lives in /public)
@@ -32,32 +32,21 @@ disciplines:
 # "highlight" = which discipline lights up when someone hovers that sentence.
 # "key: true" = shown in full colour (use for your opening and closing lines).
 intro:
-  - text: I'm Angelo, a digital & graphic designer.
+  - text: I'm Angelo, a brand and digital designer in Ireland.
     key: true
-  - text: I build brand identities, posters and printed matter,
+  - text: "What I enjoy most is the effect design has on the people it reaches:"
+  - text: brands that carry meaning and purpose,
     highlight: graphic
-  - text: design interfaces and design systems in Figma,
+  - text: screens that feel good to use,
     highlight: digital
-  - text: and make things move through motion and video.
+  - text: and things that move, made with real craft.
     highlight: [motion, video]
-  - text: Lately I'm testing what AI can add to the craft, without losing the hand.
+  - text: Lately I've been building alongside my buddy AI, working out how we make better experiences together.
     highlight: ai
     key: true
 
 # Short headline shown in the Spatial view.
 spatialTitle: Designer of brands, screens and things that move
-
-# "Show the thinking" notes — little comment pins that appear in thinking mode.
-# on: intro | work | header | footer
-notes:
-  - on: intro
-    text: Every sentence is tagged with a discipline. Hover one and the work on the right filters itself.
-  - on: work
-    text: All covers sit on a 4:3 frame so print, UI and film stills share one rhythm.
-  - on: header
-    text: Two ways in. Index for scanning, Spatial for wandering.
-  - on: footer
-    text: Kept the contact line boring on purpose. It should be the easiest thing on the page.
 
 # Shown on the Info page.
 services:
@@ -73,7 +62,7 @@ clients:
   - Sample Client Three
 ---
 
-I'm a <strong>digital and graphic designer</strong> based in India, moving between print, screens and motion.
+I'm a <strong>digital and graphic designer</strong> based in Ireland, moving between print, screens and motion.
 
 I like projects where a brand has to work as hard on a poster as it does in an app or a ten-second loop. Most days that means <strong>Figma, the Adobe suite and After Effects</strong>.
 

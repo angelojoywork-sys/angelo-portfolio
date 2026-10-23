@@ -35,8 +35,9 @@ const ogImage = image ? new URL(image, Astro.site).href : undefined;
     <script is:inline>
       try { if (localStorage.getItem('thinking') === '1') document.documentElement.classList.add('thinking'); } catch {}
       function applyTheme() {
-        try { if (localStorage.getItem('theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); else document.documentElement.removeAttribute('data-theme'); } catch {}
+        try { if (sessionStorage.getItem('theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); else document.documentElement.removeAttribute('data-theme'); } catch {}
       }
+      try { localStorage.removeItem('theme'); } catch {}
       applyTheme();
       document.addEventListener('astro:after-swap', applyTheme);
     </script>
