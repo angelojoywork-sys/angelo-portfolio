@@ -30,13 +30,13 @@ const legend = Object.entries(site.data.disciplines)
 ---
 
 <section class="spatial" aria-label="Spatial view of all work" hidden>
-  <div class="stage" tabindex="0" aria-label="Drag or use arrow keys to rotate, scroll to zoom">
+  <div class="stage" tabindex="0" aria-label="Drag or use arrow keys to rotate, scroll or press plus and minus to immerse">
     <svg class="lines" aria-hidden="true"><g class="orbits"></g><g class="links"></g></svg>
     <div class="nodes"></div>
     <div class="tip" aria-hidden="true"><b></b><span></span></div>
   </div>
 
-  <p class="hint label"><span class="fine">Drag to rotate · scroll to zoom</span><span class="touch">Drag to rotate · tap to open</span></p>
+  <p class="hint label"><span class="fine">Drag to rotate · scroll to immerse</span><span class="touch">Drag to rotate · pinch to immerse · tap to open</span></p>
 
   <div class="caption">
     <h1 class="stitle" data-spec="Display">{site.data.spatialTitle}</h1>
@@ -47,20 +47,26 @@ const legend = Object.entries(site.data.disciplines)
     {legend.map((l) => <li><button type="button" data-k={l.k}><span class="sw"></span>{l.v}<span class="label">{String(l.n).padStart(2, '0')}</span></button></li>)}
   </ul>
 
-  <div class="ruler" aria-hidden="true">
-    {Array.from({ length: 28 }, () => <i></i>)}
-    <span class="ruler-mark"><em class="label">Zoom</em></span>
+  <div class="ruler" role="slider" tabindex="0" aria-label="Immerse" aria-orientation="vertical" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+    <div class="ruler-track">
+      {Array.from({ length: 28 }, () => <i></i>)}
+      <span class="ruler-fill"></span>
+      <span class="ruler-mark"><em class="label">Immerse</em></span>
+    </div>
   </div>
 
   <script type="application/json" class="spatial-data" set:html={JSON.stringify(nodes)} />
 </section>
 
 <style>
-  .spatial { position: fixed; inset: 0; z-index: 10; background: var(--bg); overflow: hidden; touch-action: none; }
+  .spatial { position: fixed; inset: 0; z-index: 10; background: var(--bg); overflow: hidden; touch-action: none; --imm: 0; }
   .spatial[hidden] { display: none; }
+  /* soft vignette that deepens as you fly into the globe */
+  .spatial::after { content: ''; position: absolute; inset: 0; z-index: 1500; pointer-events: none; opacity: var(--imm); background: radial-gradient(ellipse 75% 70% at 50% 46%, transparent 40%, color-mix(in srgb, var(--bg) 88%, transparent) 100%); }
   .stage { position: absolute; inset: 0; cursor: grab; outline: none; }
   .stage.dragging { cursor: grabbing; }
   .lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .lines :global(.orbits) { transition: opacity .3s; }
   .lines :global(.orbits path) { fill: none; stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 4; }
   .lines :global(.links line) { stroke: var(--accent); stroke-width: 1; }
   .lines :global(.links line.weak) { stroke: var(--faint); stroke-dasharray: 3 3; }
@@ -81,30 +87,45 @@ const legend = Object.entries(site.data.disciplines)
   .tip span { font: 10px var(--mono); opacity: .65; text-transform: uppercase; }
   .tip.show { opacity: 1; }
 
-  .hint { position: absolute; top: calc(var(--header-h) + 4px); left: 50%; transform: translateX(-50%); pointer-events: none; }
-  .caption { position: absolute; left: var(--gutter); bottom: clamp(24px, 5vh, 56px); pointer-events: none; max-width: min(640px, 80vw); transition: opacity .45s var(--ease), transform .6s var(--ease); }
+  .hint, .caption, .legend, .ruler { z-index: 2000; }
+  .hint { position: absolute; bottom: clamp(24px, 5vh, 56px); left: 50%; transform: translateX(-50%); pointer-events: none; white-space: nowrap; transition: opacity .5s var(--ease); }
+  .spatial.used .hint, .spatial.zoomed .hint { opacity: 0; }
+  .caption { position: absolute; left: var(--gutter); bottom: clamp(24px, 5vh, 56px); pointer-events: none; max-width: min(660px, 80vw); transition: opacity .45s var(--ease), transform .6s var(--ease); }
   .spatial.zoomed .caption { opacity: 0; transform: translateY(12px); }
-  .stitle { margin: 0; font-size: clamp(32px, 4.4vw, 68px); line-height: 1; letter-spacing: -0.045em; font-weight: 450; text-wrap: balance; }
+  .stitle { margin: 0; font-size: clamp(28px, 3.4vw, 52px); line-height: 1; letter-spacing: -0.045em; font-weight: 450; text-wrap: balance; }
   .sub { margin: 14px 0 0; color: var(--muted); }
 
-  .legend { position: absolute; right: var(--gutter); bottom: clamp(24px, 5vh, 56px); list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+  .legend { position: absolute; right: var(--gutter); bottom: clamp(24px, 5vh, 56px); list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; align-items: flex-end; transition: opacity .45s var(--ease); }
+  .spatial.zoomed .legend { opacity: 0; pointer-events: none; }
   .legend button { display: inline-flex; gap: 8px; align-items: center; font-size: 13px; color: var(--muted); padding: 3px 0; transition: color .2s; }
   .legend button:hover, .legend button.on { color: var(--fg); }
   .legend .sw { width: 8px; height: 8px; border-radius: 50%; border: 1px solid currentColor; transition: background .2s; }
   .legend button:hover .sw, .legend button.on .sw { background: var(--accent); border-color: var(--accent); }
 
-  .ruler { position: absolute; right: var(--gutter); top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+  /* the padding is an invisible, generous hit area around the ticks */
+  .ruler { position: absolute; right: calc(var(--gutter) - 14px); top: 50%; transform: translateY(-50%); padding: 14px; cursor: ns-resize; touch-action: none; outline: none; }
+  .ruler-track { position: relative; display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
   .ruler i { display: block; width: 8px; height: 1px; background: var(--line); }
   .ruler i:nth-child(7n + 1) { width: 14px; background: var(--faint); }
-  .ruler-mark { position: absolute; right: 0; top: var(--zy, 50%); width: 22px; height: 1px; background: var(--fg); transition: top 0.2s var(--ease); }
-  .ruler-mark em { position: absolute; right: 28px; top: -6px; font-style: normal; }
+  .ruler-fill { position: absolute; right: 0; top: var(--zy, 100%); bottom: 0; width: 2px; background: var(--accent); }
+  .ruler-mark { position: absolute; right: 0; top: var(--zy, 100%); width: 22px; height: 1px; background: var(--fg); transition: width .25s var(--ease); }
+  .ruler:hover .ruler-mark, .ruler.active .ruler-mark { width: 30px; }
+  .ruler:focus-visible .ruler-mark { background: var(--accent); width: 30px; }
+  .ruler-mark em { position: absolute; right: 38px; top: -6px; font-style: normal; transition: color .2s; }
+  .ruler:hover .ruler-mark em, .ruler.active .ruler-mark em { color: var(--fg); }
 
   .touch { display: none; }
   @media (hover: none) { .fine { display: none; } .touch { display: inline; } }
-  .hint { white-space: nowrap; }
   @media (max-width: 720px) {
-    .legend, .ruler { display: none; }
-    .caption { bottom: 84px; }
+    .legend { display: none; }
+    .hint { bottom: calc(76px + env(safe-area-inset-bottom)); }
+    .caption { bottom: calc(112px + env(safe-area-inset-bottom)); }
+    .ruler { right: 0; padding: 16px 10px 16px 28px; }
+    .ruler-track { gap: 5px; }
+    .ruler i { width: 6px; }
+    .ruler i:nth-child(7n + 1) { width: 10px; }
+    .ruler-mark { width: 16px; }
+    .ruler-mark em { right: 22px; font-size: 10px; }
   }
 </style>
 
@@ -115,6 +136,9 @@ const legend = Object.entries(site.data.disciplines)
 
   let stop: (() => void) | null = null;
 
+  const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
+  const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+
   function mount(root: HTMLElement) {
     const data: Node[] = JSON.parse(root.querySelector('.spatial-data')!.textContent || '[]');
     const stage = root.querySelector<HTMLElement>('.stage')!;
@@ -122,9 +146,15 @@ const legend = Object.entries(site.data.disciplines)
     const links = root.querySelector<SVGGElement>('.links')!;
     const orbits = root.querySelector<SVGGElement>('.orbits')!;
     const tip = root.querySelector<HTMLElement>('.tip')!;
-    const mark = root.querySelector<HTMLElement>('.ruler-mark')!;
+    const ruler = root.querySelector<HTMLElement>('.ruler')!;
+    const track = root.querySelector<HTMLElement>('.ruler-track')!;
+    const caption = root.querySelector<HTMLElement>('.caption')!;
+    const title = root.querySelector<HTMLElement>('.stitle')!;
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const NS = 'http://www.w3.org/2000/svg';
+    // stage, ruler and legend outlive a mount, so their listeners are dropped on unmount
+    const ac = new AbortController();
+    const sig = { signal: ac.signal };
 
     const N = data.length;
     const golden = Math.PI * (3 - Math.sqrt(5));
@@ -151,27 +181,37 @@ const legend = Object.entries(site.data.disciplines)
       return p;
     });
 
-    let rotY = 0.6, rotX = -0.25, vy = 0, vx = 0, zoom = 1, zoomTarget = 1;
+    // immerse: 0 = looking at the globe, 1 = camera inside it. imm chases immT on a critically-damped spring.
+    let rotY = 0.6, rotX = -0.25, vy = 0, vx = 0;
+    let imm = 0, immV = 0, immT = 0, ease = 0, shownVal = -1;
     let hovered = -1, legendKey = '';
-    let dragging = false, moved = 0, lastX = 0, lastY = 0, lastT = 0;
-    let W = 0, H = 0, R = 0;
+    let dragging = false, moved = 0, lastX = 0, lastY = 0, lastT = 0, prevT = performance.now();
+    let W = 0, H = 0, R = 0, CY = 0, D = 2.6, F = 2.6;
+    const pointers = new Map<number, { x: number; y: number }>();
+    let pinch0 = 0, pinchImm0 = 0;
     const sizes: number[] = data.map(() => 0);
     const proj: { x: number; y: number; s: number; z: number }[] = data.map(() => ({ x: 0, y: 0, s: 1, z: 0 }));
 
     const resize = () => {
       W = stage.clientWidth; H = stage.clientHeight;
-      R = Math.min(W, H) * (W < 720 ? 0.4 : 0.36);
+      CY = H * (W < 720 ? 0.44 : 0.45);
+      // the lowest nodes reach ~1.2R below centre; keep them clear of the headline
+      const titleTop = caption.offsetTop + title.offsetTop;
+      R = Math.min(Math.min(W, H) * (W < 720 ? 0.36 : 0.34), (titleTop - 16 - CY) / 1.2);
     };
     resize();
     window.addEventListener('resize', resize);
+    document.fonts?.ready.then(() => stop && resize());
 
-    const D = 2.6;
+    const setImm = (v: number) => { immT = clamp01(v); };
+    const used = () => root.classList.add('used');
+
     function project(x: number, y: number, z: number) {
       const cy = Math.cos(rotY), sy = Math.sin(rotY), cx = Math.cos(rotX), sx = Math.sin(rotX);
       const x1 = x * cy + z * sy, z1 = -x * sy + z * cy;
       const y2 = y * cx - z1 * sx, z2 = y * sx + z1 * cx;
-      const s = D / (D - z2);
-      return { x: W / 2 + x1 * R * s * zoom, y: H / 2 - 10 + y2 * R * s * zoom, s, z: z2 };
+      const s = F / Math.max(0.02, D - z2);
+      return { x: W / 2 + x1 * R * s, y: CY + y2 * R * s, s, z: z2 };
     }
 
     function related(i: number) {
@@ -180,59 +220,82 @@ const legend = Object.entries(site.data.disciplines)
       return data.map((d, j) => (j === i ? 2 : d.slug === h.slug ? 2 : d.disc.some((k) => h.disc.includes(k)) ? 1 : 0));
     }
 
-    function frame() {
+    function frame(now: number) {
+      const dt = Math.min(0.05, Math.max(0.001, (now - prevT) / 1000));
+      prevT = now;
+      if (reduce) {
+        const step = 2.5 * dt;
+        imm += Math.max(-step, Math.min(step, immT - imm));
+      } else {
+        const k = 90;
+        immV += (k * (immT - imm) - 2 * Math.sqrt(k) * immV) * dt;
+        imm += immV * dt;
+      }
+      const t = clamp01(imm);
+      ease = t * t * (3 - 2 * t);
+      D = lerp(2.6, 0.55, ease);
+      F = lerp(2.6, 1.5, ease);
+
       if (!dragging) {
-        if (hovered < 0 && !legendKey && !reduce) vy += (0.0016 - vy) * 0.02;
+        if (hovered < 0 && !legendKey && !reduce) vy += (0.0016 * (1 - ease * 0.9) - vy) * 0.02;
         else vy *= 0.9;
         vx *= 0.94;
         rotY += vy; rotX += vx;
         rotX = Math.max(-1.2, Math.min(1.2, rotX));
       }
-      zoom += (zoomTarget - zoom) * 0.12;
 
       const rel = related(hovered);
-      const base = Math.min(118, Math.max(56, R * 0.27));
+      const base = Math.min(96, Math.max(48, R * 0.25)) * lerp(1, 1.5, ease);
+      const maxW = Math.min(W, H) * 0.7;
       for (let i = 0; i < N; i++) {
         const p = project(pts[i].x, pts[i].y, pts[i].z);
         proj[i] = p;
         const d = data[i];
-        const w = base * p.s * Math.sqrt(zoom) * Math.sqrt(d.ar) * 0.9;
-        const h = w / d.ar;
-        const depth = (p.z + 1) / 2;
         const el = els[i];
+        const gap = D - p.z;
+        if (gap < 0.05) { el.style.visibility = 'hidden'; continue; }
+        el.style.visibility = '';
+        const w = Math.min(maxW, base * p.s * Math.sqrt(d.ar) * 0.9);
+        const h = w / d.ar;
+        const depth = clamp01((p.z + 1) / 2);
+        const near = clamp01((gap - 0.08) / 0.4); // fade out as a node approaches the lens
         sizes[i] = w;
         el.style.width = w + 'px';
         el.style.height = h + 'px';
         el.style.transform = `translate3d(${p.x - w / 2}px, ${p.y - h / 2}px, 0)`;
         el.style.zIndex = String(Math.round(depth * 1000));
-        el.style.opacity = String(0.2 + depth * 0.8);
+        el.style.opacity = String(lerp(0.2 + depth * 0.8, 0.65 + depth * 0.35, ease) * near);
         const lit = rel ? rel[i] > 0 : legendKey ? d.disc.includes(legendKey) : true;
         el.classList.toggle('dimmed', !lit);
         el.classList.toggle('rel', !!rel && rel[i] === 2 && i !== hovered);
       }
 
-      // orbit rings
-      const rings = [
-        (t: number) => [Math.cos(t), 0, Math.sin(t)],
-        (t: number) => [Math.cos(t), Math.sin(t), 0],
-        (t: number) => [0, Math.cos(t), Math.sin(t)],
-      ];
-      rings.forEach((fn, k) => {
-        let dstr = '';
-        for (let s = 0; s <= 72; s++) {
-          const [x, y, z] = fn((s / 72) * Math.PI * 2);
-          const p = project(x * 1.02, y * 1.02, z * 1.02);
-          dstr += (s ? 'L' : 'M') + p.x.toFixed(1) + ' ' + p.y.toFixed(1);
-        }
-        orbitPaths[k].setAttribute('d', dstr);
-      });
+      // orbit rings (they fade before the camera reaches them)
+      const ringOp = clamp01(1 - ease * 2.5);
+      orbits.style.opacity = String(ringOp);
+      if (ringOp > 0) {
+        const rings = [
+          (t: number) => [Math.cos(t), 0, Math.sin(t)],
+          (t: number) => [Math.cos(t), Math.sin(t), 0],
+          (t: number) => [0, Math.cos(t), Math.sin(t)],
+        ];
+        rings.forEach((fn, k) => {
+          let dstr = '';
+          for (let s = 0; s <= 72; s++) {
+            const [x, y, z] = fn((s / 72) * Math.PI * 2);
+            const p = project(x * 1.02, y * 1.02, z * 1.02);
+            dstr += (s ? 'L' : 'M') + p.x.toFixed(1) + ' ' + p.y.toFixed(1);
+          }
+          orbitPaths[k].setAttribute('d', dstr);
+        });
+      }
 
       // connection lines
       links.textContent = '';
       if (rel && hovered >= 0) {
         const o = proj[hovered];
         for (let j = 0; j < N; j++) {
-          if (j === hovered || rel[j] === 0) continue;
+          if (j === hovered || rel[j] === 0 || D - proj[j].z < 0.05) continue;
           const l = document.createElementNS(NS, 'line');
           l.setAttribute('x1', String(o.x)); l.setAttribute('y1', String(o.y));
           l.setAttribute('x2', String(proj[j].x)); l.setAttribute('y2', String(proj[j].y));
@@ -242,10 +305,13 @@ const legend = Object.entries(site.data.disciplines)
         const p = proj[hovered];
         tip.style.transform = `translate(${Math.min(W - 220, p.x + sizes[hovered] / 2 + 12)}px, ${p.y - 20}px)`;
       }
-      // headline steps aside when zoomed in; hysteresis keeps it from flickering at the edge
-      if (zoomTarget > 1.5) root.classList.add('zoomed');
-      else if (zoomTarget < 1.3) root.classList.remove('zoomed');
-      mark.style.setProperty('--zy', ((1 - (zoom - 0.6) / 2) * 100).toFixed(1) + '%');
+      // headline steps aside when immersed; hysteresis keeps it from flickering at the edge
+      if (imm > 0.35) root.classList.add('zoomed');
+      else if (imm < 0.25) root.classList.remove('zoomed');
+      root.style.setProperty('--imm', ease.toFixed(3));
+      ruler.style.setProperty('--zy', ((1 - clamp01(imm)) * 100).toFixed(2) + '%');
+      const val = Math.round(immT * 100);
+      if (val !== shownVal) { ruler.setAttribute('aria-valuenow', String(val)); shownVal = val; }
       raf = requestAnimationFrame(frame);
     }
 
@@ -259,7 +325,7 @@ const legend = Object.entries(site.data.disciplines)
     }
 
     els.forEach((el, i) => {
-      el.addEventListener('pointerenter', () => !dragging && setHover(i));
+      el.addEventListener('pointerenter', () => !dragging && !pointers.size && setHover(i));
       el.addEventListener('pointerleave', () => !dragging && setHover(-1));
       el.addEventListener('focus', () => setHover(i));
       el.addEventListener('blur', () => setHover(-1));
@@ -270,58 +336,118 @@ const legend = Object.entries(site.data.disciplines)
       });
     });
 
+    const pinchDist = () => {
+      const [a, b] = [...pointers.values()];
+      return Math.hypot(a.x - b.x, a.y - b.y) || 1;
+    };
+
+    // one pointer rotates; two pointers pinch to immerse
     stage.addEventListener('pointerdown', (e) => {
-      dragging = true; moved = 0; lastX = e.clientX; lastY = e.clientY; lastT = performance.now();
-      vx = vy = 0;
-      stage.classList.add('dragging');
-    });
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pointers.size === 1) {
+        dragging = true; moved = 0; lastX = e.clientX; lastY = e.clientY; lastT = performance.now();
+        vx = vy = 0;
+        stage.classList.add('dragging');
+      } else if (pointers.size === 2) {
+        dragging = false; moved = 999;
+        stage.classList.remove('dragging');
+        setHover(-1);
+        pinch0 = pinchDist(); pinchImm0 = immT;
+        pointers.forEach((_, id) => { try { stage.setPointerCapture(id); } catch {} });
+      }
+    }, sig);
     const onMove = (e: PointerEvent) => {
+      const p = pointers.get(e.pointerId);
+      if (p) { p.x = e.clientX; p.y = e.clientY; }
+      if (pointers.size >= 2) {
+        setImm(pinchImm0 + Math.log(pinchDist() / pinch0) * 0.9);
+        used();
+        return;
+      }
       if (!dragging) return;
       const dx = e.clientX - lastX, dy = e.clientY - lastY;
       moved += Math.abs(dx) + Math.abs(dy);
-      if (moved > 5) { setHover(-1); try { stage.setPointerCapture(e.pointerId); } catch {} }
-      rotY += dx * 0.005; rotX += dy * 0.005;
+      if (moved > 5) { setHover(-1); used(); try { stage.setPointerCapture(e.pointerId); } catch {} }
+      const k = 0.005 * lerp(1, 0.45, ease); // calmer look-around when inside
+      rotY += dx * k; rotX += dy * k;
       const now = performance.now(), dt = Math.max(16, now - lastT);
-      vy = (dx * 0.005) * (16 / dt); vx = (dy * 0.005) * (16 / dt);
+      vy = (dx * k) * (16 / dt); vx = (dy * k) * (16 / dt);
       lastX = e.clientX; lastY = e.clientY; lastT = now;
     };
-    const onUp = () => { dragging = false; stage.classList.remove('dragging'); };
+    const onUp = (e: PointerEvent) => {
+      pointers.delete(e.pointerId);
+      dragging = false; stage.classList.remove('dragging');
+    };
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
     window.addEventListener('pointercancel', onUp);
 
     stage.addEventListener('wheel', (e) => {
       e.preventDefault();
-      zoomTarget = Math.max(0.6, Math.min(2.6, zoomTarget * Math.exp(-e.deltaY * 0.0015)));
-    }, { passive: false });
+      const dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+      setImm(immT - dy * (e.ctrlKey ? 0.01 : 0.0012));
+      used();
+    }, { passive: false, signal: ac.signal });
 
     stage.addEventListener('keydown', (e) => {
       const k = e.key;
       if (k === 'ArrowLeft') vy -= 0.02; else if (k === 'ArrowRight') vy += 0.02;
       else if (k === 'ArrowUp') vx -= 0.02; else if (k === 'ArrowDown') vx += 0.02;
-      else if (k === '+' || k === '=') zoomTarget = Math.min(2.6, zoomTarget * 1.15);
-      else if (k === '-') zoomTarget = Math.max(0.6, zoomTarget / 1.15);
+      else if (k === '+' || k === '=') setImm(immT + 0.15);
+      else if (k === '-') setImm(immT - 0.15);
       else return;
       e.preventDefault();
-    });
+    }, sig);
+
+    // Immerse ruler: drag the marker (up = in), click a tick, or use the keyboard
+    const fromY = (y: number) => {
+      const r = track.getBoundingClientRect();
+      setImm(1 - (y - r.top) / r.height);
+      used();
+    };
+    let rulerId = -1;
+    ruler.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      rulerId = e.pointerId;
+      try { ruler.setPointerCapture(e.pointerId); } catch {}
+      ruler.classList.add('active');
+      ruler.focus({ preventScroll: true });
+      fromY(e.clientY);
+    }, sig);
+    ruler.addEventListener('pointermove', (e) => { if (e.pointerId === rulerId) fromY(e.clientY); }, sig);
+    const rulerUp = (e: PointerEvent) => { if (e.pointerId === rulerId) { rulerId = -1; ruler.classList.remove('active'); } };
+    ruler.addEventListener('pointerup', rulerUp, sig);
+    ruler.addEventListener('pointercancel', rulerUp, sig);
+    ruler.addEventListener('keydown', (e) => {
+      const k = e.key;
+      if (k === 'ArrowUp' || k === 'ArrowRight' || k === 'PageUp') setImm(immT + (k === 'PageUp' ? 0.25 : 0.05));
+      else if (k === 'ArrowDown' || k === 'ArrowLeft' || k === 'PageDown') setImm(immT - (k === 'PageDown' ? 0.25 : 0.05));
+      else if (k === 'Home') setImm(0);
+      else if (k === 'End') setImm(1);
+      else return;
+      e.preventDefault();
+      used();
+    }, sig);
 
     root.querySelectorAll<HTMLButtonElement>('.legend button').forEach((b) => {
-      b.addEventListener('pointerenter', () => { legendKey = b.dataset.k!; b.classList.add('on'); });
-      b.addEventListener('pointerleave', () => { legendKey = ''; b.classList.remove('on'); });
-      b.addEventListener('focus', () => { legendKey = b.dataset.k!; });
-      b.addEventListener('blur', () => { legendKey = ''; });
+      b.addEventListener('pointerenter', () => { legendKey = b.dataset.k!; b.classList.add('on'); }, sig);
+      b.addEventListener('pointerleave', () => { legendKey = ''; b.classList.remove('on'); }, sig);
+      b.addEventListener('focus', () => { legendKey = b.dataset.k!; }, sig);
+      b.addEventListener('blur', () => { legendKey = ''; }, sig);
     });
 
     let raf = requestAnimationFrame(frame);
     return () => {
       cancelAnimationFrame(raf);
+      ac.abort();
       window.removeEventListener('resize', resize);
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
       window.removeEventListener('pointercancel', onUp);
       layer.textContent = '';
       orbits.textContent = '';
-      root.classList.remove('zoomed');
+      root.classList.remove('zoomed', 'used');
+      root.style.removeProperty('--imm');
     };
   }
 

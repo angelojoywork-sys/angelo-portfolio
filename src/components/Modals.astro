@@ -25,24 +25,29 @@ const ext = (u: string) => (u.startsWith('http') ? { target: '_blank', rel: 'noo
   <button class="m-close" type="button" aria-label="Close" data-close>
     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
   </button>
-  <div class="m-body">
-    <h2 id="mc-title" class="m-head">Reach out for a chat</h2>
-    <a class="m-email" href={`mailto:${d.email}`}>{d.email}</a>
-    {linkedin && <p class="m-line">Or via my <a href={linkedin.url} {...ext(linkedin.url)}>{linkedin.label}</a></p>}
+  <div class="m-body contact">
+    <h2 id="mc-title" class="m-kicker">Reach out for a chat</h2>
+    <div class="m-email-row">
+      <a class="m-email" href={`mailto:${d.email}`}>{d.email}</a>
+      <button class="m-copy label" type="button" data-copy={d.email}>Copy</button>
+    </div>
     {follow.length > 0 && (
       <p class="m-line">You can also follow my work on {follow.map((l, i) => (
         <><a href={l.url} {...ext(l.url)}>{l.label}</a>{i < follow.length - 2 ? ', ' : i === follow.length - 2 ? ' and ' : ''}</>
       ))}</p>
     )}
-    <div class="m-icons">
-      <a href={`mailto:${d.email}`} aria-label="Email">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M4 7l8 6 8-6"/></svg>
-      </a>
-      {socials.map((l) => (
-        <a href={l.url} {...ext(l.url)} aria-label={l.label}>
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" set:html={icons[iconFor(l.label)]} />
+    <div class="m-foot">
+      {linkedin ? <p class="m-line">Or via <a href={linkedin.url} {...ext(linkedin.url)}>{linkedin.label}</a></p> : <span />}
+      <div class="m-icons">
+        <a href={`mailto:${d.email}`} aria-label="Email">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M4 7l8 6 8-6"/></svg>
         </a>
-      ))}
+        {socials.map((l) => (
+          <a href={l.url} {...ext(l.url)} aria-label={l.label}>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" set:html={icons[iconFor(l.label)]} />
+          </a>
+        ))}
+      </div>
     </div>
   </div>
 </dialog>
@@ -63,7 +68,7 @@ const ext = (u: string) => (u.startsWith('http') ? { target: '_blank', rel: 'noo
 <style is:global>
   .modal {
     margin: auto; padding: 0; border: 0; color: var(--fg);
-    width: min(520px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow: auto;
+    width: min(480px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow: auto;
     background: color-mix(in srgb, var(--raised) 92%, var(--bg));
     border-radius: 18px; box-shadow: 0 1px 0 rgb(255 255 255 / .5) inset, 0 30px 80px rgb(0 0 0 / .18), 0 2px 6px rgb(0 0 0 / .06);
     opacity: 0; transform: translateY(14px) scale(.97);
@@ -84,13 +89,21 @@ const ext = (u: string) => (u.startsWith('http') ? { target: '_blank', rel: 'noo
   .m-close { position: absolute; top: 18px; right: 18px; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; color: var(--muted); transition: color .2s, background .2s, transform .35s var(--ease); }
   .m-close:hover { color: var(--fg); background: var(--surface); transform: rotate(90deg); }
   .m-head { margin: 0 36px 24px 0; font-size: 20px; font-weight: 450; letter-spacing: -0.03em; line-height: 1.2; }
-  .m-email { display: block; font-size: clamp(26px, 4vw, 46px); letter-spacing: -0.05em; line-height: 1.05; margin: 0 0 44px; overflow-wrap: anywhere; }
-  .m-line { margin: 0 0 14px; color: var(--muted); font-size: 18px; letter-spacing: -0.025em; }
+  .m-line { margin: 0; color: var(--muted); font-size: 17px; letter-spacing: -0.025em; }
   .m-line a, .m-prose a, .m-prose strong { color: var(--fg); font-weight: 450; }
   .m-line a:hover { text-decoration: underline; text-underline-offset: 3px; }
-  .m-icons { display: flex; gap: 22px; margin-top: 34px; }
-  .m-icons a { display: grid; place-items: center; transition: transform .3s var(--ease), color .2s; }
-  .m-icons a:hover { transform: translateY(-3px); color: var(--accent); }
+
+  .contact { padding: clamp(24px, 4vw, 40px); display: grid; gap: 24px; }
+  .m-kicker { margin: 0; padding: 8px 44px 0 0; font: 400 15px/1.3 var(--mono); letter-spacing: 0.01em; color: var(--muted); }
+  .m-email-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: -4px; }
+  .m-email { min-width: 0; font-size: clamp(22px, 3vw, 30px); letter-spacing: -0.045em; line-height: 1.15; overflow-wrap: break-word; transition: color .2s; }
+  .m-email:hover { color: var(--accent); }
+  .m-copy { padding: 6px 10px; border: 1px solid var(--line); border-radius: 999px; transition: color .2s, border-color .2s; }
+  .m-copy:hover, .m-copy.done { color: var(--fg); border-color: var(--faint); }
+  .m-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 20px; border-top: 1px solid var(--line); }
+  .m-icons { display: flex; gap: 4px; margin-right: -8px; }
+  .m-icons a { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; color: var(--muted); transition: color .2s, background .2s; }
+  .m-icons a:hover { color: var(--accent); background: var(--surface); }
 
   .about { display: grid; gap: 28px; }
   .about.has-photo { grid-template-columns: minmax(0, 1fr) minmax(0, 0.55fr); gap: clamp(28px, 4vw, 56px); }
@@ -115,6 +128,26 @@ const ext = (u: string) => (u.startsWith('http') ? { target: '_blank', rel: 'noo
         const dlg = document.getElementById('modal-' + trigger.dataset.modal) as HTMLDialogElement | null;
         document.querySelectorAll<HTMLDialogElement>('dialog.modal[open]').forEach((o) => o !== dlg && o.close());
         if (dlg && !dlg.open) dlg.showModal();
+        return;
+      }
+      const copy = t.closest<HTMLButtonElement>('[data-copy]');
+      if (copy) {
+        const text = copy.dataset.copy!;
+        const done = () => {
+          copy.textContent = 'Copied'; copy.classList.add('done');
+          setTimeout(() => { copy.textContent = 'Copy'; copy.classList.remove('done'); }, 1500);
+        };
+        // older browsers and non-secure origins have no async clipboard, so fall back to a hidden field
+        const legacy = () => {
+          const ta = document.createElement('textarea');
+          ta.value = text; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;opacity:0';
+          copy.after(ta); ta.select();
+          const ok = document.execCommand('copy');
+          ta.remove(); copy.focus();
+          if (ok) done();
+        };
+        if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, legacy);
+        else legacy();
         return;
       }
       const dlg = t.closest<HTMLDialogElement>('dialog.modal');
