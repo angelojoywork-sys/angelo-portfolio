@@ -1,0 +1,52 @@
+---
+import { render } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { getSite } from '../lib/content';
+const site = await getSite();
+const { Content } = await render(site);
+const d = site.data;
+---
+
+<Base title="Info" page="info">
+  <div class="info">
+    <section class="bio">
+      <p class="label">Info</p>
+      <h1 data-spec="H1">{d.name}</h1>
+      <p class="role">{d.role}{d.location && <> · {d.location}</>}</p>
+      <div class="text" data-spec="Body" data-spec-text="p"><Content /></div>
+    </section>
+
+    <aside class="cols">
+      <div>
+        <h2 class="label">Contact</h2>
+        <ul>
+          <li><a href={`mailto:${d.email}`} class="u">{d.email}</a></li>
+          {d.links.map((l) => <li><a href={l.url} class="u" target={l.url.startsWith('http') ? '_blank' : undefined} rel="noopener">{l.label}</a></li>)}
+        </ul>
+      </div>
+      {d.services.length > 0 && (
+        <div>
+          <h2 class="label">Services</h2>
+          <ul>{d.services.map((s) => <li>{s}</li>)}</ul>
+        </div>
+      )}
+      {d.clients.length > 0 && (
+        <div>
+          <h2 class="label">Selected clients</h2>
+          <ul>{d.clients.map((c) => <li>{c}</li>)}</ul>
+        </div>
+      )}
+    </aside>
+  </div>
+</Base>
+
+<style>
+  .info { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: clamp(40px, 6vw, 120px); padding-top: clamp(24px, 8vh, 96px); }
+  h1 { margin: 12px 0 8px; font-size: clamp(40px, 6vw, 88px); line-height: 0.98; letter-spacing: -0.05em; font-weight: 450; }
+  .role { margin: 0 0 40px; color: var(--muted); }
+  .text { font-size: clamp(18px, 1.6vw, 22px); line-height: 1.45; letter-spacing: -0.015em; max-width: 36em; }
+  .text :global(p) { margin: 0 0 1em; }
+  .cols { display: grid; gap: 40px; align-content: start; padding-top: 32px; }
+  ul { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; font-size: 15px; }
+  @media (max-width: 900px) { .info { grid-template-columns: 1fr; } }
+</style>

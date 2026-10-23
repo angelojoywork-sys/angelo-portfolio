@@ -1,0 +1,67 @@
+---
+import { getSite, type Item } from '../lib/content';
+interface Props { work: Item[] }
+const { work } = Astro.props;
+const site = await getSite();
+const workKeys = new Set(work.flatMap((w) => w.data.disciplines));
+const sentences = site.data.intro.map((s) => {
+  const keys = s.highlight ? ([] as string[]).concat(s.highlight) : [];
+  // A sentence about something with no matching work (e.g. AI) links to Experiments instead.
+  const toLab = keys.length > 0 && keys.every((k) => !workKeys.has(k));
+  return { ...s, keys, toLab };
+});
+---
+
+<section class="hero" aria-label="About">
+  <p class="intro" data-spec="Intro" data-note-on="intro" data-measure>
+    {sentences.map((s) =>
+      s.toLab ? (
+        <a href="/experiments/" class:list={['sent', 'lab', { key: s.key }]} data-hl={s.keys.join(' ')}>{s.text}<span class="arrow" aria-hidden="true">↗</span></a>
+      ) : s.keys.length ? (
+        <span role="button" tabindex="0" class:list={['sent', 'pick', { key: s.key }]} data-hl={s.keys.join(' ')} aria-pressed="false">{s.text}</span>
+      ) : (
+        <span class:list={['sent', { key: s.key }]}>{s.text}</span>
+      )
+    ).reduce((acc: any[], el, i) => (i ? [...acc, ' ', el] : [el]), [])}
+  </p>
+
+  <dl class="facts">
+    <div><dt class="label">Role</dt><dd>{site.data.role}</dd></div>
+    {site.data.location && <div><dt class="label">Location</dt><dd>{site.data.location}</dd></div>}
+    {site.data.available && <div><dt class="label">Status</dt><dd><span class="avail"></span>{site.data.available}</dd></div>}
+  </dl>
+</section>
+
+<style>
+  .hero { display: flex; flex-direction: column; gap: 40px; }
+  .intro {
+    margin: 0;
+    font-size: clamp(24px, 2.35vw, 38px);
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+    font-weight: 420;
+    max-width: 22em;
+    color: var(--faint);
+    text-wrap: pretty;
+  }
+  .sent {
+    font: inherit; letter-spacing: inherit; text-align: left; display: inline;
+    color: inherit;
+    transition: color 0.35s var(--ease), background-size 0.5s var(--ease);
+    background: linear-gradient(var(--accent), var(--accent)) left 100% / 0% 2px no-repeat;
+    padding-bottom: 2px;
+    -webkit-box-decoration-break: clone; box-decoration-break: clone;
+  }
+  .sent.key { color: var(--fg); }
+  .pick, a.sent { cursor: pointer; }
+  .pick:hover, a.sent:hover, .sent.on, .sent[aria-pressed='true'] { color: var(--fg); }
+  .pick:hover, .sent[aria-pressed='true'] { background-size: 100% 2px; }
+  a.sent:hover { background-size: 100% 2px; }
+  .arrow { display: inline-block; font-size: 0.6em; vertical-align: 0.5em; margin-left: 0.15em; color: var(--accent); opacity: 0; transform: translate(-4px, 4px); transition: opacity .3s, transform .35s var(--ease); }
+  a.sent:hover .arrow { opacity: 1; transform: none; }
+  :global(.hl-active) .intro .sent:not(.on):not(:hover):not([aria-pressed='true']) { color: var(--faint); }
+
+  .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr)); gap: 16px 24px; margin: 0; max-width: 34em; }
+  .facts dd { margin: 4px 0 0; font-size: 14px; }
+  .avail { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #22c55e; margin-right: 8px; vertical-align: 2px; }
+</style>

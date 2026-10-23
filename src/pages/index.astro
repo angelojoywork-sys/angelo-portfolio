@@ -1,0 +1,125 @@
+---
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import WorkIndex from '../components/WorkIndex.astro';
+import Spatial from '../components/Spatial.astro';
+import { getItems } from '../lib/content';
+
+const work = await getItems('work');
+const experiments = await getItems('experiments');
+---
+
+<Base page="home">
+  <Spatial items={[...work, ...experiments]} slot="full" />
+  <div class="home">
+    <div class="left"><Hero work={work} /></div>
+    <WorkIndex work={work} />
+  </div>
+</Base>
+
+<style>
+  .home {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(32px, 5vw, 96px);
+    padding-top: clamp(24px, 8vh, 96px);
+    align-items: start;
+  }
+  .left { position: sticky; top: calc(var(--header-h) + clamp(24px, 8vh, 96px)); }
+  @media (max-width: 960px) {
+    .home { grid-template-columns: minmax(0, 1fr); padding-top: 24px; }
+    .left { position: static; }
+  }
+  :global(body.spatial-on) { overflow: hidden; }
+  :global(body.spatial-on .page) { display: none; }
+</style>
+
+<script>
+  // Hero ⇄ work highlighting: hover a sentence to light up matching projects,
+  // hover a project to light up the sentences that describe it. Click to pin.
+  function init() {
+    const home = document.querySelector('.home');
+    if (!home) return;
+    const sents = [...home.querySelectorAll<HTMLElement>('.sent[data-hl]')];
+    const cards = [...home.querySelectorAll<HTMLElement>('.card, .lrow')];
+    const chips = [...home.querySelectorAll<HTMLButtonElement>('.chip')];
+    let pinned = '';
+
+    const keysOf = (el: HTMLElement, attr: string) => (el.getAttribute(attr) || '').split(' ').filter(Boolean);
+
+    function apply(keys: string[]) {
+      const active = keys.length > 0;
+      home!.classList.toggle('hl-active', active);
+      cards.forEach((c) => {
+        const match = keysOf(c, 'data-disc').some((k) => keys.includes(k));
+        c.classList.toggle('lit', active && match);
+      });
+      sents.forEach((s) => s.classList.toggle('on', active && keysOf(s, 'data-hl').some((k) => keys.includes(k))));
+    }
+    const reset = () => apply(pinned ? [pinned] : []);
+
+    function pin(key: string) {
+      pinned = pinned === key ? '' : key;
+      sents.forEach((s) => s.setAttribute('aria-pressed', String(!!pinned && keysOf(s, 'data-hl').includes(pinned))));
+      chips.forEach((c) => c.setAttribute('aria-pressed', String((c.dataset.filter || '') === pinned)));
+      reset();
+    }
+
+    sents.forEach((s) => {
+      const keys = keysOf(s, 'data-hl');
+      s.addEventListener('pointerenter', () => apply(keys));
+      s.addEventListener('focus', () => apply(keys));
+      s.addEventListener('pointerleave', reset);
+      s.addEventListener('blur', reset);
+      if (s.classList.contains('pick')) {
+        s.addEventListener('click', () => pin(keys[0]));
+        s.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pin(keys[0]); }
+        });
+      }
+    });
+
+    cards.forEach((c) => {
+      c.addEventListener('pointerenter', () => {
+        if (pinned) return;
+        const keys = keysOf(c, 'data-disc');
+        sents.forEach((s) => s.classList.toggle('on', keysOf(s, 'data-hl').some((k) => keys.includes(k))));
+        home!.classList.add('hl-active');
+      });
+      c.addEventListener('pointerleave', reset);
+    });
+
+    // "All" clears the pin (pinning the current key again toggles it off)
+    chips.forEach((c) => c.addEventListener('click', () => pin(c.dataset.filter || pinned)));
+
+    // Grid / list layout
+    const grid = home.querySelector<HTMLElement>('.grid')!;
+    const list = home.querySelector<HTMLElement>('.list')!;
+    const btns = [...home.querySelectorAll<HTMLButtonElement>('[data-layout]')];
+    function setLayout(l: string) {
+      grid.hidden = l === 'list';
+      list.hidden = l !== 'list';
+      btns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.layout === l)));
+      try { localStorage.setItem('layout', l); } catch {}
+      document.dispatchEvent(new CustomEvent('view-change'));
+    }
+    btns.forEach((b) => b.addEventListener('click', () => setLayout(b.dataset.layout!)));
+    try { if (localStorage.getItem('layout') === 'list') setLayout('list'); } catch {}
+
+    // Floating preview for list rows
+    const preview = home.querySelector<HTMLElement>('.preview')!;
+    list.querySelectorAll<HTMLElement>('.lrow').forEach((row, i) => {
+      row.addEventListener('pointerenter', () => {
+        if (row.dataset.preview) preview.style.backgroundImage = `url("${row.dataset.preview}")`;
+        preview.style.setProperty('--rot', (i % 2 ? 2 : -2) + 'deg');
+        preview.classList.add('show');
+      });
+      row.addEventListener('pointerleave', () => preview.classList.remove('show'));
+    });
+    list.addEventListener('pointermove', (e) => {
+      preview.style.setProperty('--px', e.clientX + 24 + 'px');
+      preview.style.setProperty('--py', e.clientY - 90 + 'px');
+    });
+  }
+  document.addEventListener('astro:page-load', init);
+</script>

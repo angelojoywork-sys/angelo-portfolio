@@ -1,0 +1,50 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import { getItems } from '../../lib/content';
+const items = await getItems('experiments');
+---
+
+<Base title="Experiments" description="Experiments with AI, motion and image-making." page="experiments">
+  <header class="intro">
+    <p class="label">Experiments ({String(items.length).padStart(2, '0')})</p>
+    <h1 data-spec="H1">A lab for things that might not work.</h1>
+    <p class="lede">Side projects with AI image and video tools, generative type and motion tests. Quick, unpolished on purpose, and where most of my new ideas start.</p>
+  </header>
+
+  <div class="masonry">
+    {items.map((it) => (
+      <a href={it.url} class="exp" data-card-note={it.data.note}>
+        <div class="frame">
+          {it.cover?.kind === 'image' && (
+            <Image src={it.cover.image} alt={it.data.title} widths={[480, 800, 1200]} sizes="(max-width: 720px) 100vw, 33vw" transition:name={`media-${it.kind}-${it.slug}`} />
+          )}
+          {it.cover?.kind === 'video' && <video src={it.cover.src} autoplay muted loop playsinline />}
+          <span class="tools label">{it.data.tools.join(' · ')}</span>
+        </div>
+        <div class="row">
+          <h2>{it.data.title}</h2>
+          <span class="label">{it.data.year}</span>
+        </div>
+        <p>{it.data.summary}</p>
+      </a>
+    ))}
+  </div>
+</Base>
+
+<style>
+  .intro { padding: clamp(24px, 8vh, 96px) 0 clamp(32px, 6vh, 64px); max-width: 760px; }
+  h1 { margin: 12px 0 16px; font-size: clamp(36px, 5vw, 72px); line-height: 1; letter-spacing: -0.045em; font-weight: 450; text-wrap: balance; }
+  .lede { margin: 0; color: var(--muted); font-size: 17px; max-width: 56ch; }
+
+  .masonry { columns: 3 300px; column-gap: var(--gutter); }
+  .exp { break-inside: avoid; display: flex; flex-direction: column; gap: 8px; margin-bottom: 40px; }
+  .frame { border-radius: 3px; }
+  .frame :global(img), .frame video { width: 100%; height: auto; transition: transform 0.9s var(--ease); }
+  .exp:hover .frame :global(img) { transform: scale(1.03); }
+  .tools { position: absolute; left: 10px; bottom: 10px; background: var(--bg); color: var(--fg); padding: 4px 7px; border-radius: 3px; opacity: 0; transform: translateY(6px); transition: opacity .3s, transform .4s var(--ease); }
+  .exp:hover .tools { opacity: 1; transform: none; }
+  .row { display: flex; justify-content: space-between; align-items: baseline; margin-top: 4px; }
+  h2 { margin: 0; font-size: 15px; font-weight: 550; letter-spacing: -0.01em; }
+  .exp p { margin: 0; color: var(--muted); font-size: 14px; }
+</style>

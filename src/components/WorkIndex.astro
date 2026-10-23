@@ -1,0 +1,87 @@
+---
+import { getImage } from 'astro:assets';
+import Card from './Card.astro';
+import { getSite, type Item } from '../lib/content';
+interface Props { work: Item[] }
+const { work } = Astro.props;
+const site = await getSite();
+const previews = await Promise.all(
+  work.map((w) => (w.cover?.kind === 'image' ? getImage({ src: w.cover.image, width: 480, format: 'webp' }).then((r) => r.src) : ''))
+);
+const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w) => w.data.disciplines.includes(k)));
+---
+
+<section class="work" data-note-on="work" aria-label="Selected work">
+  <div class="bar">
+    <h2 class="label">Selected work <span class="count">({String(work.length).padStart(2, '0')})</span></h2>
+    <div class="chips" role="group" aria-label="Filter by discipline">
+      <button type="button" class="chip" data-filter="" aria-pressed="true">All</button>
+      {used.map(([k, v]) => <button type="button" class="chip" data-filter={k} aria-pressed="false">{v}</button>)}
+    </div>
+    <div class="layout" role="group" aria-label="Layout">
+      <button type="button" data-layout="grid" aria-pressed="true" title="Grid"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><rect width="6" height="6"/><rect x="8" width="6" height="6"/><rect y="8" width="6" height="6"/><rect x="8" y="8" width="6" height="6"/></svg><span class="visually-hidden">Grid</span></button>
+      <button type="button" data-layout="list" aria-pressed="false" title="List"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><rect width="14" height="2"/><rect y="6" width="14" height="2"/><rect y="12" width="14" height="2"/></svg><span class="visually-hidden">List</span></button>
+    </div>
+  </div>
+
+  <div class="grid">
+    {work.map((item, i) => <Card item={item} eager={i < 4} />)}
+  </div>
+
+  <ol class="list" hidden>
+    {work.map((item, i) => (
+      <li>
+        <a href={item.url} class="lrow" data-disc={item.data.disciplines.join(' ')} data-preview={previews[i]}>
+          <span class="label">{item.number}</span>
+          <span class="ltitle">{item.data.title}</span>
+          <span class="lmeta">{item.data.type}</span>
+          <span class="lmeta hide-sm">{item.data.client}</span>
+          <span class="label lyear">{item.data.year}</span>
+        </a>
+      </li>
+    ))}
+  </ol>
+  <div class="preview" aria-hidden="true"></div>
+</section>
+
+<style>
+  .work { min-width: 0; }
+  .grid[hidden], .list[hidden] { display: none; }
+  .bar { display: flex; align-items: center; justify-content: space-between; gap: 12px 20px; flex-wrap: wrap; margin-bottom: 20px; }
+  .count { color: var(--faint); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-right: auto; }
+  .chip { font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); transition: all 0.25s var(--ease); }
+  .chip:hover { color: var(--fg); border-color: var(--faint); }
+  .chip[aria-pressed='true'] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+  .layout { display: inline-flex; gap: 2px; }
+  .layout button { padding: 6px; color: var(--faint); border-radius: 4px; }
+  .layout button[aria-pressed='true'] { color: var(--fg); background: var(--surface); }
+
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px var(--gutter); }
+  @media (min-width: 1700px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+
+  .list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+  .lrow {
+    display: grid; grid-template-columns: 40px minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) 48px;
+    gap: 16px; align-items: baseline; padding: 14px 0; border-bottom: 1px solid var(--line);
+    transition: padding 0.35s var(--ease), opacity 0.4s, color .3s;
+  }
+  .lrow:hover { padding-left: 10px; }
+  .ltitle { font-weight: 550; letter-spacing: -0.01em; }
+  .lmeta { color: var(--muted); font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lyear { text-align: right; }
+  .lrow.lit { padding-left: 10px; }
+  .lrow.lit .ltitle { color: var(--accent); }
+  @media (max-width: 720px) { .lrow { grid-template-columns: 32px 1fr auto; } .lmeta { display: none; } }
+
+  .preview {
+    position: fixed; left: 0; top: 0; width: 240px; aspect-ratio: 4/3; z-index: 30;
+    pointer-events: none; border-radius: 3px; overflow: hidden; box-shadow: var(--shadow);
+    opacity: 0; transform: translate(var(--px, 0), var(--py, 0)) scale(0.9) rotate(var(--rot, 0deg));
+    transition: opacity 0.25s, transform 0.5s var(--ease);
+    background: var(--surface) center / cover no-repeat;
+  }
+  .preview.show { opacity: 1; transform: translate(var(--px, 0), var(--py, 0)) scale(1) rotate(var(--rot, 0deg)); }
+  @media (hover: none) { .preview { display: none; } }
+</style>

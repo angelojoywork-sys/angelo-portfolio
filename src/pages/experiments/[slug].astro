@@ -1,0 +1,19 @@
+---
+import Base from '../../layouts/Base.astro';
+import Detail from '../../components/Detail.astro';
+import { getItems, type Item } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const items = await getItems('experiments');
+  return items.map((item, i) => ({
+    params: { slug: item.slug },
+    props: { item, next: items[(i + 1) % items.length], prev: items[(i - 1 + items.length) % items.length] },
+  }));
+}
+const { item, next, prev } = Astro.props as { item: Item; next: Item; prev: Item };
+const og = item.cover?.kind === 'image' ? item.cover.image.src : undefined;
+---
+
+<Base title={item.data.title} description={item.data.summary} image={og} page="experiments">
+  <Detail item={item} next={next} prev={prev} backLabel="All experiments" backHref="/experiments/" />
+</Base>

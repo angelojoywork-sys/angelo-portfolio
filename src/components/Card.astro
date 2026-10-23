@@ -1,0 +1,49 @@
+---
+import { Image } from 'astro:assets';
+import type { Item, Media } from '../lib/content';
+interface Props { item: Item; eager?: boolean; showNote?: boolean }
+const { item, eager = false, showNote = true } = Astro.props;
+const peek: Media | undefined = item.gallery.find((m) => m.kind === 'image');
+const sizes = '(max-width: 720px) 100vw, (max-width: 1200px) 30vw, 22vw';
+---
+
+<a
+  href={item.url}
+  class="card"
+  data-disc={item.data.disciplines.join(' ')}
+  data-card-note={showNote ? item.data.note : undefined}
+>
+  <div class="frame media" data-spec={item.number === '01' ? 'Cover · 4:3' : undefined} data-spec-kind="box">
+    {item.cover?.kind === 'image' && (
+      <Image src={item.cover.image} alt={item.data.title} widths={[480, 800, 1200]} sizes={sizes} loading={eager ? 'eager' : 'lazy'} class="cover" transition:name={`media-${item.kind}-${item.slug}`} />
+    )}
+    {item.cover?.kind === 'video' && <video src={item.cover.src} muted loop playsinline autoplay class="cover" />}
+    {peek?.kind === 'image' && (
+      <Image src={peek.image} alt="" widths={[480, 800]} sizes={sizes} loading="lazy" class="peek" aria-hidden="true" />
+    )}
+  </div>
+  <div class="row">
+    <h3 class="title">{item.data.title}</h3>
+    <span class="label num">{item.number}</span>
+  </div>
+  <p class="sum">{item.data.summary}</p>
+  <p class="label tags">{item.data.type ?? item.data.disciplines.join(' · ')} · {item.data.year}</p>
+</a>
+
+<style>
+  .card { display: flex; flex-direction: column; gap: 10px; }
+  .media { aspect-ratio: 4 / 3; border-radius: 3px; }
+  .media :global(img), .media video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.9s var(--ease), clip-path 0.7s var(--ease); }
+  .media .peek { clip-path: inset(0 0 0 100%); }
+  .card:hover .media .cover { transform: scale(1.04); }
+  .card:hover .media .peek { clip-path: inset(0 0 0 0%); transition-delay: 0.35s; }
+  .row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-top: 4px; }
+  .title { margin: 0; font-size: 15px; font-weight: 550; letter-spacing: -0.01em; }
+  .title::after { content: ' →'; display: inline-block; opacity: 0; transform: translateX(-6px); transition: opacity .3s, transform .4s var(--ease); color: var(--accent); }
+  .card:hover .title::after { opacity: 1; transform: none; }
+  .sum { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.4; max-width: 40ch; }
+  .tags { margin-top: 2px; }
+  .media { transition: box-shadow 0.45s var(--ease); }
+  :global(.lit) .media { box-shadow: 0 0 0 3px var(--bg), 0 0 0 4.5px var(--accent); }
+  :global(.lit) .media .cover { transform: scale(1.04); }
+</style>

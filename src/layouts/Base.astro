@@ -1,0 +1,54 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Thinking from '../components/Thinking.astro';
+import { getSite } from '../lib/content';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  page?: 'home' | 'work' | 'experiments' | 'info' | 'other';
+}
+const site = await getSite();
+const { title, description = `${site.data.name} — ${site.data.role}.`, image, page = 'other' } = Astro.props;
+const fullTitle = title ? `${title} — ${site.data.name}` : `${site.data.name} · ${site.data.role}`;
+const ogImage = image ? new URL(image, Astro.site).href : undefined;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <ClientRouter />
+    <script is:inline>
+      try { if (localStorage.getItem('thinking') === '1') document.documentElement.classList.add('thinking'); } catch {}
+      function applyTheme() {
+        try { if (localStorage.getItem('theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); else document.documentElement.removeAttribute('data-theme'); } catch {}
+      }
+      applyTheme();
+      document.addEventListener('astro:after-swap', applyTheme);
+    </script>
+  </head>
+  <body data-page={page}>
+    <Header page={page} />
+    <slot name="full" />
+    <div class="page">
+      <main id="main">
+        <slot />
+      </main>
+      <Footer />
+    </div>
+    <Thinking />
+  </body>
+</html>

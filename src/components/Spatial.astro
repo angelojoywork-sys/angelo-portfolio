@@ -1,0 +1,336 @@
+---
+import { getImage } from 'astro:assets';
+import { getSite, type Item } from '../lib/content';
+interface Props { items: Item[] }
+const { items } = Astro.props;
+const site = await getSite();
+
+// Each project contributes its cover plus a couple of gallery images as nodes.
+const nodes = [];
+for (const it of items) {
+  const imgs = [it.cover, ...it.gallery].filter((m) => m?.kind === 'image').slice(0, it.kind === 'work' ? 3 : 2);
+  for (const m of imgs) {
+    if (m?.kind !== 'image') continue;
+    const img = await getImage({ src: m.image, width: 420, format: 'webp' });
+    nodes.push({
+      src: img.src,
+      ar: m.image.width / m.image.height,
+      slug: `${it.kind}/${it.slug}`,
+      url: it.url,
+      title: it.data.title,
+      type: it.data.type ?? '',
+      kind: it.kind,
+      disc: it.data.disciplines,
+    });
+  }
+}
+const legend = Object.entries(site.data.disciplines)
+  .map(([k, v]) => ({ k, v, n: items.filter((i) => i.data.disciplines.includes(k)).length }))
+  .filter((l) => l.n > 0);
+---
+
+<section class="spatial" aria-label="Spatial view of all work" hidden>
+  <div class="stage" tabindex="0" aria-label="Drag or use arrow keys to rotate, scroll to zoom">
+    <svg class="lines" aria-hidden="true"><g class="orbits"></g><g class="links"></g></svg>
+    <div class="nodes"></div>
+    <div class="tip" aria-hidden="true"><b></b><span></span></div>
+  </div>
+
+  <p class="hint label"><span class="fine">Drag to rotate · scroll to zoom</span><span class="touch">Drag to rotate · tap to open</span></p>
+
+  <div class="caption">
+    <h1 class="stitle" data-spec="Display">{site.data.spatialTitle}</h1>
+    <p class="sub"><span class="fine">Hover a piece to see what it's connected to</span><span class="touch">Tap a piece to open it</span></p>
+  </div>
+
+  <ul class="legend" aria-label="Disciplines">
+    {legend.map((l) => <li><button type="button" data-k={l.k}><span class="sw"></span>{l.v}<span class="label">{String(l.n).padStart(2, '0')}</span></button></li>)}
+  </ul>
+
+  <div class="ruler" aria-hidden="true">
+    {Array.from({ length: 28 }, () => <i></i>)}
+    <span class="ruler-mark"><em class="label">Zoom</em></span>
+  </div>
+
+  <script type="application/json" class="spatial-data" set:html={JSON.stringify(nodes)} />
+</section>
+
+<style>
+  .spatial { position: fixed; inset: 0; z-index: 10; background: var(--bg); overflow: hidden; touch-action: none; }
+  .spatial[hidden] { display: none; }
+  .stage { position: absolute; inset: 0; cursor: grab; outline: none; }
+  .stage.dragging { cursor: grabbing; }
+  .lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .lines :global(.orbits path) { fill: none; stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 4; }
+  .lines :global(.links line) { stroke: var(--accent); stroke-width: 1; }
+  .lines :global(.links line.weak) { stroke: var(--faint); stroke-dasharray: 3 3; }
+  .nodes { position: absolute; inset: 0; }
+  .nodes :global(a) {
+    position: absolute; left: 0; top: 0; display: block;
+    background: var(--surface) center / cover no-repeat;
+    border-radius: 2px;
+    will-change: transform, opacity;
+    transition: filter 0.35s, box-shadow .3s;
+  }
+  .nodes :global(a.rel) { box-shadow: 0 0 0 1px var(--accent); }
+  .nodes :global(a.dimmed) { filter: grayscale(1) opacity(0.2); }
+  .nodes :global(a:focus-visible) { outline-offset: 2px; }
+
+  .tip { position: absolute; left: 0; top: 0; pointer-events: none; background: var(--fg); color: var(--bg); padding: 7px 10px; border-radius: 6px; font-size: 13px; line-height: 1.25; opacity: 0; transition: opacity .2s; white-space: nowrap; z-index: 99999; }
+  .tip b { display: block; font-weight: 550; }
+  .tip span { font: 10px var(--mono); opacity: .65; text-transform: uppercase; }
+  .tip.show { opacity: 1; }
+
+  .hint { position: absolute; top: calc(var(--header-h) + 4px); left: 50%; transform: translateX(-50%); pointer-events: none; }
+  .caption { position: absolute; left: var(--gutter); bottom: clamp(24px, 5vh, 56px); pointer-events: none; max-width: min(640px, 80vw); }
+  .stitle { margin: 0; font-size: clamp(32px, 4.4vw, 68px); line-height: 1; letter-spacing: -0.045em; font-weight: 450; text-wrap: balance; }
+  .sub { margin: 14px 0 0; color: var(--muted); }
+
+  .legend { position: absolute; right: var(--gutter); bottom: clamp(24px, 5vh, 56px); list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+  .legend button { display: inline-flex; gap: 8px; align-items: center; font-size: 13px; color: var(--muted); padding: 3px 0; transition: color .2s; }
+  .legend button:hover, .legend button.on { color: var(--fg); }
+  .legend .sw { width: 8px; height: 8px; border-radius: 50%; border: 1px solid currentColor; transition: background .2s; }
+  .legend button:hover .sw, .legend button.on .sw { background: var(--accent); border-color: var(--accent); }
+
+  .ruler { position: absolute; right: var(--gutter); top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+  .ruler i { display: block; width: 8px; height: 1px; background: var(--line); }
+  .ruler i:nth-child(7n + 1) { width: 14px; background: var(--faint); }
+  .ruler-mark { position: absolute; right: 0; top: var(--zy, 50%); width: 22px; height: 1px; background: var(--fg); transition: top 0.2s var(--ease); }
+  .ruler-mark em { position: absolute; right: 28px; top: -6px; font-style: normal; }
+
+  .touch { display: none; }
+  @media (hover: none) { .fine { display: none; } .touch { display: inline; } }
+  .hint { white-space: nowrap; }
+  @media (max-width: 720px) {
+    .legend, .ruler { display: none; }
+    .caption { bottom: 84px; }
+  }
+</style>
+
+<script>
+  import { navigate } from 'astro:transitions/client';
+
+  type Node = { src: string; ar: number; slug: string; url: string; title: string; type: string; kind: string; disc: string[] };
+
+  let stop: (() => void) | null = null;
+
+  function mount(root: HTMLElement) {
+    const data: Node[] = JSON.parse(root.querySelector('.spatial-data')!.textContent || '[]');
+    const stage = root.querySelector<HTMLElement>('.stage')!;
+    const layer = root.querySelector<HTMLElement>('.nodes')!;
+    const links = root.querySelector<SVGGElement>('.links')!;
+    const orbits = root.querySelector<SVGGElement>('.orbits')!;
+    const tip = root.querySelector<HTMLElement>('.tip')!;
+    const mark = root.querySelector<HTMLElement>('.ruler-mark')!;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const NS = 'http://www.w3.org/2000/svg';
+
+    const N = data.length;
+    const golden = Math.PI * (3 - Math.sqrt(5));
+    const pts = data.map((d, i) => {
+      const y = N === 1 ? 0 : 1 - (i / (N - 1)) * 2;
+      const r = Math.sqrt(1 - y * y);
+      const th = golden * i;
+      return { x: Math.cos(th) * r, y, z: Math.sin(th) * r };
+    });
+
+    const els = data.map((d) => {
+      const a = document.createElement('a');
+      a.href = d.url;
+      a.style.backgroundImage = `url("${d.src}")`;
+      a.setAttribute('aria-label', `${d.title}${d.type ? ', ' + d.type : ''}`);
+      a.draggable = false;
+      layer.append(a);
+      return a;
+    });
+
+    const orbitPaths = [0, 1, 2].map(() => {
+      const p = document.createElementNS(NS, 'path');
+      orbits.append(p);
+      return p;
+    });
+
+    let rotY = 0.6, rotX = -0.25, vy = 0, vx = 0, zoom = 1, zoomTarget = 1;
+    let hovered = -1, legendKey = '';
+    let dragging = false, moved = 0, lastX = 0, lastY = 0, lastT = 0;
+    let W = 0, H = 0, R = 0;
+    const sizes: number[] = data.map(() => 0);
+    const proj: { x: number; y: number; s: number; z: number }[] = data.map(() => ({ x: 0, y: 0, s: 1, z: 0 }));
+
+    const resize = () => {
+      W = stage.clientWidth; H = stage.clientHeight;
+      R = Math.min(W, H) * (W < 720 ? 0.4 : 0.36);
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    const D = 2.6;
+    function project(x: number, y: number, z: number) {
+      const cy = Math.cos(rotY), sy = Math.sin(rotY), cx = Math.cos(rotX), sx = Math.sin(rotX);
+      const x1 = x * cy + z * sy, z1 = -x * sy + z * cy;
+      const y2 = y * cx - z1 * sx, z2 = y * sx + z1 * cx;
+      const s = D / (D - z2);
+      return { x: W / 2 + x1 * R * s * zoom, y: H / 2 - 10 + y2 * R * s * zoom, s, z: z2 };
+    }
+
+    function related(i: number) {
+      if (i < 0) return null;
+      const h = data[i];
+      return data.map((d, j) => (j === i ? 2 : d.slug === h.slug ? 2 : d.disc.some((k) => h.disc.includes(k)) ? 1 : 0));
+    }
+
+    function frame() {
+      if (!dragging) {
+        if (hovered < 0 && !legendKey && !reduce) vy += (0.0016 - vy) * 0.02;
+        else vy *= 0.9;
+        vx *= 0.94;
+        rotY += vy; rotX += vx;
+        rotX = Math.max(-1.2, Math.min(1.2, rotX));
+      }
+      zoom += (zoomTarget - zoom) * 0.12;
+
+      const rel = related(hovered);
+      const base = Math.min(118, Math.max(56, R * 0.27));
+      for (let i = 0; i < N; i++) {
+        const p = project(pts[i].x, pts[i].y, pts[i].z);
+        proj[i] = p;
+        const d = data[i];
+        const w = base * p.s * Math.sqrt(zoom) * Math.sqrt(d.ar) * 0.9;
+        const h = w / d.ar;
+        const depth = (p.z + 1) / 2;
+        const el = els[i];
+        sizes[i] = w;
+        el.style.width = w + 'px';
+        el.style.height = h + 'px';
+        el.style.transform = `translate3d(${p.x - w / 2}px, ${p.y - h / 2}px, 0)`;
+        el.style.zIndex = String(Math.round(depth * 1000));
+        el.style.opacity = String(0.2 + depth * 0.8);
+        const lit = rel ? rel[i] > 0 : legendKey ? d.disc.includes(legendKey) : true;
+        el.classList.toggle('dimmed', !lit);
+        el.classList.toggle('rel', !!rel && rel[i] === 2 && i !== hovered);
+      }
+
+      // orbit rings
+      const rings = [
+        (t: number) => [Math.cos(t), 0, Math.sin(t)],
+        (t: number) => [Math.cos(t), Math.sin(t), 0],
+        (t: number) => [0, Math.cos(t), Math.sin(t)],
+      ];
+      rings.forEach((fn, k) => {
+        let dstr = '';
+        for (let s = 0; s <= 72; s++) {
+          const [x, y, z] = fn((s / 72) * Math.PI * 2);
+          const p = project(x * 1.02, y * 1.02, z * 1.02);
+          dstr += (s ? 'L' : 'M') + p.x.toFixed(1) + ' ' + p.y.toFixed(1);
+        }
+        orbitPaths[k].setAttribute('d', dstr);
+      });
+
+      // connection lines
+      links.textContent = '';
+      if (rel && hovered >= 0) {
+        const o = proj[hovered];
+        for (let j = 0; j < N; j++) {
+          if (j === hovered || rel[j] === 0) continue;
+          const l = document.createElementNS(NS, 'line');
+          l.setAttribute('x1', String(o.x)); l.setAttribute('y1', String(o.y));
+          l.setAttribute('x2', String(proj[j].x)); l.setAttribute('y2', String(proj[j].y));
+          if (rel[j] === 1) l.setAttribute('class', 'weak');
+          links.append(l);
+        }
+        const p = proj[hovered];
+        tip.style.transform = `translate(${Math.min(W - 220, p.x + sizes[hovered] / 2 + 12)}px, ${p.y - 20}px)`;
+      }
+      mark.style.setProperty('--zy', ((1 - (zoom - 0.6) / 2) * 100).toFixed(1) + '%');
+      raf = requestAnimationFrame(frame);
+    }
+
+    function setHover(i: number) {
+      hovered = i;
+      if (i >= 0) {
+        tip.querySelector('b')!.textContent = data[i].title;
+        tip.querySelector('span')!.textContent = (data[i].kind === 'experiments' ? 'Experiment · ' : '') + data[i].type;
+        tip.classList.add('show');
+      } else tip.classList.remove('show');
+    }
+
+    els.forEach((el, i) => {
+      el.addEventListener('pointerenter', () => !dragging && setHover(i));
+      el.addEventListener('pointerleave', () => !dragging && setHover(-1));
+      el.addEventListener('focus', () => setHover(i));
+      el.addEventListener('blur', () => setHover(-1));
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (moved > 5) return;
+        navigate(data[i].url);
+      });
+    });
+
+    stage.addEventListener('pointerdown', (e) => {
+      dragging = true; moved = 0; lastX = e.clientX; lastY = e.clientY; lastT = performance.now();
+      vx = vy = 0;
+      stage.classList.add('dragging');
+    });
+    const onMove = (e: PointerEvent) => {
+      if (!dragging) return;
+      const dx = e.clientX - lastX, dy = e.clientY - lastY;
+      moved += Math.abs(dx) + Math.abs(dy);
+      if (moved > 5) { setHover(-1); try { stage.setPointerCapture(e.pointerId); } catch {} }
+      rotY += dx * 0.005; rotX += dy * 0.005;
+      const now = performance.now(), dt = Math.max(16, now - lastT);
+      vy = (dx * 0.005) * (16 / dt); vx = (dy * 0.005) * (16 / dt);
+      lastX = e.clientX; lastY = e.clientY; lastT = now;
+    };
+    const onUp = () => { dragging = false; stage.classList.remove('dragging'); };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
+
+    stage.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      zoomTarget = Math.max(0.6, Math.min(2.6, zoomTarget * Math.exp(-e.deltaY * 0.0015)));
+    }, { passive: false });
+
+    stage.addEventListener('keydown', (e) => {
+      const k = e.key;
+      if (k === 'ArrowLeft') vy -= 0.02; else if (k === 'ArrowRight') vy += 0.02;
+      else if (k === 'ArrowUp') vx -= 0.02; else if (k === 'ArrowDown') vx += 0.02;
+      else if (k === '+' || k === '=') zoomTarget = Math.min(2.6, zoomTarget * 1.15);
+      else if (k === '-') zoomTarget = Math.max(0.6, zoomTarget / 1.15);
+      else return;
+      e.preventDefault();
+    });
+
+    root.querySelectorAll<HTMLButtonElement>('.legend button').forEach((b) => {
+      b.addEventListener('pointerenter', () => { legendKey = b.dataset.k!; b.classList.add('on'); });
+      b.addEventListener('pointerleave', () => { legendKey = ''; b.classList.remove('on'); });
+      b.addEventListener('focus', () => { legendKey = b.dataset.k!; });
+      b.addEventListener('blur', () => { legendKey = ''; });
+    });
+
+    let raf = requestAnimationFrame(frame);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', resize);
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+      layer.textContent = '';
+      orbits.textContent = '';
+    };
+  }
+
+  function sync() {
+    const root = document.querySelector<HTMLElement>('.spatial');
+    const on = !!root && location.hash === '#spatial';
+    document.body.classList.toggle('spatial-on', on);
+    if (root) root.hidden = !on;
+    if (on && !stop) stop = mount(root!);
+    if (!on && stop) { stop(); stop = null; }
+    document.dispatchEvent(new CustomEvent('view-change'));
+  }
+
+  window.addEventListener('hashchange', sync);
+  document.addEventListener('astro:page-load', sync);
+  document.addEventListener('astro:before-swap', () => { if (stop) { stop(); stop = null; } });
+</script>
