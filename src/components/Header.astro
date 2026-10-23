@@ -83,7 +83,7 @@ const showThinking = page === 'home' || page === 'experiments';
   .nav-link { position: relative; color: var(--fg); }
   .nav-link::after { content: ''; position: absolute; left: 0; right: 0; bottom: -3px; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: right; transition: transform 0.35s var(--ease); }
   .nav-link:hover::after, .nav-link.active::after { transform: scaleX(1); transform-origin: left; }
-  .nav-link::after { background: var(--accent); box-shadow: 0 0 8px var(--accent-glow); }
+  .nav-link::after { background: var(--hover); box-shadow: 0 0 8px var(--accent-glow); }
 
   button.nav-link { font: inherit; font-size: 14px; padding: 0; }
 

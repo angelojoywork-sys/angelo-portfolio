@@ -6,6 +6,7 @@ type: AI video
 tools: [Runway, After Effects]
 disciplines: [ai, motion]
 cover: cover.jpg
+note: Getting a loop to close seamlessly took far more tries than the dreaming part.
 captions:
   01.jpg: Placeholder image. Replace with your own.
 ---

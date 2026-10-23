@@ -48,7 +48,7 @@ const sentences = site.data.intro.map((s) => {
     font: inherit; letter-spacing: inherit; text-align: left; display: inline;
     color: inherit;
     transition: color 0.35s var(--ease), background-size 0.5s var(--ease);
-    background: linear-gradient(var(--accent), var(--accent)) left 100% / 0% 2px no-repeat;
+    background: linear-gradient(var(--hover), var(--hover)) left 100% / 0% 2px no-repeat;
     padding-bottom: 2px;
     -webkit-box-decoration-break: clone; box-decoration-break: clone;
     filter: drop-shadow(0 0 0 transparent);
@@ -58,7 +58,7 @@ const sentences = site.data.intro.map((s) => {
   .intro:has(.lead:hover) .lead { color: var(--fg); }
   /* Hint: faint dotted blue underline, staggered, telling people these lines respond */
   .intro.hint .pick:not(:hover):not(.on):not([aria-pressed='true']), .intro.hint a.sent:not(:hover):not(.on) {
-    text-decoration: underline dotted color-mix(in srgb, var(--accent) 55%, transparent);
+    text-decoration: underline dotted color-mix(in srgb, var(--hover) 55%, transparent);
     text-decoration-thickness: 1.5px; text-underline-offset: 6px;
     animation: hint-in 0.5s var(--ease) backwards; animation-delay: calc(var(--n, 0) * 140ms);
   }
@@ -68,7 +68,7 @@ const sentences = site.data.intro.map((s) => {
   .pick:hover, a.sent:hover, .sent.on, .sent[aria-pressed='true'] { color: var(--fg); }
   .pick:hover, .sent[aria-pressed='true'] { background-size: 100% 2px; }
   a.sent:hover { background-size: 100% 2px; }
-  .arrow { display: inline-block; font-size: 0.6em; vertical-align: 0.5em; margin-left: 0.15em; color: var(--accent); opacity: 0; transform: translate(-4px, 4px); transition: opacity .3s, transform .35s var(--ease); }
+  .arrow { display: inline-block; font-size: 0.6em; vertical-align: 0.5em; margin-left: 0.15em; color: var(--hover); opacity: 0; transform: translate(-4px, 4px); transition: opacity .3s, transform .35s var(--ease); }
   a.sent:hover .arrow { opacity: 1; transform: none; }
   :global(.hl-active) .intro .sent:not(.on):not(:hover):not([aria-pressed='true']) { color: var(--faint); }
 

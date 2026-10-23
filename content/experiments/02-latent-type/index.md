@@ -6,6 +6,7 @@ type: AI · typography
 tools: [Stable Diffusion, Illustrator]
 disciplines: [ai, graphic]
 cover: cover.jpg
+note: The best letters were the ones right before the model gave up.
 captions:
   01.jpg: Placeholder image. Replace with your own.
 ---

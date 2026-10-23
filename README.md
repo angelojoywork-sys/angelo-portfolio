@@ -119,7 +119,7 @@ intro:
 If a sentence highlights something that has no work projects (like `ai`), it automatically
 becomes a link to the Experiments page.
 
-The `notes:` list is what shows up as comment pins in **Show the thinking** mode (press `T`).
+Each project's or experiment's `note:` line is what shows up as a comment bubble in **Show the thinking** mode (press `T`).
 
 ---
 

@@ -42,7 +42,7 @@ role:
 tools: []
 disciplines: [${disciplines.split(',').map((s) => s.trim()).filter(Boolean).join(', ')}]
 cover: cover.jpg
-# note: A behind-the-scenes thought, shown in "Show the thinking" mode.
+${kind === 'experiments' ? 'note: A behind-the-scenes thought, shown in "Show the thinking" mode.' : '# note: A behind-the-scenes thought, shown in "Show the thinking" mode.'}
 # embed: [https://vimeo.com/123456789]   # optional, extra videos shown above the gallery
 # link: { label: "Visit the site", url: "https://..." }
 order: ${Number(next) * 10}

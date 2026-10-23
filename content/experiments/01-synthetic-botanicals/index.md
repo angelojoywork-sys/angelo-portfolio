@@ -6,6 +6,7 @@ type: AI imagery
 tools: [Midjourney, Photoshop]
 disciplines: [ai]
 cover: cover.jpg
+note: Every plant here has a real species hiding underneath, I just kept asking the model to forget which.
 captions:
   01.jpg: Placeholder image. Replace with your own.
 ---
