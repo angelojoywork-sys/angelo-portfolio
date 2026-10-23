@@ -82,7 +82,8 @@ const legend = Object.entries(site.data.disciplines)
   .tip.show { opacity: 1; }
 
   .hint { position: absolute; top: calc(var(--header-h) + 4px); left: 50%; transform: translateX(-50%); pointer-events: none; }
-  .caption { position: absolute; left: var(--gutter); bottom: clamp(24px, 5vh, 56px); pointer-events: none; max-width: min(640px, 80vw); }
+  .caption { position: absolute; left: var(--gutter); bottom: clamp(24px, 5vh, 56px); pointer-events: none; max-width: min(640px, 80vw); transition: opacity .45s var(--ease), transform .6s var(--ease); }
+  .spatial.zoomed .caption { opacity: 0; transform: translateY(12px); }
   .stitle { margin: 0; font-size: clamp(32px, 4.4vw, 68px); line-height: 1; letter-spacing: -0.045em; font-weight: 450; text-wrap: balance; }
   .sub { margin: 14px 0 0; color: var(--muted); }
 
@@ -241,6 +242,9 @@ const legend = Object.entries(site.data.disciplines)
         const p = proj[hovered];
         tip.style.transform = `translate(${Math.min(W - 220, p.x + sizes[hovered] / 2 + 12)}px, ${p.y - 20}px)`;
       }
+      // headline steps aside when zoomed in; hysteresis keeps it from flickering at the edge
+      if (zoomTarget > 1.5) root.classList.add('zoomed');
+      else if (zoomTarget < 1.3) root.classList.remove('zoomed');
       mark.style.setProperty('--zy', ((1 - (zoom - 0.6) / 2) * 100).toFixed(1) + '%');
       raf = requestAnimationFrame(frame);
     }
@@ -317,6 +321,7 @@ const legend = Object.entries(site.data.disciplines)
       window.removeEventListener('pointercancel', onUp);
       layer.textContent = '';
       orbits.textContent = '';
+      root.classList.remove('zoomed');
     };
   }
 

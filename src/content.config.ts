@@ -15,6 +15,7 @@ const site = defineCollection({
     timezone: z.string().default('Asia/Kolkata'),
     available: z.string().optional(),
     email: z.string(),
+    photo: z.string().optional(),
     links: z.array(z.object({ label: z.string(), url: z.string() })).default([]),
     disciplines: z.record(z.string()),
     intro: z.array(

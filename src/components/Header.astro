@@ -9,7 +9,8 @@ const isHome = page === 'home';
 <header class="site-header" data-spec="Header" data-spec-kind="box" data-note-on="header">
   <a href="/" class="brand" aria-label={`${site.data.name}, home`}>
     <span class="dot" aria-hidden="true"></span>
-    <span class="brand-name">{site.data.name}</span>
+    <span class="brand-name" aria-hidden="true">{[...site.data.name].map((c, i) => <span class="ch" style={`--i:${i}`}>{c === ' ' ? ' ' : c}</span>)}</span>
+    <span class="visually-hidden">{site.data.name}</span>
   </a>
 
   <nav class="views" aria-label="Work views">
@@ -20,9 +21,12 @@ const isHome = page === 'home';
 
   <nav class="links" aria-label="Main">
     <a href="/experiments/" class:list={['nav-link', { active: page === 'experiments' }]}>Experiments</a>
-    <a href="/info/" class:list={['nav-link', { active: page === 'info' }]}>Info</a>
-    <a href={`mailto:${site.data.email}`} class="nav-link hide-sm">Contact</a>
-    <button class="theme-toggle nav-link" type="button" aria-pressed="false" title="Switch theme">Dark</button>
+    <button type="button" class="nav-link" data-modal="about">About</button>
+    <button type="button" class="nav-link hide-sm" data-modal="contact">Contact</button>
+    <button class="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark theme" title="Switch theme">
+      <svg class="sun" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>
+      <svg class="moon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>
+    </button>
     <button class="think-toggle" type="button" aria-pressed="false" title="Reveal my thinking (T)">
       <span class="switch" aria-hidden="true"><span></span></span>
       <span class="think-label">Reveal my thinking</span>
@@ -76,7 +80,24 @@ const isHome = page === 'home';
   .nav-link::after { content: ''; position: absolute; left: 0; right: 0; bottom: -3px; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: right; transition: transform 0.35s var(--ease); }
   .nav-link:hover::after, .nav-link.active::after { transform: scaleX(1); transform-origin: left; }
 
-  .theme-toggle { font: inherit; font-size: 14px; padding: 0; background: none; border: 0; cursor: pointer; }
+  button.nav-link { font: inherit; font-size: 14px; padding: 0; }
+
+  /* Name micro-interaction: letters hop in a wave, the dot speeds up */
+  .ch { display: inline-block; transition: transform .45s var(--ease); transition-delay: calc(var(--i) * 28ms); }
+  .brand:hover .ch { transform: translateY(-3px); }
+  .brand:hover .dot { animation-duration: 0.9s; }
+
+  .theme-toggle { position: relative; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; color: var(--fg); transition: background .2s; }
+  .theme-toggle:hover { background: var(--surface); }
+  .theme-toggle svg { grid-area: 1 / 1; transition: transform .6s var(--ease), opacity .3s; }
+  .theme-toggle .moon { opacity: 0; transform: rotate(-90deg) scale(.5); }
+  :global(:root[data-theme='dark']) .theme-toggle .sun { opacity: 0; transform: rotate(90deg) scale(.5); }
+  :global(:root[data-theme='dark']) .theme-toggle .moon { opacity: 1; transform: none; }
+
+  /* Spatial owns the whole screen, so the thinking overlay steps aside */
+  :global(body.spatial-on) .think-toggle { display: none; }
+  :global(body.spatial-on .th-grid), :global(body.spatial-on .th-gen) { display: none; }
+  :global(body.spatial-on [data-spec]) { outline: none !important; }
   .think-toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); padding: 5px 8px 5px 6px; border-radius: 999px; border: 1px solid var(--line); transition: border-color .2s, color .2s; }
   .think-toggle:hover { color: var(--fg); border-color: var(--faint); }
   .switch { width: 26px; height: 15px; border-radius: 999px; background: var(--line); position: relative; transition: background 0.25s; }
@@ -113,7 +134,7 @@ const isHome = page === 'home';
   function syncTheme() {
     const dark = document.documentElement.getAttribute('data-theme') === 'dark';
     document.querySelectorAll('.theme-toggle').forEach((b) => {
-      b.textContent = dark ? 'Light' : 'Dark';
+      b.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
       b.setAttribute('aria-pressed', String(dark));
     });
   }
@@ -156,6 +177,7 @@ const isHome = page === 'home';
   });
   document.addEventListener('keydown', (e) => {
     if (e.key.toLowerCase() !== 't' || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (document.body.classList.contains('spatial-on')) return;
     const tag = (e.target as HTMLElement).tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA') return;
     setThinking(!document.documentElement.classList.contains('thinking'));

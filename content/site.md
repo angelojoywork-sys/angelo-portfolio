@@ -4,18 +4,18 @@
 #  Keep the indentation (spaces) exactly as it is.
 # ─────────────────────────────────────────────────────────────
 
-name: Angelo Joel Joy
+name: Angelo Joy
 role: Digital & Graphic Designer
 location: Based in India · working worldwide
 timezone: Asia/Kolkata   # for the live clock in the footer (e.g. Europe/London, America/New_York)
 available: Open for freelance & full-time
-email: hello@example.com
+email: angelojoyirl@gmail.com
+# Portrait for the About pop-up (file lives in /public)
+photo: /portrait.jpg
 
 links:
   - label: LinkedIn
-    url: https://www.linkedin.com/
-  - label: Instagram
-    url: https://www.instagram.com/
+    url: https://www.linkedin.com/in/angelo-joy/
   - label: Résumé · PDF
     url: /resume.pdf
 
@@ -73,8 +73,10 @@ clients:
   - Sample Client Three
 ---
 
-I'm a digital and graphic designer who moves between print, screens and motion. I like projects where a brand has to work as hard on a poster as it does in an app or a ten-second loop.
+I'm a <strong>digital and graphic designer</strong> based in India, moving between print, screens and motion.
 
-My day-to-day is Figma, the Adobe suite and After Effects. On the side I run small experiments with AI image and video tools, mostly to find out where they help and where they get in the way.
+I like projects where a brand has to work as hard on a poster as it does in an app or a ten-second loop. Most days that means <strong>Figma, the Adobe suite and After Effects</strong>.
 
-This site is a work in progress, like most good things.
+On the side I test what <strong>AI</strong> can add to the craft, mostly to find out where it helps and where it gets in the way.
+
+If something here sparks an idea, say hello through <strong>Contact</strong>. I'm open to freelance and full-time work.

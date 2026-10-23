@@ -1,0 +1,128 @@
+---
+// Contact and About pop-up cards. Opened by any [data-modal="contact|about"] trigger.
+import { render } from 'astro:content';
+import { getSite } from '../lib/content';
+const site = await getSite();
+const { Content } = await render(site);
+const d = site.data;
+
+const icons: Record<string, string> = {
+  linkedin: '<path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3 9.75h4V21H3V9.75Zm6.5 0h3.83v1.54h.05c.53-1 1.84-2.07 3.78-2.07 4.04 0 4.79 2.66 4.79 6.1V21h-4v-5.1c0-1.22-.02-2.78-1.7-2.78-1.7 0-1.96 1.33-1.96 2.69V21h-4V9.75Z" fill="currentColor" stroke="none"/>',
+  instagram: '<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="0.8" fill="currentColor" stroke="none"/>',
+  x: '<path transform="translate(2.5 2.5) scale(.79)" d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" fill="currentColor" stroke="none"/>',
+};
+const iconFor = (label: string) => {
+  const l = label.toLowerCase();
+  return l.includes('linkedin') ? 'linkedin' : l.includes('instagram') ? 'instagram' : /^(x|twitter)\b/.test(l) ? 'x' : '';
+};
+const socials = d.links.filter((l) => iconFor(l.label));
+const linkedin = socials.find((l) => iconFor(l.label) === 'linkedin');
+const follow = socials.filter((l) => iconFor(l.label) !== 'linkedin');
+const ext = (u: string) => (u.startsWith('http') ? { target: '_blank', rel: 'noopener' } : {});
+---
+
+<dialog class="modal" id="modal-contact" aria-labelledby="mc-title">
+  <button class="m-close" type="button" aria-label="Close" data-close>
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+  </button>
+  <div class="m-body">
+    <h2 id="mc-title" class="m-head">Reach out for a chat</h2>
+    <a class="m-email" href={`mailto:${d.email}`}>{d.email}</a>
+    {linkedin && <p class="m-line">Or via my <a href={linkedin.url} {...ext(linkedin.url)}>{linkedin.label}</a></p>}
+    {follow.length > 0 && (
+      <p class="m-line">You can also follow my work on {follow.map((l, i) => (
+        <><a href={l.url} {...ext(l.url)}>{l.label}</a>{i < follow.length - 2 ? ', ' : i === follow.length - 2 ? ' and ' : ''}</>
+      ))}</p>
+    )}
+    <div class="m-icons">
+      <a href={`mailto:${d.email}`} aria-label="Email">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M4 7l8 6 8-6"/></svg>
+      </a>
+      {socials.map((l) => (
+        <a href={l.url} {...ext(l.url)} aria-label={l.label}>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" set:html={icons[iconFor(l.label)]} />
+        </a>
+      ))}
+    </div>
+  </div>
+</dialog>
+
+<dialog class="modal wide" id="modal-about" aria-labelledby="ma-title">
+  <button class="m-close" type="button" aria-label="Close" data-close>
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+  </button>
+  <div class="m-body about" class:list={{ 'has-photo': !!d.photo }}>
+    <div class="m-text">
+      <h2 id="ma-title" class="m-head">Hey there, I'm {d.name}.</h2>
+      <div class="m-prose"><Content /></div>
+    </div>
+    {d.photo && <img class="m-photo" src={d.photo} alt={d.name} />}
+  </div>
+</dialog>
+
+<style is:global>
+  .modal {
+    margin: auto; padding: 0; border: 0; color: var(--fg);
+    width: min(520px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow: auto;
+    background: color-mix(in srgb, var(--raised) 92%, var(--bg));
+    border-radius: 18px; box-shadow: 0 1px 0 rgb(255 255 255 / .5) inset, 0 30px 80px rgb(0 0 0 / .18), 0 2px 6px rgb(0 0 0 / .06);
+    opacity: 0; transform: translateY(14px) scale(.97);
+    transition: opacity .3s var(--ease), transform .4s var(--ease), overlay .4s allow-discrete, display .4s allow-discrete;
+  }
+  .modal.wide { width: min(1000px, calc(100vw - 32px)); }
+  .modal[open] { opacity: 1; transform: none; }
+  @starting-style { .modal[open] { opacity: 0; transform: translateY(14px) scale(.97); } }
+  .modal::backdrop {
+    background: color-mix(in srgb, var(--bg) 40%, transparent);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    opacity: 0; transition: opacity .3s var(--ease), overlay .4s allow-discrete, display .4s allow-discrete;
+  }
+  .modal[open]::backdrop { opacity: 1; }
+  @starting-style { .modal[open]::backdrop { opacity: 0; } }
+
+  .m-body { padding: clamp(28px, 4vw, 54px); }
+  .m-close { position: absolute; top: 18px; right: 18px; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; color: var(--muted); transition: color .2s, background .2s, transform .35s var(--ease); }
+  .m-close:hover { color: var(--fg); background: var(--surface); transform: rotate(90deg); }
+  .m-head { margin: 0 36px 24px 0; font-size: 20px; font-weight: 450; letter-spacing: -0.03em; line-height: 1.2; }
+  .m-email { display: block; font-size: clamp(26px, 4vw, 46px); letter-spacing: -0.05em; line-height: 1.05; margin: 0 0 44px; overflow-wrap: anywhere; }
+  .m-line { margin: 0 0 14px; color: var(--muted); font-size: 18px; letter-spacing: -0.025em; }
+  .m-line a, .m-prose a, .m-prose strong { color: var(--fg); font-weight: 450; }
+  .m-line a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .m-icons { display: flex; gap: 22px; margin-top: 34px; }
+  .m-icons a { display: grid; place-items: center; transition: transform .3s var(--ease), color .2s; }
+  .m-icons a:hover { transform: translateY(-3px); color: var(--accent); }
+
+  .about { display: grid; gap: 28px; }
+  .about.has-photo { grid-template-columns: minmax(0, 1fr) minmax(0, 0.55fr); gap: clamp(28px, 4vw, 56px); }
+  .m-prose { color: var(--muted); font-size: 18px; line-height: 1.5; letter-spacing: -0.025em; }
+  .m-prose p { margin: 0 0 1.1em; }
+  .m-photo { width: 100%; border-radius: 10px; object-fit: cover; align-self: end; aspect-ratio: 5 / 7; }
+  @media (max-width: 720px) {
+    .about.has-photo { grid-template-columns: 1fr; }
+    .m-photo { aspect-ratio: 4 / 3; order: -1; }
+    .m-prose { font-size: 16px; }
+  }
+  html:has(dialog[open]) { overflow: hidden; }
+</style>
+
+<script>
+  function bind() {
+    document.addEventListener('click', (e) => {
+      const t = e.target as HTMLElement;
+      const trigger = t.closest<HTMLElement>('[data-modal]');
+      if (trigger) {
+        e.preventDefault();
+        const dlg = document.getElementById('modal-' + trigger.dataset.modal) as HTMLDialogElement | null;
+        document.querySelectorAll<HTMLDialogElement>('dialog.modal[open]').forEach((o) => o !== dlg && o.close());
+        if (dlg && !dlg.open) dlg.showModal();
+        return;
+      }
+      const dlg = t.closest<HTMLDialogElement>('dialog.modal');
+      if (t.closest('[data-close]') && dlg) dlg.close();
+      else if (t instanceof HTMLDialogElement && t.classList.contains('modal')) t.close(); // click on backdrop
+    });
+  }
+  bind();
+  // The router keeps pop-ups from lingering across page swaps.
+  document.addEventListener('astro:before-swap', () => document.querySelectorAll<HTMLDialogElement>('dialog.modal[open]').forEach((d) => d.close()));
+</script>
