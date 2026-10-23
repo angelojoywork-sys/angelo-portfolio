@@ -11,7 +11,7 @@
   --line: #d9d7d0;
   --accent: #2F6BFF;
   --hover: var(--fg);
-  --accent-glow: rgb(18 18 17 / 0.22);
+  --accent-glow: color-mix(in srgb, var(--accent) 35%, transparent);
   --accent-ink: #fff;
   --shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 8px 24px rgb(0 0 0 / 0.08);
 
