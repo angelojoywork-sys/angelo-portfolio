@@ -80,19 +80,17 @@ const availRest = availTail.length ? '& ' + availTail.join(' & ') : '';
     .arrow { display: none; }
     .pick, a.sent { cursor: auto; -webkit-tap-highlight-color: transparent; }
     .pick:hover, a.sent:hover, .sent.on { filter: none; }
-    /* Underline: a hairline set clear of the descenders. Sliced across wrapped lines so it draws on line after line like one stroke.
-       First scroll draws the lines in order with a soft ease-out; returning to the top rubs them out quickly, last line first. */
+    /* Underline: the font's own underline, so it hugs the baseline at the right weight and skips the descenders.
+       First scroll fades each line in while it rises into place, one sentence after another; back at the top they ease away. */
     .sent.pick, a.sent {
-      -webkit-box-decoration-break: slice; box-decoration-break: slice;
-      padding-bottom: 0.09em;
-      background-image: linear-gradient(var(--hover), var(--hover));
-      background-position: 0 100%; background-repeat: no-repeat;
-      background-size: 0% 1.5px;
-      transition: background-size 360ms var(--ease) calc((3 - var(--n, 0)) * 50ms);
+      background: none; padding-bottom: 0;
+      text-decoration-line: underline; text-decoration-style: solid; text-decoration-skip-ink: auto;
+      text-decoration-thickness: 0.055em; text-decoration-color: transparent; text-underline-offset: 0.34em;
+      transition: text-decoration-color 300ms ease, text-underline-offset 300ms ease;
     }
     .intro.ul-on .sent.pick, .intro.ul-on a.sent {
-      background-size: 100% 1.5px;
-      transition: background-size 900ms cubic-bezier(.22, .8, .2, 1) calc(var(--n, 0) * 140ms);
+      text-decoration-color: var(--hover); text-underline-offset: 0.14em;
+      transition: text-decoration-color 600ms ease calc(var(--n, 0) * 160ms), text-underline-offset 800ms cubic-bezier(.22, .8, .2, 1) calc(var(--n, 0) * 160ms);
     }
   }
   @media (max-width: 720px) and (prefers-reduced-motion: reduce) { .sent, .intro.ul-on .sent { transition: none !important; } }
