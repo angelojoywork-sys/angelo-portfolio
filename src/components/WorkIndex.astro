@@ -26,7 +26,8 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
 
   <div class="stepper" aria-label="Project navigation">
     <button type="button" class="step" data-step="-1" aria-label="Previous project"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3L5 8l5 5"/></svg></button>
-    <span class="step-count" aria-live="polite"><b>1</b> of {work.length}</span>
+    <span class="step-count" aria-live="polite"><span class="roll"><b class="cur">1</b></span> of {work.length}</span>
+    <span class="progress" aria-hidden="true"><i></i></span>
     <button type="button" class="step" data-step="1" aria-label="Next project"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3l5 5-5 5"/></svg></button>
   </div>
 
@@ -75,14 +76,28 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
     .step { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--line); color: var(--fg); transition: opacity var(--dur-1), border-color var(--dur-1), transform var(--dur-1) var(--ease); }
     .step:active { transform: scale(.92); }
     .step:disabled { opacity: .3; }
-    .step-count b { color: var(--fg); font-weight: 500; }
+    .step-count { display: inline-flex; gap: .5ch; }
+    .roll { position: relative; display: inline-block; overflow: hidden; height: 1.15em; line-height: 1.15; min-width: 1ch; color: var(--fg); }
+    .roll b { display: block; font-weight: 500; transition: transform 320ms var(--ease), opacity 320ms var(--ease); }
+    .roll b:not(.cur) { position: absolute; left: 0; top: 0; }
+    .roll b.from-b { transform: translateY(100%); opacity: 0; }
+    .roll b.from-t { transform: translateY(-100%); opacity: 0; }
+    .roll b.to-t { transform: translateY(-100%); opacity: 0; }
+    .roll b.to-b { transform: translateY(100%); opacity: 0; }
+    .progress { flex: 1; height: 2px; border-radius: 2px; background: var(--line); overflow: hidden; }
+    .progress i { display: block; height: 100%; background: var(--fg); transform-origin: left; transform: scaleX(var(--p, .25)); }
     .grid:not([hidden]) {
       display: flex; align-items: flex-start; gap: 14px; overflow-x: auto; overscroll-behavior-x: contain;
       scroll-snap-type: x mandatory; scroll-padding-inline: var(--gutter); scrollbar-width: none;
       margin-inline: calc(var(--gutter) * -1); padding: 0 var(--gutter) 4px;
     }
     .grid::-webkit-scrollbar { display: none; }
-    .grid :global(.card) { flex: 0 0 84%; scroll-snap-align: start; scroll-snap-stop: always; }
+    .grid :global(.card) {
+      flex: 0 0 84%; scroll-snap-align: start; scroll-snap-stop: always;
+      transform: scale(calc(1 - .07 * var(--a, 0))); opacity: calc(1 - .45 * var(--a, 0));
+      transform-origin: calc(50% - var(--d, 0) * 50%) 50%; will-change: transform, opacity;
+    }
+    @media (prefers-reduced-motion: reduce) { .grid :global(.card) { transform: none; opacity: 1; } .roll b { transition: none; } }
   }
 
   .list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
@@ -118,26 +133,56 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
     const cards = [...grid.querySelectorAll<HTMLElement>('.card')];
     const prev = stepper.querySelector<HTMLButtonElement>('[data-step="-1"]')!;
     const next = stepper.querySelector<HTMLButtonElement>('[data-step="1"]')!;
-    const num = stepper.querySelector('b')!;
-    const current = () => {
-      let best = 0, bestD = Infinity;
-      cards.forEach((c, i) => { const d = Math.abs(c.offsetLeft - grid.offsetLeft - grid.scrollLeft - parseFloat(getComputedStyle(grid).paddingLeft)); if (d < bestD) { bestD = d; best = i; } });
-      return best;
+    const roll = stepper.querySelector<HTMLElement>('.roll')!;
+    const bar = stepper.querySelector<HTMLElement>('.progress i')!;
+    let shown = 0;
+
+    // where each card sits relative to its snap position, in px (0 = snapped)
+    const offsets = () => {
+      const pad = parseFloat(getComputedStyle(grid).paddingLeft) || 0;
+      return cards.map((c) => c.offsetLeft - grid.offsetLeft - pad - grid.scrollLeft);
+    };
+    const setNum = (n: number, dir: number) => {
+      const cur = roll.querySelector<HTMLElement>('b.cur')!;
+      if (cur.textContent === String(n)) return;
+      const nb = document.createElement('b');
+      nb.className = 'cur ' + (dir > 0 ? 'from-b' : 'from-t');
+      nb.textContent = String(n);
+      cur.classList.remove('cur');
+      cur.classList.add(dir > 0 ? 'to-t' : 'to-b');
+      roll.appendChild(nb);
+      void nb.offsetWidth;
+      nb.classList.remove('from-b', 'from-t');
+      setTimeout(() => cur.remove(), 340);
     };
     const sync = () => {
-      const i = current();
-      num.textContent = String(i + 1);
-      prev.disabled = i === 0;
-      next.disabled = i === cards.length - 1;
+      const off = offsets();
+      const step = (cards[1]?.offsetLeft ?? 0) - (cards[0]?.offsetLeft ?? 0) || grid.clientWidth * 0.84;
+      let best = 0;
+      off.forEach((o, i) => {
+        const d = Math.max(-1, Math.min(1, o / step));
+        cards[i].style.setProperty('--d', d.toFixed(3));
+        cards[i].style.setProperty('--a', Math.abs(d).toFixed(3));
+        if (Math.abs(o) < Math.abs(off[best])) best = i;
+      });
+      if (best !== shown) { setNum(best + 1, best - shown); shown = best; }
+      prev.disabled = best === 0;
+      next.disabled = best === cards.length - 1;
+      const max = grid.scrollWidth - grid.clientWidth;
+      const p = max > 0 ? grid.scrollLeft / max : 0;
+      bar.style.setProperty('--p', (1 / cards.length + p * (1 - 1 / cards.length)).toFixed(3));
     };
     const go = (to: number) => {
-      const c = cards[Math.max(0, Math.min(cards.length - 1, to))];
-      grid.scrollTo({ left: c.offsetLeft - grid.offsetLeft - parseFloat(getComputedStyle(grid).paddingLeft), behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+      const i = Math.max(0, Math.min(cards.length - 1, to));
+      const target = grid.scrollLeft + offsets()[i];
+      grid.scrollTo({ left: target, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
     };
-    prev.addEventListener('click', () => go(current() - 1));
-    next.addEventListener('click', () => go(current() + 1));
+    prev.addEventListener('click', () => go(shown - 1));
+    next.addEventListener('click', () => go(shown + 1));
     let raf = 0;
-    grid.addEventListener('scroll', () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(sync); }, { passive: true });
+    grid.addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; sync(); }); }, { passive: true });
+    window.addEventListener('resize', sync);
+    document.addEventListener('astro:before-swap', () => window.removeEventListener('resize', sync), { once: true });
     sync();
   }
   document.addEventListener('astro:page-load', initStepper);

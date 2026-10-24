@@ -79,9 +79,7 @@ const availRest = availTail.length ? '& ' + availTail.join(' & ') : '';
     .intro, :global(.hl-active) .intro .sent:not(.on):not(:hover):not([aria-pressed='true']) { color: var(--fg); }
     .pick, a.sent { cursor: auto; -webkit-tap-highlight-color: transparent; }
     .pick:hover, a.sent:hover, .sent.on { filter: none; }
-    .sent.in-view { background-size: 100% 2px; }
-    .sent.pick:not(.in-view), a.sent:not(.in-view) { background-size: 0% 2px; }
-    .sent { transition: background-size 700ms var(--ease); }
+    .sent.pick, .sent.pick:hover, a.sent, a.sent:hover { background-size: calc(var(--u, 0) * 100%) 2px; transition: background-size 120ms linear; }
   }
   @media (max-width: 720px) and (prefers-reduced-motion: reduce) { .sent { transition: none; } }
 

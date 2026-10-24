@@ -151,6 +151,8 @@ const legend = Object.entries(site.data.disciplines)
     .hint { bottom: calc(76px + env(safe-area-inset-bottom)); }
     .caption { bottom: calc(112px + env(safe-area-inset-bottom)); }
     .fcap { bottom: calc(76px + env(safe-area-inset-bottom)); }
+    .spatial.filled .ruler { opacity: 0; pointer-events: none; }
+    .ruler { transition: opacity var(--dur-2) var(--ease); }
     .ruler { right: 0; padding: 16px 10px 16px 28px; }
     .ruler-track { gap: 5px; }
     .ruler i { width: 6px; }
@@ -237,6 +239,8 @@ const legend = Object.entries(site.data.disciplines)
     // focus: the third stage of immersion, one project centred. fw blends each node
     // from its globe spot into the focus slot; ox is its sideways offset (drag / swipe).
     let focus = -1;
+    // phones: a focused card holds for a beat, then grows to fill the free space (fill 0 → 1)
+    let focusAt = 0, fill = 0, availTop = 72, availBot = 0;
     const fw: number[] = data.map(() => 0);
     const ox: number[] = data.map(() => 0);
     let axis: '' | 'x' | 'rot' = '', startX = 0, startY = 0, flick = 0;
@@ -260,8 +264,9 @@ const legend = Object.entries(site.data.disciplines)
       const titleTop = caption.offsetTop + title.offsetTop;
       R = Math.min(Math.min(W, H) * (W < 720 ? 0.36 : 0.34), (titleTop - 16 - CY) / 1.2);
     };
+    const measure = () => { availTop = 72; availBot = fcap.offsetTop - 16; };
     resize();
-    window.addEventListener('resize', resize);
+    window.addEventListener('resize', () => { resize(); if (focus >= 0) measure(); });
     document.fonts?.ready.then(() => stop && resize());
 
     const setImm = (v: number) => { immT = clamp01(v); };
@@ -277,6 +282,7 @@ const legend = Object.entries(site.data.disciplines)
       [fcMeta, fcTitle].forEach((el) => { el.classList.remove('in'); void el.offsetWidth; el.classList.add('in'); });
       live.textContent = `${d.title}, ${focus + 1} of ${P}`;
       if (dir) ox[i] = dir * W * 0.3;
+      focusAt = performance.now(); fill = 0; measure();
       // warm the neighbours so a swipe lands on a sharp image
       upgrade(i);
       upgrade(projects[(focus + 1) % P]);
@@ -305,7 +311,8 @@ const legend = Object.entries(site.data.disciplines)
     function exitFocus(to = 0.75) {
       if (focus < 0) return;
       focus = -1;
-      root.classList.remove('focused');
+      fill = 0;
+      root.classList.remove('focused', 'filled');
       fcOpen.tabIndex = -1;
       live.textContent = '';
       setImm(to);
@@ -376,6 +383,11 @@ const legend = Object.entries(site.data.disciplines)
         fmax = Math.max(fmax, fw[i]);
       }
       const dim = lerp(1, 0.03, fmax);
+      if (fn >= 0 && W < 720) {
+        const held = now - focusAt > 1000;
+        fill += ((held ? 1 : 0) - fill) * (reduce ? 1 : 1 - Math.exp(-dt * 3.5));
+        root.classList.toggle('filled', fill > 0.4);
+      } else fill = 0;
 
       const rel = related(hovered);
       const base = Math.min(96, Math.max(48, R * 0.25)) * lerp(1, 1.5, ease);
@@ -398,10 +410,15 @@ const legend = Object.entries(site.data.disciplines)
         let x = behind ? W / 2 : p.x, y = behind ? CY : p.y;
         let op = behind ? 0 : lerp(0.2 + depth * 0.8, 0.65 + depth * 0.35, ease) * near * dim;
         if (f > 0) {
-          const sw = Math.min(W * 0.62, H * 0.6 * d.ar);
+          let sw = Math.min(W * 0.62, H * 0.6 * d.ar);
+          let fy = CY;
+          if (fill > 0.001 && i === fn) {
+            sw = lerp(sw, Math.max(sw, Math.min(W - 32, (availBot - availTop) * d.ar)), fill);
+            fy = lerp(CY, (availTop + availBot) / 2, fill);
+          }
           w = lerp(w, sw, f);
           x = lerp(x, W / 2 + ox[i], f);
-          y = lerp(y, CY, f);
+          y = lerp(y, fy, f);
           op = lerp(op, 1, f);
         }
         const h = w / d.ar;
