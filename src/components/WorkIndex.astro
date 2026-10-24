@@ -26,7 +26,7 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
 
   <div class="stepper" aria-label="Project navigation">
     <button type="button" class="step" data-step="-1" aria-label="Previous project"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3L5 8l5 5"/></svg></button>
-    <span class="step-count" aria-live="polite"><span class="roll"><b class="cur">1</b></span> of {work.length}</span>
+    <span class="step-count" aria-live="polite"><span class="roll"><span class="strip">{work.map((_, i) => <b>{i + 1}</b>)}</span></span> of {work.length}</span>
     <span class="progress" aria-hidden="true"><i></i></span>
     <button type="button" class="step" data-step="1" aria-label="Next project"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3l5 5-5 5"/></svg></button>
   </div>
@@ -69,35 +69,33 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
   @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
 
   .stepper { display: none; }
-  /* Phones: projects become a swipeable card row with a "1 of N" stepper */
+  /* Phones: projects become a centred deck. Drag a card sideways and it flies off, the next one scales up behind it. */
   @media (max-width: 720px) {
     .stepper { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; font: 400 13px/1 var(--mono); color: var(--muted); }
     .work:has(.grid[hidden]) .stepper { display: none; }
-    .step { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--line); color: var(--fg); transition: opacity var(--dur-1), border-color var(--dur-1), transform var(--dur-1) var(--ease); }
+    .step { width: 34px; height: 34px; flex: none; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--line); color: var(--fg); transition: opacity var(--dur-1), border-color var(--dur-1), transform var(--dur-1) var(--ease); }
     .step:active { transform: scale(.92); }
     .step:disabled { opacity: .3; }
-    .step-count { display: inline-flex; gap: .5ch; }
-    .roll { position: relative; display: inline-block; overflow: hidden; height: 1.15em; line-height: 1.15; min-width: 1ch; color: var(--fg); }
-    .roll b { display: block; font-weight: 500; transition: transform 320ms var(--ease), opacity 320ms var(--ease); }
-    .roll b:not(.cur) { position: absolute; left: 0; top: 0; }
-    .roll b.from-b { transform: translateY(100%); opacity: 0; }
-    .roll b.from-t { transform: translateY(-100%); opacity: 0; }
-    .roll b.to-t { transform: translateY(-100%); opacity: 0; }
-    .roll b.to-b { transform: translateY(100%); opacity: 0; }
-    .progress { flex: 1; height: 2px; border-radius: 2px; background: var(--line); overflow: hidden; }
+    .step-count { display: inline-flex; gap: .5ch; white-space: nowrap; }
+    /* every number is rendered once and the strip slides, so there are never stray digits */
+    .roll { display: inline-block; overflow: hidden; height: 1.2em; line-height: 1.2; color: var(--fg); }
+    .strip { display: flex; flex-direction: column; transform: translateY(calc(var(--i, 0) * -1.2em)); transition: transform 380ms var(--ease); }
+    .strip b { display: block; height: 1.2em; font-weight: 500; }
+    .progress { flex: 1; min-width: 24px; height: 2px; border-radius: 2px; background: var(--line); overflow: hidden; }
     .progress i { display: block; height: 100%; background: var(--fg); transform-origin: left; transform: scaleX(var(--p, .25)); }
-    .grid:not([hidden]) {
-      display: flex; align-items: flex-start; gap: 14px; overflow-x: auto; overscroll-behavior-x: contain;
-      scroll-snap-type: x mandatory; scroll-padding-inline: var(--gutter); scrollbar-width: none;
-      margin-inline: calc(var(--gutter) * -1); padding: 0 var(--gutter) 4px;
+    .progress i.settle, .strip.settle { transition: transform 380ms var(--ease); }
+    .progress i:not(.settle) { transition: none; }
+
+    .grid:not([hidden]) { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; overflow-x: clip; touch-action: pan-y; -webkit-user-select: none; user-select: none; }
+    .grid:not([hidden]) :global(.card) {
+      grid-area: 1 / 1; align-self: start; width: 100%; will-change: transform, opacity;
+      -webkit-touch-callout: none; -webkit-user-drag: none;
     }
-    .grid::-webkit-scrollbar { display: none; }
-    .grid :global(.card) {
-      flex: 0 0 84%; scroll-snap-align: start; scroll-snap-stop: always;
-      transform: scale(calc(1 - .07 * var(--a, 0))); opacity: calc(1 - .45 * var(--a, 0));
-      transform-origin: calc(50% - var(--d, 0) * 50%) 50%; will-change: transform, opacity;
-    }
-    @media (prefers-reduced-motion: reduce) { .grid :global(.card) { transform: none; opacity: 1; } .roll b { transition: none; } }
+    .grid :global(.card.deck-settle) { transition: transform 420ms var(--ease), opacity 320ms var(--ease); }
+    .grid :global(.card.deck-off) { pointer-events: none; }
+    .grid :global(.card.deck-snap) { transition: none !important; }
+    .grid :global(.card img) { -webkit-user-drag: none; pointer-events: none; }
+    @media (prefers-reduced-motion: reduce) { .grid :global(.card.deck-settle) { transition: opacity 200ms; } .strip, .strip.settle { transition: none; } }
   }
 
   .list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
@@ -126,64 +124,120 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
 </style>
 
 <script>
-  function initStepper() {
-    const grid = document.querySelector<HTMLElement>('.work .grid');
-    const stepper = document.querySelector<HTMLElement>('.work .stepper');
-    if (!grid || !stepper) return;
+  function initDeck() {
+    const work = document.querySelector<HTMLElement>('.work');
+    const grid = work?.querySelector<HTMLElement>('.grid');
+    const stepper = work?.querySelector<HTMLElement>('.stepper');
+    if (!work || !grid || !stepper) return;
+    const phone = matchMedia('(max-width: 720px)');
+    const calm = matchMedia('(prefers-reduced-motion: reduce)');
     const cards = [...grid.querySelectorAll<HTMLElement>('.card')];
+    const N = cards.length;
     const prev = stepper.querySelector<HTMLButtonElement>('[data-step="-1"]')!;
     const next = stepper.querySelector<HTMLButtonElement>('[data-step="1"]')!;
-    const roll = stepper.querySelector<HTMLElement>('.roll')!;
+    const strip = stepper.querySelector<HTMLElement>('.strip')!;
     const bar = stepper.querySelector<HTMLElement>('.progress i')!;
-    let shown = 0;
+    let index = 0, drag = 0, width = 1, settle = true;
+    const ac = new AbortController();
+    const sig = { signal: ac.signal };
+    document.addEventListener('astro:before-swap', () => ac.abort(), { once: true });
 
-    // where each card sits relative to its snap position, in px (0 = snapped)
-    const offsets = () => {
-      const pad = parseFloat(getComputedStyle(grid).paddingLeft) || 0;
-      return cards.map((c) => c.offsetLeft - grid.offsetLeft - pad - grid.scrollLeft);
-    };
-    const setNum = (n: number, dir: number) => {
-      const cur = roll.querySelector<HTMLElement>('b.cur')!;
-      if (cur.textContent === String(n)) return;
-      const nb = document.createElement('b');
-      nb.className = 'cur ' + (dir > 0 ? 'from-b' : 'from-t');
-      nb.textContent = String(n);
-      cur.classList.remove('cur');
-      cur.classList.add(dir > 0 ? 'to-t' : 'to-b');
-      roll.appendChild(nb);
-      void nb.offsetWidth;
-      nb.classList.remove('from-b', 'from-t');
-      setTimeout(() => cur.remove(), 340);
-    };
-    const sync = () => {
-      const off = offsets();
-      const step = (cards[1]?.offsetLeft ?? 0) - (cards[0]?.offsetLeft ?? 0) || grid.clientWidth * 0.84;
-      let best = 0;
-      off.forEach((o, i) => {
-        const d = Math.max(-1, Math.min(1, o / step));
-        cards[i].style.setProperty('--d', d.toFixed(3));
-        cards[i].style.setProperty('--a', Math.abs(d).toFixed(3));
-        if (Math.abs(o) < Math.abs(off[best])) best = i;
+    const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
+
+    let snap: HTMLElement | null = null;
+    function render() {
+      const off = !phone.matches || grid.hidden;
+      const p = clamp(Math.abs(drag) / (width * 0.5), 0, 1);
+      const dir = drag < 0 ? 1 : -1; // the neighbour that is revealed behind the dragged card
+      cards.forEach((c, i) => {
+        if (off) { c.style.cssText = ''; c.classList.remove('deck-settle', 'deck-off', 'deck-snap'); c.inert = false; c.removeAttribute('aria-hidden'); return; }
+        const rel = i - index;
+        let x = 0, s = 0.94, o = 0, z = 0;
+        if (rel === 0) { x = calm.matches ? 0 : drag; s = 1; o = 1 - p * 0.9; z = 3; }
+        else if (rel === dir && drag !== 0) { s = 0.94 + 0.06 * p; o = 0.35 + 0.65 * p; z = 2; }
+        else if (rel < 0) { x = -width * 1.1; }   // swiped away to the left, waiting to fly back in
+        c.style.transform = `translate3d(${x}px, 0, 0) scale(${s})`;
+        c.style.opacity = String(o);
+        c.style.zIndex = String(z);
+        c.classList.toggle('deck-settle', settle);
+        c.classList.toggle('deck-snap', c === snap);
+        c.classList.toggle('deck-off', o === 0 && !(rel === 0));
+        c.inert = rel !== 0;
+        c.setAttribute('aria-hidden', String(rel !== 0));
       });
-      if (best !== shown) { setNum(best + 1, best - shown); shown = best; }
-      prev.disabled = best === 0;
-      next.disabled = best === cards.length - 1;
-      const max = grid.scrollWidth - grid.clientWidth;
-      const p = max > 0 ? grid.scrollLeft / max : 0;
-      bar.style.setProperty('--p', (1 / cards.length + p * (1 - 1 / cards.length)).toFixed(3));
+      strip.style.setProperty('--i', String(index));
+      strip.classList.toggle('settle', settle);
+      bar.classList.toggle('settle', settle);
+      bar.style.setProperty('--p', ((index + 1) / N).toFixed(3));
+      prev.disabled = index === 0;
+      next.disabled = index === N - 1;
+    }
+
+    function measure() { width = grid.clientWidth || 1; }
+    function goTo(i: number) {
+      const t = clamp(i, 0, N - 1);
+      settle = true;
+      // fly the current card off in the direction of travel, then make the target active
+      if (t !== index) {
+        const dir = t > index ? -1 : 1;
+        drag = dir * width * 1.1;
+        render();
+        const old = cards[index];
+        requestAnimationFrame(() => {
+          snap = t < index ? old : null; // a card that flew off to the right is reset unseen
+          index = t; drag = 0; render();
+          if (snap) requestAnimationFrame(() => requestAnimationFrame(() => { snap = null; render(); }));
+        });
+      } else { drag = 0; render(); }
+    }
+
+    prev.addEventListener('click', () => goTo(index - 1), sig);
+    next.addEventListener('click', () => goTo(index + 1), sig);
+
+    // pointer drag
+    let id = -1, sx = 0, sy = 0, lx = 0, lt = 0, vx = 0, dragging = false, moved = 0;
+    grid.addEventListener('pointerdown', (e) => {
+      if (!phone.matches || grid.hidden || e.pointerType === 'mouse' && e.button !== 0) return;
+      id = e.pointerId; sx = lx = e.clientX; sy = e.clientY; lt = e.timeStamp; vx = 0; dragging = false; moved = 0;
+    }, sig);
+    grid.addEventListener('pointermove', (e) => {
+      if (e.pointerId !== id) return;
+      const dx = e.clientX - sx, dy = e.clientY - sy;
+      if (!dragging) {
+        if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+        if (Math.abs(dy) > Math.abs(dx)) { id = -1; return; }
+        dragging = true; settle = false; measure();
+        try { grid.setPointerCapture(e.pointerId); } catch {}
+      }
+      const dt = Math.max(1, e.timeStamp - lt);
+      vx = (e.clientX - lx) / dt; lx = e.clientX; lt = e.timeStamp;
+      moved = Math.max(moved, Math.abs(dx));
+      // no card beyond the ends: rubber-band
+      const blocked = (dx < 0 && index === N - 1) || (dx > 0 && index === 0);
+      drag = blocked ? dx * 0.25 : dx;
+      render();
+    }, sig);
+    const end = (e: PointerEvent) => {
+      if (e.pointerId !== id) return;
+      id = -1;
+      if (!dragging) return;
+      dragging = false; settle = true;
+      const fast = Math.abs(vx) > 0.5;
+      const far = Math.abs(drag) > width * 0.28;
+      const dir = drag < 0 ? 1 : -1;
+      const ok = (fast && Math.sign(vx) === -dir || far) && index + dir >= 0 && index + dir < N;
+      if (ok) goTo(index + dir); else { drag = 0; render(); }
     };
-    const go = (to: number) => {
-      const i = Math.max(0, Math.min(cards.length - 1, to));
-      const target = grid.scrollLeft + offsets()[i];
-      grid.scrollTo({ left: target, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-    };
-    prev.addEventListener('click', () => go(shown - 1));
-    next.addEventListener('click', () => go(shown + 1));
-    let raf = 0;
-    grid.addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; sync(); }); }, { passive: true });
-    window.addEventListener('resize', sync);
-    document.addEventListener('astro:before-swap', () => window.removeEventListener('resize', sync), { once: true });
-    sync();
+    grid.addEventListener('pointerup', end, sig);
+    grid.addEventListener('pointercancel', end, sig);
+    // a drag must never open the project underneath
+    grid.addEventListener('click', (e) => { if (moved > 8) { e.preventDefault(); e.stopPropagation(); moved = 0; } }, { capture: true, signal: ac.signal });
+    grid.addEventListener('dragstart', (e) => e.preventDefault(), sig);
+
+    phone.addEventListener('change', () => { measure(); render(); }, sig);
+    window.addEventListener('resize', () => { measure(); render(); }, sig);
+    document.addEventListener('view-change', render, sig);
+    measure(); render();
   }
-  document.addEventListener('astro:page-load', initStepper);
+  document.addEventListener('astro:page-load', initDeck);
 </script>

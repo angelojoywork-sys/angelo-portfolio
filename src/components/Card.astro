@@ -48,7 +48,7 @@ const sizes = '(max-width: 720px) 100vw, (max-width: 1200px) 30vw, 22vw';
   .card:is(:hover, :focus-visible, .lit) .title::after { opacity: 1; transform: none; }
   /* the second image peeks in only after a deliberate pause */
   .card:is(:hover, :focus-visible) .media .peek { clip-path: inset(0 0 0 0%); transition-delay: var(--dur-2); }
-  /* Phones: no ring or hover effects; cards move with the carousel scroll */
+  /* Phones: no ring or hover effects; the deck in WorkIndex moves the cards */
   @media (max-width: 720px), (hover: none) {
     .card:is(:hover, :focus-visible, .lit) .media { box-shadow: none; }
     .card:is(:hover, :focus-visible, .lit) .media .cover { transform: none; }
@@ -56,12 +56,7 @@ const sizes = '(max-width: 720px) 100vw, (max-width: 1200px) 30vw, 22vw';
     .card:is(:hover, :focus-visible, .lit) .title::after { opacity: 0; }
   }
   @media (max-width: 720px) {
-    /* the carousel in WorkIndex feeds --d (signed) and --a (absolute) distance from the active card */
-    .card .media .cover, .card:is(:hover, :focus-visible, .lit) .media .cover { transform: translate3d(calc(var(--d, 0) * -7%), 0, 0) scale(1.14); transition: none; }
     .card:active .media { transform: scale(.985); transition: transform var(--dur-1) var(--ease); }
-  }
-  @media (max-width: 720px) and (prefers-reduced-motion: reduce) {
-    .card .media .cover, .card:is(:hover, :focus-visible, .lit) .media .cover { transform: none; }
   }
   /* drop the ring before the page morph captures the frame */
   .card.leaving .media { box-shadow: none; transition: none; }
