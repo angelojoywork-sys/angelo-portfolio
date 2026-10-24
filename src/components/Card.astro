@@ -10,12 +10,13 @@ const sizes = '(max-width: 720px) 100vw, (max-width: 1200px) 30vw, 22vw';
 <a
   href={item.url}
   class="card"
+  data-astro-prefetch
   data-disc={item.data.disciplines.join(' ')}
   data-card-note={showNote ? item.data.note : undefined}
 >
-  <div class="frame media">
+  <div class="frame media" transition:name={`media-${item.kind}-${item.slug}`}>
     {item.cover?.kind === 'image' && (
-      <Image src={item.cover.image} alt={item.data.title} widths={[480, 800, 1200]} sizes={sizes} loading={eager ? 'eager' : 'lazy'} class="cover" transition:name={`media-${item.kind}-${item.slug}`} />
+      <Image src={item.cover.image} alt={item.data.title} widths={[480, 800, 1200]} sizes={sizes} loading={eager ? 'eager' : 'lazy'} class="cover" />
     )}
     {item.cover?.kind === 'video' && <video src={item.cover.src} muted loop playsinline autoplay class="cover" />}
     {peek?.kind === 'image' && (
@@ -31,19 +32,29 @@ const sizes = '(max-width: 720px) 100vw, (max-width: 1200px) 30vw, 22vw';
 </a>
 
 <style>
-  .card { display: flex; flex-direction: column; gap: 10px; }
-  .media { aspect-ratio: 4 / 3; border-radius: 3px; }
-  .media :global(img), .media video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.9s var(--ease), clip-path 0.7s var(--ease); }
+  .card { display: flex; flex-direction: column; gap: 10px; outline: none; }
+  .media { aspect-ratio: 4 / 3; border-radius: 3px; transition: box-shadow var(--dur-2) var(--ease); }
+  .media :global(img), .media video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform var(--dur-3) var(--ease), clip-path var(--dur-3) var(--ease); }
   .media .peek { clip-path: inset(0 0 0 100%); }
-  .card:hover .media .cover { transform: scale(1.04); }
-  .card:hover .media .peek { clip-path: inset(0 0 0 0%); transition-delay: 0.35s; }
   .row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-top: 4px; }
   .title { margin: 0; font-size: 15px; font-weight: 550; letter-spacing: -0.01em; }
-  .title::after { content: ' →'; display: inline-block; opacity: 0; transform: translateX(-6px); transition: opacity .3s, transform .4s var(--ease); color: var(--accent); }
-  .card:hover .title::after { opacity: 1; transform: none; }
+  .title::after { content: ' →'; display: inline-block; opacity: 0; transform: translateX(-6px); transition: opacity var(--dur-1), transform var(--dur-2) var(--ease); color: var(--accent); }
   .sum { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.4; max-width: 40ch; }
   .tags { margin-top: 2px; }
-  .media { transition: box-shadow 0.5s ease; }
-  .card:hover .media, :global(.lit) .media { box-shadow: 0 0 0 3px var(--bg), 0 0 0 4.5px var(--hover), 0 0 24px 2px var(--accent-glow); }
-  :global(.lit) .media .cover { transform: scale(1.04); }
+
+  /* Hover, keyboard focus and the hero's "lit" state all read the same */
+  .card:is(:hover, :focus-visible, .lit) .media { box-shadow: 0 0 0 3px var(--bg), 0 0 0 4.5px var(--hover), 0 0 24px 2px var(--accent-glow); }
+  .card:is(:hover, :focus-visible, .lit) .media .cover { transform: scale(1.04); }
+  .card:is(:hover, :focus-visible, .lit) .title::after { opacity: 1; transform: none; }
+  /* the second image peeks in only after a deliberate pause */
+  .card:is(:hover, :focus-visible) .media .peek { clip-path: inset(0 0 0 0%); transition-delay: var(--dur-2); }
+  /* drop the ring before the page morph captures the frame */
+  .card.leaving .media { box-shadow: none; transition: none; }
 </style>
+
+<script>
+  document.addEventListener('click', (e) => {
+    const c = (e.target as HTMLElement).closest<HTMLElement>('.card');
+    if (c && !(e.metaKey || e.ctrlKey || e.shiftKey)) c.classList.add('leaving');
+  });
+</script>

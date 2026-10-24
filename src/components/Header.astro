@@ -7,7 +7,7 @@ const isHome = page === 'home';
 const showThinking = page === 'home' || page === 'experiments';
 ---
 
-<header class="site-header">
+<header class="site-header" transition:name="site-header" transition:animate="none">
   <a href="/" class="brand" aria-label={`${site.data.name}, home`}>
     <span class="brand-name" aria-hidden="true">{site.data.name}</span>
     <svg class="smile" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
@@ -65,7 +65,7 @@ const showThinking = page === 'home' || page === 'experiments';
     background: var(--surface);
     font-size: 13px;
   }
-  .seg { position: relative; z-index: 1; padding: 5px 16px; border-radius: 999px; color: var(--muted); transition: color 0.25s; }
+  .seg { position: relative; z-index: 1; padding: 5px 16px; border-radius: 999px; color: var(--muted); transition: color var(--dur-1); }
   .seg:hover { color: var(--fg); }
   .seg.active { color: var(--fg); }
   .seg-thumb {
@@ -75,13 +75,13 @@ const showThinking = page === 'home' || page === 'experiments';
     border-radius: 999px;
     background: var(--raised);
     box-shadow: var(--shadow);
-    transition: transform 0.45s var(--ease), width 0.45s var(--ease), opacity .2s;
+    transition: transform var(--dur-2) var(--ease), width var(--dur-2) var(--ease), opacity var(--dur-1);
     opacity: var(--o, 0);
   }
 
   .links { justify-self: end; display: inline-flex; align-items: center; gap: clamp(12px, 2vw, 28px); font-size: 14px; }
   .nav-link { position: relative; color: var(--fg); }
-  .nav-link::after { content: ''; position: absolute; left: 0; right: 0; bottom: -3px; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: right; transition: transform 0.35s var(--ease); }
+  .nav-link::after { content: ''; position: absolute; left: 0; right: 0; bottom: -3px; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: right; transition: transform var(--dur-2) var(--ease); }
   .nav-link:hover::after, .nav-link.active::after { transform: scaleX(1); transform-origin: left; }
   .nav-link::after { background: var(--hover); box-shadow: 0 0 8px var(--accent-glow); }
 
@@ -89,22 +89,24 @@ const showThinking = page === 'home' || page === 'experiments';
 
   /* Name: a gentle rise on load; on hover a small smiley springs in beside it and winks once. */
   .brand { gap: 8px; }
-  .brand-name { display: inline-block; animation: name-rise .7s var(--ease) 120ms backwards; }
-  .smile { flex: none; opacity: 0; transform: scale(.2) rotate(-40deg); transition: opacity .2s, transform .5s cubic-bezier(.34, 1.56, .64, 1); }
+  .brand-name { display: inline-block; animation: name-rise var(--dur-3) var(--ease) 120ms backwards; }
+  .smile { flex: none; opacity: 0; transform: scale(.2) rotate(-40deg); transition: opacity var(--dur-1), transform var(--dur-3) cubic-bezier(.34, 1.56, .64, 1); }
   .smile .eye { transform-box: fill-box; transform-origin: center; }
   .brand:is(:hover, :focus-visible) .smile { opacity: 1; transform: none; }
-  .brand:is(:hover, :focus-visible) .smile .eye:last-of-type { animation: wink .45s .35s ease-in-out; }
+  .brand:is(:hover, :focus-visible) .smile .eye:last-of-type { animation: wink var(--dur-2) var(--dur-2) ease-in-out; }
+  /* only on the first page of a visit, not on every navigation */
+  :global(html.nav) .brand-name { animation: none; }
   @keyframes name-rise { from { opacity: 0; transform: translateY(6px); } }
   @keyframes wink { 50% { transform: scaleY(.1); } }
   @media (prefers-reduced-motion: reduce) {
     .brand-name { animation: none; }
-    .smile { transform: none; transition: opacity .2s; }
+    .smile { transform: none; transition: opacity var(--dur-1); }
     .brand:is(:hover, :focus-visible) .smile .eye:last-of-type { animation: none; }
   }
 
-  .theme-toggle { position: relative; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; color: var(--fg); transition: background .2s; }
+  .theme-toggle { position: relative; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; color: var(--fg); transition: background var(--dur-1); }
   .theme-toggle:hover { background: var(--surface); }
-  .theme-toggle svg { grid-area: 1 / 1; transition: transform .6s var(--ease), opacity .3s; }
+  .theme-toggle svg { grid-area: 1 / 1; transition: transform var(--dur-3) var(--ease), opacity var(--dur-2); }
   .theme-toggle .moon { opacity: 0; transform: rotate(-90deg) scale(.5); }
   :global(:root[data-theme='dark']) .theme-toggle .sun { opacity: 0; transform: rotate(90deg) scale(.5); }
   :global(:root[data-theme='dark']) .theme-toggle .moon { opacity: 1; transform: none; }
@@ -112,10 +114,10 @@ const showThinking = page === 'home' || page === 'experiments';
   /* Spatial owns the whole screen, so the thinking overlay steps aside */
   :global(body.spatial-on) .think-toggle { display: none; }
   :global(body.spatial-on .th-grid), :global(body.spatial-on .th-gen) { display: none; }
-  .think-toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); padding: 5px 8px 5px 6px; border-radius: 999px; border: 1px solid var(--line); transition: border-color .2s, color .2s; }
+  .think-toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); padding: 5px 8px 5px 6px; border-radius: 999px; border: 1px solid var(--line); transition: border-color var(--dur-1), color var(--dur-1); }
   .think-toggle:hover { color: var(--fg); border-color: var(--faint); }
-  .switch { width: 26px; height: 15px; border-radius: 999px; background: var(--line); position: relative; transition: background 0.25s; }
-  .switch span { position: absolute; top: 2px; left: 2px; width: 11px; height: 11px; border-radius: 50%; background: var(--bg); box-shadow: 0 1px 2px rgb(0 0 0 / .25); transition: transform 0.3s var(--ease); }
+  .switch { width: 26px; height: 15px; border-radius: 999px; background: var(--line); position: relative; transition: background var(--dur-1); }
+  .switch span { position: absolute; top: 2px; left: 2px; width: 11px; height: 11px; border-radius: 50%; background: var(--bg); box-shadow: 0 1px 2px rgb(0 0 0 / .25); transition: transform var(--dur-2) var(--ease); }
   :global(html.thinking) .switch { background: var(--accent); }
   :global(html.thinking) .switch span { transform: translateX(11px); }
   :global(html.thinking) .think-toggle { color: var(--fg); }

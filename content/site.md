@@ -34,14 +34,14 @@ disciplines:
 intro:
   - text: I'm Angelo, a brand and digital designer in Ireland.
     key: true
-  - text: "What I enjoy most is the effect design has on the people it reaches:"
-  - text: brands that carry meaning and purpose,
+  - text: I make
+  - text: brands with purpose,
     highlight: graphic
   - text: screens that feel good to use,
     highlight: digital
-  - text: and things that move, made with real craft.
+  - text: and things that move.
     highlight: [motion, video]
-  - text: Lately I've been building alongside my buddy AI, working out how we make better experiences together.
+  - text: Lately I'm building with AI to find better ways to make them.
     highlight: ai
     key: true
 

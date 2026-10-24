@@ -8,6 +8,8 @@ role: Digital & Graphic Designer
 tools: [Adobe InDesign, Illustrator, Photoshop]
 disciplines: [Print]
 cover: cover.jpg
+order: 2
+note: "Two days, two languages, and a 1:10 scale file. Leaving the QR code off was the easy call."
 ---
 
 Cairn Homes is one of Ireland’s leading home and community builders, known for developing sustainable, high-quality residential neighborhoods across the Greater Dublin Area. Hampden Hill in Donabate is one of their flagship coastal residential communities, blending modern energy-efficient architecture with natural landscapes.

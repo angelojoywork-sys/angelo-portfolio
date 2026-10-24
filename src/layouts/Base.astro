@@ -17,6 +17,13 @@ const site = await getSite();
 const { title, description = `${site.data.name} — ${site.data.role}.`, image, page = 'other' } = Astro.props;
 const fullTitle = title ? `${title} — ${site.data.name}` : `${site.data.name} · ${site.data.role}`;
 const ogImage = image ? new URL(image, Astro.site).href : undefined;
+
+// Page content: a quick fade out, then a calm fade-and-rise in
+const calm = {
+  old: { name: 'page-out', duration: '150ms', easing: 'ease-out', fillMode: 'both' },
+  new: { name: 'page-in', duration: '300ms', easing: 'cubic-bezier(0.2, 0.7, 0.1, 1)', delay: '60ms', fillMode: 'both' },
+};
+const calmAnim = { forwards: calm, backwards: calm };
 ---
 
 <!doctype html>
@@ -33,25 +40,43 @@ const ogImage = image ? new URL(image, Astro.site).href : undefined;
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <ClientRouter />
     <script is:inline>
-      try { if (localStorage.getItem('thinking') === '1') document.documentElement.classList.add('thinking'); } catch {}
       function applyTheme() {
         try { if (sessionStorage.getItem('theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); else document.documentElement.removeAttribute('data-theme'); } catch {}
+        try { document.documentElement.classList.toggle('thinking', localStorage.getItem('thinking') === '1'); } catch {}
       }
       try { localStorage.removeItem('theme'); } catch {}
       applyTheme();
-      document.addEventListener('astro:after-swap', applyTheme);
+      // a swap replaces <html>'s attributes, so restore them; "nav" marks every page after the first
+      document.addEventListener('astro:after-swap', () => { applyTheme(); document.documentElement.classList.add('nav'); });
     </script>
   </head>
   <body data-page={page}>
     <Header page={page} />
     <slot name="full" />
     <div class="page">
-      <main id="main">
+      <main id="main" transition:name="page" transition:animate={calmAnim}>
         <slot />
       </main>
       <Footer />
     </div>
     <Thinking />
     <Modals />
+    <script>
+      // Hold the swap (briefly) until the case study's hero image is decoded,
+      // so the card morphs into a picture rather than a blank frame.
+      document.addEventListener('astro:before-preparation', (e) => {
+        const load = e.loader;
+        e.loader = async () => {
+          await load();
+          const img = e.newDocument?.querySelector<HTMLImageElement>('[data-hero] img');
+          if (!img) return;
+          const pre = new Image();
+          pre.sizes = img.sizes;
+          pre.srcset = img.srcset;
+          pre.src = img.src;
+          await Promise.race([pre.decode().catch(() => {}), new Promise((r) => setTimeout(r, 350))]);
+        };
+      });
+    </script>
   </body>
 </html>

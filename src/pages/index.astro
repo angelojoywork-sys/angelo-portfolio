@@ -124,6 +124,10 @@ const experiments = await getItems('experiments');
       });
       row.addEventListener('pointerleave', () => preview.classList.remove('show'));
     });
+    const hide = () => preview.classList.remove('show');
+    list.addEventListener('pointerleave', hide);
+    window.addEventListener('scroll', hide, { passive: true });
+    document.addEventListener('astro:before-swap', () => window.removeEventListener('scroll', hide), { once: true });
     list.addEventListener('pointermove', (e) => {
       preview.style.setProperty('--px', e.clientX + 24 + 'px');
       preview.style.setProperty('--py', e.clientY - 90 + 'px');

@@ -31,7 +31,7 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
   <ol class="list" hidden>
     {work.map((item, i) => (
       <li>
-        <a href={item.url} class="lrow" data-disc={item.data.disciplines.join(' ')} data-preview={previews[i]}>
+        <a href={item.url} class="lrow" data-astro-prefetch data-disc={item.data.disciplines.join(' ')} data-preview={previews[i]}>
           <span class="label">{item.number}</span>
           <span class="ltitle">{item.data.title}</span>
           <span class="lmeta">{item.data.type}</span>
@@ -50,7 +50,7 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
   .bar { display: flex; align-items: center; justify-content: space-between; gap: 12px 20px; flex-wrap: wrap; margin-bottom: 20px; }
   .count { color: var(--faint); }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-right: auto; }
-  .chip { font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); transition: all 0.25s var(--ease); }
+  .chip { font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); transition: all var(--dur-1) var(--ease); }
   .chip:hover { color: var(--fg); border-color: var(--faint); }
   .chip[aria-pressed='true'] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
   .layout { display: inline-flex; gap: 2px; }
@@ -65,7 +65,7 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
   .lrow {
     display: grid; grid-template-columns: 40px minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) 48px;
     gap: 16px; align-items: baseline; padding: 14px 0; border-bottom: 1px solid var(--line);
-    transition: padding 0.35s var(--ease), opacity 0.4s, color .3s;
+    transition: padding var(--dur-2) var(--ease), opacity var(--dur-2), color var(--dur-2);
   }
   .lrow:hover { padding-left: 10px; }
   .ltitle { font-weight: 550; letter-spacing: -0.01em; }
@@ -79,7 +79,7 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
     position: fixed; left: 0; top: 0; width: 240px; aspect-ratio: 4/3; z-index: 30;
     pointer-events: none; border-radius: 3px; overflow: hidden; box-shadow: var(--shadow);
     opacity: 0; transform: translate(var(--px, 0), var(--py, 0)) scale(0.9) rotate(var(--rot, 0deg));
-    transition: opacity 0.25s, transform 0.5s var(--ease);
+    transition: opacity var(--dur-1), transform var(--dur-3) var(--ease);
     background: var(--surface) center / cover no-repeat;
   }
   .preview.show { opacity: 1; transform: translate(var(--px, 0), var(--py, 0)) scale(1) rotate(var(--rot, 0deg)); }

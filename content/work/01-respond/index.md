@@ -8,6 +8,8 @@ role: Lead designer
 tools: [Illustrator, Photoshop, InDesign]
 disciplines: [Graphic design]
 cover: cover.jpg
+order: 1
+note: "A QR code did more for these banners than any extra line of copy could."
 ---
 
 Respond is one of Ireland’s largest not-for-profit housing associations, providing social and affordable homes and support services to families and individuals. Its brand has to earn the trust of tenants, local authorities, and the wider community.
