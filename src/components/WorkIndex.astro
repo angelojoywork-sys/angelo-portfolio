@@ -91,9 +91,8 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
       grid-area: 1 / 1; align-self: start; width: 100%; will-change: transform, opacity;
       -webkit-touch-callout: none; -webkit-user-drag: none;
     }
-    .grid :global(.card.deck-settle) { transition: transform 420ms var(--ease), opacity 320ms var(--ease); }
+    .grid :global(.card.deck-settle) { transition: transform 460ms var(--ease), opacity 380ms var(--ease), filter 380ms var(--ease); }
     .grid :global(.card.deck-off) { pointer-events: none; }
-    .grid :global(.card.deck-snap) { transition: none !important; }
     .grid :global(.card img) { -webkit-user-drag: none; pointer-events: none; }
     @media (prefers-reduced-motion: reduce) { .grid :global(.card.deck-settle) { transition: opacity 200ms; } .strip, .strip.settle { transition: none; } }
   }
@@ -144,24 +143,23 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
 
     const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 
-    let snap: HTMLElement | null = null;
     function render() {
       const off = !phone.matches || grid.hidden;
       const p = clamp(Math.abs(drag) / (width * 0.5), 0, 1);
-      const dir = drag < 0 ? 1 : -1; // the neighbour that is revealed behind the dragged card
+      const dir = drag < 0 ? 1 : -1; // the neighbour that slides in as the dragged card leaves
       cards.forEach((c, i) => {
-        if (off) { c.style.cssText = ''; c.classList.remove('deck-settle', 'deck-off', 'deck-snap'); c.inert = false; c.removeAttribute('aria-hidden'); return; }
+        if (off) { c.style.cssText = ''; c.classList.remove('deck-settle', 'deck-off'); c.inert = false; c.removeAttribute('aria-hidden'); return; }
         const rel = i - index;
-        let x = 0, s = 0.94, o = 0, z = 0;
-        if (rel === 0) { x = calm.matches ? 0 : drag; s = 1; o = 1 - p * 0.9; z = 3; }
-        else if (rel === dir && drag !== 0) { s = 0.94 + 0.06 * p; o = 0.35 + 0.65 * p; z = 2; }
-        else if (rel < 0) { x = -width * 1.1; }   // swiped away to the left, waiting to fly back in
+        // pager feel: the card glides out blurring and fading while the next one glides in from the other side, sharpening
+        let x = Math.sign(rel) * width * 0.5, s = 0.96, o = 0, bl = 8, z = 0;
+        if (rel === 0) { x = calm.matches ? 0 : drag; s = 1 - p * 0.04; o = 1 - p * 0.95; bl = p * 8; z = 3; }
+        else if (rel === dir && drag !== 0) { x = calm.matches ? 0 : Math.sign(rel) * width * 0.5 * (1 - p); s = 0.96 + 0.04 * p; o = p; bl = 8 * (1 - p); z = 2; }
         c.style.transform = `translate3d(${x}px, 0, 0) scale(${s})`;
         c.style.opacity = String(o);
+        c.style.filter = bl > 0.2 && !calm.matches ? `blur(${bl.toFixed(2)}px)` : 'none';
         c.style.zIndex = String(z);
         c.classList.toggle('deck-settle', settle);
-        c.classList.toggle('deck-snap', c === snap);
-        c.classList.toggle('deck-off', o === 0 && !(rel === 0));
+        c.classList.toggle('deck-off', rel !== 0);
         c.inert = rel !== 0;
         c.setAttribute('aria-hidden', String(rel !== 0));
       });
@@ -182,12 +180,7 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
         const dir = t > index ? -1 : 1;
         drag = dir * width * 1.1;
         render();
-        const old = cards[index];
-        requestAnimationFrame(() => {
-          snap = t < index ? old : null; // a card that flew off to the right is reset unseen
-          index = t; drag = 0; render();
-          if (snap) requestAnimationFrame(() => requestAnimationFrame(() => { snap = null; render(); }));
-        });
+        requestAnimationFrame(() => { index = t; drag = 0; render(); });
       } else { drag = 0; render(); }
     }
 
