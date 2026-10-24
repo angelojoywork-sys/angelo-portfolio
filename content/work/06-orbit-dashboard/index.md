@@ -8,6 +8,7 @@ role: UI designer
 tools: [Figma]
 disciplines: [digital]
 cover: cover.jpg
+draft: true
 note: Built the tokens before the screens, so the dark theme took an afternoon.
 captions:
   01.jpg: Placeholder image. Replace with your own.

@@ -8,6 +8,7 @@ role: Motion designer, editor
 tools: [After Effects, Premiere Pro]
 disciplines: [motion, video]
 cover: cover.jpg
+draft: true
 note: Cut to the music first, animated second. The edit decides the motion.
 captions:
   01.jpg: Placeholder image. Replace with your own.
