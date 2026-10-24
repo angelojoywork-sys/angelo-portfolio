@@ -145,15 +145,16 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
 
     function render() {
       const off = !phone.matches || grid.hidden;
-      const p = clamp(Math.abs(drag) / (width * 0.5), 0, 1);
+      const gap = 16;
+      const q = clamp(Math.abs(drag) / width, 0, 1);
       const dir = drag < 0 ? 1 : -1; // the neighbour that slides in as the dragged card leaves
       cards.forEach((c, i) => {
         if (off) { c.style.cssText = ''; c.classList.remove('deck-settle', 'deck-off'); c.inert = false; c.removeAttribute('aria-hidden'); return; }
         const rel = i - index;
-        // pager feel: the card glides out blurring and fading while the next one glides in from the other side, sharpening
-        let x = Math.sign(rel) * width * 0.5, s = 0.96, o = 0, bl = 8, z = 0;
-        if (rel === 0) { x = calm.matches ? 0 : drag; s = 1 - p * 0.04; o = 1 - p * 0.95; bl = p * 8; z = 3; }
-        else if (rel === dir && drag !== 0) { x = calm.matches ? 0 : Math.sign(rel) * width * 0.5 * (1 - p); s = 0.96 + 0.04 * p; o = p; bl = 8 * (1 - p); z = 2; }
+        // pager: the two cards travel side by side, never stacked. The leaving card blurs and fades, the arriving one sharpens.
+        let x = Math.sign(rel) * (width + gap), s = 0.96, o = 0, bl = 8, z = 0;
+        if (rel === 0) { x = calm.matches ? 0 : drag; s = 1 - q * 0.04; o = 1 - q * 0.9; bl = q * 8; z = 3; }
+        else if (rel === dir && drag !== 0) { x = calm.matches ? 0 : Math.sign(rel) * (width + gap) * (1 - q); s = 0.96 + 0.04 * q; o = 0.1 + 0.9 * q; bl = 8 * (1 - q); z = 2; }
         c.style.transform = `translate3d(${x}px, 0, 0) scale(${s})`;
         c.style.opacity = String(o);
         c.style.filter = bl > 0.2 && !calm.matches ? `blur(${bl.toFixed(2)}px)` : 'none';
@@ -178,7 +179,7 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
       // fly the current card off in the direction of travel, then make the target active
       if (t !== index) {
         const dir = t > index ? -1 : 1;
-        drag = dir * width * 1.1;
+        drag = dir * width;
         render();
         requestAnimationFrame(() => { index = t; drag = 0; render(); });
       } else { drag = 0; render(); }
@@ -216,7 +217,7 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
       if (!dragging) return;
       dragging = false; settle = true;
       const fast = Math.abs(vx) > 0.5;
-      const far = Math.abs(drag) > width * 0.28;
+      const far = Math.abs(drag) > width * 0.25;
       const dir = drag < 0 ? 1 : -1;
       const ok = (fast && Math.sign(vx) === -dir || far) && index + dir >= 0 && index + dir < N;
       if (ok) goTo(index + dir); else { drag = 0; render(); }

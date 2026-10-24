@@ -77,11 +77,25 @@ const availRest = availTail.length ? '& ' + availTail.join(' & ') : '';
   /* Phones: one solid colour; each discipline line gets its underline as it scrolls to mid-screen */
   @media (max-width: 720px) {
     .intro, :global(.hl-active) .intro .sent:not(.on):not(:hover):not([aria-pressed='true']) { color: var(--fg); }
+    .arrow { display: none; }
     .pick, a.sent { cursor: auto; -webkit-tap-highlight-color: transparent; }
     .pick:hover, a.sent:hover, .sent.on { filter: none; }
-    .sent.pick, .sent.pick:hover, a.sent, a.sent:hover { background-size: calc(var(--u, 0) * 100%) 2px; transition: background-size 120ms linear; }
+    /* Underline: a hairline set clear of the descenders. Sliced across wrapped lines so it draws on line after line like one stroke.
+       First scroll draws the lines in order with a soft ease-out; returning to the top rubs them out quickly, last line first. */
+    .sent.pick, a.sent {
+      -webkit-box-decoration-break: slice; box-decoration-break: slice;
+      padding-bottom: 0.09em;
+      background-image: linear-gradient(var(--hover), var(--hover));
+      background-position: 0 100%; background-repeat: no-repeat;
+      background-size: 0% 1.5px;
+      transition: background-size 360ms var(--ease) calc((3 - var(--n, 0)) * 50ms);
+    }
+    .intro.ul-on .sent.pick, .intro.ul-on a.sent {
+      background-size: 100% 1.5px;
+      transition: background-size 900ms cubic-bezier(.22, .8, .2, 1) calc(var(--n, 0) * 140ms);
+    }
   }
-  @media (max-width: 720px) and (prefers-reduced-motion: reduce) { .sent { transition: none; } }
+  @media (max-width: 720px) and (prefers-reduced-motion: reduce) { .sent, .intro.ul-on .sent { transition: none !important; } }
 
   .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr)); gap: 16px 24px; margin: 0; max-width: 34em; }
   .facts dd { margin: 4px 0 0; font-size: 14px; }
