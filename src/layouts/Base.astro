@@ -18,7 +18,7 @@ const { title, description = `${site.data.name} — ${site.data.role}.`, image, 
 const fullTitle = title ? `${title} — ${site.data.name}` : `${site.data.name} · ${site.data.role}`;
 const ogImage = image ? new URL(image, Astro.site).href : undefined;
 
-// Page content: a quick fade out, then a calm fade-and-rise in
+// Page content: a quick fade out, then a calm fade in
 const calm = {
   old: { name: 'page-out', duration: '150ms', easing: 'ease-out', fillMode: 'both' },
   new: { name: 'page-in', duration: '300ms', easing: 'cubic-bezier(0.2, 0.7, 0.1, 1)', delay: '60ms', fillMode: 'both' },
@@ -46,8 +46,9 @@ const calmAnim = { forwards: calm, backwards: calm };
       }
       try { localStorage.removeItem('theme'); } catch {}
       applyTheme();
+      document.documentElement.classList.add('js');
       // a swap replaces <html>'s attributes, so restore them; "nav" marks every page after the first
-      document.addEventListener('astro:after-swap', () => { applyTheme(); document.documentElement.classList.add('nav'); });
+      document.addEventListener('astro:after-swap', () => { applyTheme(); document.documentElement.classList.add('nav', 'js'); });
     </script>
   </head>
   <body data-page={page}>
@@ -74,7 +75,7 @@ const calmAnim = { forwards: calm, backwards: calm };
           pre.sizes = img.sizes;
           pre.srcset = img.srcset;
           pre.src = img.src;
-          await Promise.race([pre.decode().catch(() => {}), new Promise((r) => setTimeout(r, 350))]);
+          await Promise.race([pre.decode().catch(() => {}), new Promise((r) => setTimeout(r, 600))]);
         };
       });
     </script>

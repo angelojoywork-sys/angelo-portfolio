@@ -83,7 +83,14 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 /* Page transitions: morphing media crops to fit instead of stretching between ratios */
 ::view-transition-old(*), ::view-transition-new(*) { height: 100%; object-fit: cover; }
 @keyframes page-out { to { opacity: 0; } }
-@keyframes page-in { from { opacity: 0; transform: translateY(6px); } }
+@keyframes page-in { from { opacity: 0; } }
+/* Phones: a short sideways drift on the page content only (the morphing media stays put) */
+@keyframes page-out-m { to { opacity: 0; transform: translateX(-14px); } }
+@keyframes page-in-m { from { opacity: 0; transform: translateX(14px); } }
+@media (max-width: 720px) {
+  ::view-transition-old(page) { animation: page-out-m 160ms ease-out both !important; }
+  ::view-transition-new(page) { animation: page-in-m 320ms var(--ease) 60ms both !important; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }

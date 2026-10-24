@@ -28,7 +28,7 @@ const showThinking = page === 'home' || page === 'experiments';
   <nav class="links" aria-label="Main">
     <a href="/experiments/" class:list={['nav-link', { active: page === 'experiments' }]}>Experiments</a>
     <button type="button" class="nav-link" data-modal="about">About</button>
-    <button type="button" class="nav-link hide-sm" data-modal="contact">Contact</button>
+    <button type="button" class="nav-link" data-modal="contact">Contact</button>
     <button class="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark theme" title="Switch theme">
       <svg class="sun" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>
       <svg class="moon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>
@@ -131,7 +131,8 @@ const showThinking = page === 'home' || page === 'experiments';
     /* backdrop-filter would trap the fixed pill inside the header, so use a solid bar */
     .site-header { grid-template-columns: 1fr auto; backdrop-filter: none; -webkit-backdrop-filter: none; background: color-mix(in srgb, var(--bg) 96%, transparent); }
     .brand-name { font-size: 14px; }
-    .hide-sm { display: none; }
+    .links { gap: 14px; }
+    .nav-link { font-size: 14px; }
     .think-toggle { display: none; }
     /* Index / Spatial switch becomes a floating pill at the bottom on phones */
     .views { position: fixed; left: 50%; bottom: max(16px, env(safe-area-inset-bottom)); transform: translateX(-50%); box-shadow: var(--shadow); background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(10px); }

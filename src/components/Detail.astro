@@ -101,6 +101,15 @@ const morph = `media-${item.kind}-${item.slug}`;
   </nav>
 </article>
 
+<script>
+  // Back to the index: step through history when we came from it, so the scroll position is restored
+  document.addEventListener('click', (e) => {
+    const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('.detail .back');
+    if (!a || e.metaKey || e.ctrlKey || e.shiftKey || a.getAttribute('href') !== '/#index') return;
+    if (history.length > 1 && document.referrer.startsWith(location.origin)) { e.preventDefault(); history.back(); }
+  });
+</script>
+
 <style>
   .detail { max-width: 1100px; margin: 0 auto; padding-top: clamp(16px, 4vh, 48px); }
   .back { display: inline-flex; gap: 6px; transition: color var(--dur-1), gap var(--dur-2) var(--ease); }

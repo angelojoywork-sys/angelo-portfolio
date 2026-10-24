@@ -10,6 +10,8 @@ const sentences = site.data.intro.map((s) => {
   const toLab = keys.length > 0 && keys.every((k) => !workKeys.has(k));
   return { ...s, keys, toLab };
 });
+const [availLead, ...availTail] = (site.data.available ?? '').split(' & ');
+const availRest = availTail.length ? '& ' + availTail.join(' & ') : '';
 ---
 
 <section class="hero" aria-label="About">
@@ -28,7 +30,7 @@ const sentences = site.data.intro.map((s) => {
   <dl class="facts">
     <div><dt class="label">Role</dt><dd>{site.data.role}</dd></div>
     {site.data.location && <div><dt class="label">Location</dt><dd>{site.data.location}</dd></div>}
-    {site.data.available && <div><dt class="label">Status</dt><dd><span class="avail"></span>{site.data.available}</dd></div>}
+    {site.data.available && <div><dt class="label">Status</dt><dd><span class="avail"></span>{availLead}{availRest && <><br />{availRest}</>}</dd></div>}
   </dl>
 </section>
 
@@ -71,6 +73,17 @@ const sentences = site.data.intro.map((s) => {
   .arrow { display: inline-block; font-size: 0.6em; vertical-align: 0.5em; margin-left: 0.15em; color: var(--hover); opacity: 0; transform: translate(-4px, 4px); transition: opacity var(--dur-2), transform var(--dur-2) var(--ease); }
   a.sent:hover .arrow { opacity: 1; transform: none; }
   :global(.hl-active) .intro .sent:not(.on):not(:hover):not([aria-pressed='true']) { color: var(--faint); }
+
+  /* Phones: one solid colour; each discipline line gets its underline as it scrolls to mid-screen */
+  @media (max-width: 720px) {
+    .intro, :global(.hl-active) .intro .sent:not(.on):not(:hover):not([aria-pressed='true']) { color: var(--fg); }
+    .pick, a.sent { cursor: auto; -webkit-tap-highlight-color: transparent; }
+    .pick:hover, a.sent:hover, .sent.on { filter: none; }
+    .sent.in-view { background-size: 100% 2px; }
+    .sent.pick:not(.in-view), a.sent:not(.in-view) { background-size: 0% 2px; }
+    .sent { transition: background-size 700ms var(--ease); }
+  }
+  @media (max-width: 720px) and (prefers-reduced-motion: reduce) { .sent { transition: none; } }
 
   .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr)); gap: 16px 24px; margin: 0; max-width: 34em; }
   .facts dd { margin: 4px 0 0; font-size: 14px; }

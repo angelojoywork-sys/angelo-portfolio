@@ -61,7 +61,7 @@ const ext = (u: string) => (u.startsWith('http') ? { target: '_blank', rel: 'noo
       <h2 id="ma-title" class="m-head">Hey there, I'm {d.name}.</h2>
       <div class="m-prose"><Content /></div>
     </div>
-    {d.photo && <img class="m-photo" src={d.photo} alt={d.name} />}
+    {d.photo && <img class="m-photo" src={d.photo} alt={d.name} width="800" height="600" decoding="async" fetchpriority="high" />}
   </div>
 </dialog>
 
@@ -115,7 +115,20 @@ const ext = (u: string) => (u.startsWith('http') ? { target: '_blank', rel: 'noo
     .m-photo { aspect-ratio: 4 / 3; order: -1; }
     .m-prose { font-size: 16px; }
   }
-  html:has(dialog[open]) { overflow: hidden; }
+  html:has(dialog[open]) { overflow: hidden; scrollbar-gutter: stable; }
+  /* Phones: dialogs become bottom sheets; the close button sits in its own sticky row above the content */
+  @media (max-width: 720px) {
+    .modal, .modal.wide { width: 100vw; max-width: none; margin: auto 0 0; max-height: 92dvh; border-radius: 20px 20px 0 0; overscroll-behavior: contain; transform: translateY(100%); }
+    @starting-style { .modal[open] { transform: translateY(100%); opacity: 1; } }
+    .modal[open] { transform: none; }
+    .modal .m-close { position: sticky; top: 0; float: none; display: grid; margin: 10px 10px -6px auto; z-index: 2; background: color-mix(in srgb, var(--raised) 92%, var(--bg)); }
+    .m-body, .m-body.contact { padding: 8px 20px max(28px, env(safe-area-inset-bottom)); }
+    .m-head { margin: 0 0 16px; }
+    .m-kicker { padding-right: 0; }
+    .about.has-photo { gap: 20px; }
+    .m-photo { aspect-ratio: 4 / 3; object-position: 50% 62%; align-self: start; }
+    .m-prose { font-size: 16px; line-height: 1.5; }
+  }
 </style>
 
 <script>

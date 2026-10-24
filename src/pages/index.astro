@@ -44,6 +44,21 @@ const experiments = await getItems('experiments');
     const cards = [...home.querySelectorAll<HTMLElement>('.card, .lrow')];
     const chips = [...home.querySelectorAll<HTMLButtonElement>('.chip')];
     let pinned = '';
+    const phone = matchMedia('(max-width: 720px)');
+
+    // Phones: reveal underlines and card zooms as elements scroll into view
+    const reveal = (els: Element[], cls: string, margin: string) => {
+      if (!('IntersectionObserver' in window)) { els.forEach((el) => el.classList.add(cls)); return; }
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((en) => { if (en.isIntersecting) { en.target.classList.add(cls); io.unobserve(en.target); } });
+      }, { rootMargin: margin });
+      els.forEach((el) => io.observe(el));
+      document.addEventListener('astro:before-swap', () => io.disconnect(), { once: true });
+    };
+    if (phone.matches) {
+      reveal([...home.querySelectorAll('.sent.pick, a.sent')], 'in-view', '-45% 0px -45% 0px');
+      reveal([...home.querySelectorAll('.card')], 'in', '0px 0px -8% 0px');
+    }
 
     // Hovering the lead-in line hints that the sentences after it are interactive
     const intro = home.querySelector<HTMLElement>('.intro');
@@ -73,7 +88,9 @@ const experiments = await getItems('experiments');
       reset();
     }
 
+    // On phones a tap on the headline does nothing special (links still navigate)
     sents.forEach((s) => {
+      if (phone.matches) { s.removeAttribute('role'); s.removeAttribute('tabindex'); s.removeAttribute('aria-pressed'); return; }
       const keys = keysOf(s, 'data-hl');
       s.addEventListener('pointerenter', () => apply(keys));
       s.addEventListener('focus', () => apply(keys));
@@ -88,6 +105,7 @@ const experiments = await getItems('experiments');
     });
 
     cards.forEach((c) => {
+      if (phone.matches) return;
       c.addEventListener('pointerenter', () => {
         if (pinned) return;
         const keys = keysOf(c, 'data-disc');

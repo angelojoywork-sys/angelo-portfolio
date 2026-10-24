@@ -48,6 +48,21 @@ const sizes = '(max-width: 720px) 100vw, (max-width: 1200px) 30vw, 22vw';
   .card:is(:hover, :focus-visible, .lit) .title::after { opacity: 1; transform: none; }
   /* the second image peeks in only after a deliberate pause */
   .card:is(:hover, :focus-visible) .media .peek { clip-path: inset(0 0 0 0%); transition-delay: var(--dur-2); }
+  /* Phones: no ring or hover effects; the cover eases in with a small zoom as the card scrolls into view */
+  @media (max-width: 720px), (hover: none) {
+    .card:is(:hover, :focus-visible, .lit) .media { box-shadow: none; }
+    .card:is(:hover, :focus-visible, .lit) .media .cover { transform: none; }
+    .card:is(:hover, :focus-visible) .media .peek { clip-path: inset(0 0 0 100%); }
+    .card:is(:hover, :focus-visible, .lit) .title::after { opacity: 0; }
+  }
+  @media (max-width: 720px) {
+    :global(html.js) .card .media .cover { transform: scale(1.08); opacity: 0.8; transition: transform 900ms var(--ease), opacity 700ms var(--ease); }
+    :global(html.js) .card.in .media .cover { transform: none; opacity: 1; }
+    .card:active .media { transform: scale(.985); transition: transform var(--dur-1) var(--ease); }
+  }
+  @media (max-width: 720px) and (prefers-reduced-motion: reduce) {
+    :global(html.js) .card .media .cover { transform: none; opacity: 1; }
+  }
   /* drop the ring before the page morph captures the frame */
   .card.leaving .media { box-shadow: none; transition: none; }
 </style>
@@ -57,4 +72,6 @@ const sizes = '(max-width: 720px) 100vw, (max-width: 1200px) 30vw, 22vw';
     const c = (e.target as HTMLElement).closest<HTMLElement>('.card');
     if (c && !(e.metaKey || e.ctrlKey || e.shiftKey)) c.classList.add('leaving');
   });
+  document.addEventListener('astro:after-swap', () => document.querySelectorAll('.card.leaving').forEach((c) => c.classList.remove('leaving')));
+  window.addEventListener('pageshow', () => document.querySelectorAll('.card.leaving').forEach((c) => c.classList.remove('leaving')));
 </script>
