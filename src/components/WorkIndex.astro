@@ -24,6 +24,12 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
     </div>
   </div>
 
+  <div class="stepper" aria-label="Project navigation">
+    <button type="button" class="step" data-step="-1" aria-label="Previous project"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3L5 8l5 5"/></svg></button>
+    <span class="step-count" aria-live="polite"><b>1</b> of {work.length}</span>
+    <button type="button" class="step" data-step="1" aria-label="Next project"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3l5 5-5 5"/></svg></button>
+  </div>
+
   <div class="grid">
     {work.map((item, i) => <Card item={item} eager={i < 4} />)}
   </div>
@@ -61,6 +67,24 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
   @media (min-width: 1700px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
   @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
 
+  .stepper { display: none; }
+  /* Phones: projects become a swipeable card row with a "1 of N" stepper */
+  @media (max-width: 720px) {
+    .stepper { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; font: 400 13px/1 var(--mono); color: var(--muted); }
+    .work:has(.grid[hidden]) .stepper { display: none; }
+    .step { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--line); color: var(--fg); transition: opacity var(--dur-1), border-color var(--dur-1), transform var(--dur-1) var(--ease); }
+    .step:active { transform: scale(.92); }
+    .step:disabled { opacity: .3; }
+    .step-count b { color: var(--fg); font-weight: 500; }
+    .grid:not([hidden]) {
+      display: flex; align-items: flex-start; gap: 14px; overflow-x: auto; overscroll-behavior-x: contain;
+      scroll-snap-type: x mandatory; scroll-padding-inline: var(--gutter); scrollbar-width: none;
+      margin-inline: calc(var(--gutter) * -1); padding: 0 var(--gutter) 4px;
+    }
+    .grid::-webkit-scrollbar { display: none; }
+    .grid :global(.card) { flex: 0 0 84%; scroll-snap-align: start; scroll-snap-stop: always; }
+  }
+
   .list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
   .lrow {
     display: grid; grid-template-columns: 40px minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) 48px;
@@ -85,3 +109,36 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
   .preview.show { opacity: 1; transform: translate(var(--px, 0), var(--py, 0)) scale(1) rotate(var(--rot, 0deg)); }
   @media (hover: none) { .preview { display: none; } }
 </style>
+
+<script>
+  function initStepper() {
+    const grid = document.querySelector<HTMLElement>('.work .grid');
+    const stepper = document.querySelector<HTMLElement>('.work .stepper');
+    if (!grid || !stepper) return;
+    const cards = [...grid.querySelectorAll<HTMLElement>('.card')];
+    const prev = stepper.querySelector<HTMLButtonElement>('[data-step="-1"]')!;
+    const next = stepper.querySelector<HTMLButtonElement>('[data-step="1"]')!;
+    const num = stepper.querySelector('b')!;
+    const current = () => {
+      let best = 0, bestD = Infinity;
+      cards.forEach((c, i) => { const d = Math.abs(c.offsetLeft - grid.offsetLeft - grid.scrollLeft - parseFloat(getComputedStyle(grid).paddingLeft)); if (d < bestD) { bestD = d; best = i; } });
+      return best;
+    };
+    const sync = () => {
+      const i = current();
+      num.textContent = String(i + 1);
+      prev.disabled = i === 0;
+      next.disabled = i === cards.length - 1;
+    };
+    const go = (to: number) => {
+      const c = cards[Math.max(0, Math.min(cards.length - 1, to))];
+      grid.scrollTo({ left: c.offsetLeft - grid.offsetLeft - parseFloat(getComputedStyle(grid).paddingLeft), behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    };
+    prev.addEventListener('click', () => go(current() - 1));
+    next.addEventListener('click', () => go(current() + 1));
+    let raf = 0;
+    grid.addEventListener('scroll', () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(sync); }, { passive: true });
+    sync();
+  }
+  document.addEventListener('astro:page-load', initStepper);
+</script>
