@@ -1,19 +1,13 @@
 ---
-interface Props { name: string }
-const { name } = Astro.props;
+const outer = 'M150 8C168 6 178 22 186 44C206 96 238 170 268 226C280 248 292 258 286 270C278 284 250 280 236 270C222 258 220 238 212 218C206 202 196 196 178 198C160 200 140 202 122 198C104 196 94 204 88 220C80 240 78 262 62 272C46 282 20 278 14 264C8 250 22 238 34 216C58 172 88 108 112 48C120 26 134 10 150 8Z';
+const counter = 'M150 66C140 90 126 124 116 146C112 156 120 160 134 160C152 160 168 160 182 158C192 156 190 148 184 136C174 114 160 88 150 66Z';
+const d = `${outer}${counter}`;
 ---
 
 <div class="loader" aria-hidden="true">
-  <div class="mark">
-    <svg class="smile" viewBox="0 0 24 24" width="56" height="56">
-      <circle cx="12" cy="12" r="11" />
-      <ellipse cx="8.5" cy="9.5" rx="1.5" ry="2" />
-      <ellipse cx="15.5" cy="9.5" rx="1.5" ry="2" />
-      <path d="M7 14.5c1.2 2.4 3 3.3 5 3.3s3.8-.9 5-3.3" stroke-linecap="round" />
-    </svg>
-    <svg class="word" viewBox="0 0 330 64" height="48">
-      <text x="0" y="48">{name}</text>
-    </svg>
+  <div class="loader__a">
+    <svg class="loader__fill" viewBox="0 0 300 282"><path d={d} fill-rule="evenodd" /></svg>
+    <svg class="loader__line" viewBox="0 0 300 282"><path d={d} fill-rule="evenodd" /></svg>
   </div>
 </div>
 
@@ -21,33 +15,42 @@ const { name } = Astro.props;
   .loader { display: none; }
   html.has-loader { overflow: hidden; }
   html.has-loader .loader {
-    position: fixed; inset: 0; z-index: 200; display: grid; place-items: center;
-    background: var(--accent); color: #fff;
-    animation: loader-sweep 800ms var(--ease) 1.6s forwards;
+    position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; overflow: hidden;
+    background: var(--accent);
+    animation: loader-ground 1.5s linear forwards;
   }
-  .loader .mark { display: flex; align-items: center; gap: 16px; }
-  .loader svg { overflow: visible; }
-  .loader .smile * { fill: none; stroke: #fff; stroke-width: 0.7; stroke-dasharray: 80; stroke-dashoffset: 80; animation: loader-draw 1.1s var(--ease) 0.15s forwards; }
-  .loader .smile path { stroke-width: 1.2; }
-  .loader .word text {
-    font: 500 52px/1 var(--sans, inherit); letter-spacing: -0.04em;
-    fill: transparent; stroke: #fff; stroke-width: 1; stroke-dasharray: 2000; stroke-dashoffset: 2000;
-    animation: loader-draw 1.3s var(--ease) 0.2s forwards, loader-fill 0.3s ease-out 1.3s forwards;
+  .loader__a {
+    position: relative; width: min(280px, 52vw); aspect-ratio: 300 / 282;
+    transform-origin: 50% 66%;
+    animation: loader-zoom 1.5s linear forwards;
   }
-  html.has-loader .brand-name { animation-delay: 1.9s; }
-  @keyframes loader-draw { to { stroke-dashoffset: 0; } }
-  @keyframes loader-fill { to { fill: #fff; } }
-  @keyframes loader-sweep { to { transform: translateY(-100%); } }
+  .loader__a svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .loader__line path { fill: none; stroke: var(--bg); stroke-width: 2px; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .loader__fill path { fill: var(--bg); }
+  .loader__fill { clip-path: inset(100% -2% -2%); animation: loader-fill 1.5s linear forwards; }
+  html.has-loader .brand-name { animation-delay: 1.3s; }
+
+  @keyframes loader-fill {
+    0%, 6.67% { clip-path: inset(100% -2% -2%); animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1); }
+    46.67%, 100% { clip-path: inset(-2%); }
+  }
+  @keyframes loader-zoom {
+    0%, 46.67% { transform: scale(1); animation-timing-function: cubic-bezier(0.7, 0, 0.84, 0); }
+    83.33%, 100% { transform: scale(60); }
+  }
+  @keyframes loader-ground {
+    0%, 73.33% { background-color: var(--accent); opacity: 1; visibility: visible; }
+    83.33% { background-color: var(--bg); opacity: 1; }
+    99.9% { visibility: visible; }
+    100% { background-color: var(--bg); opacity: 0; visibility: hidden; }
+  }
 </style>
 
 <script>
-  const done = () => {
-    try { sessionStorage.setItem('loaded', '1'); } catch {}
-    document.documentElement.classList.remove('has-loader');
-  };
+  const done = () => document.documentElement.classList.remove('has-loader');
   const el = document.querySelector('.loader');
   if (el && document.documentElement.classList.contains('has-loader')) {
-    el.addEventListener('animationend', (e) => { if ((e as AnimationEvent).animationName === 'loader-sweep') done(); });
+    el.addEventListener('animationend', (e) => { if ((e as AnimationEvent).animationName === 'loader-ground') done(); });
     setTimeout(done, 4000);
   }
 </script>
