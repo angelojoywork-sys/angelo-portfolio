@@ -85,3 +85,20 @@ export async function getSite() {
   const [site] = await getCollection('site');
   return site;
 }
+
+// A project's background colour becomes the page's palette: white or black ink, whichever reads better (WCAG contrast).
+export function themeVars(bg?: string | null): string | undefined {
+  const m = bg?.trim().match(/^#?([0-9a-f]{6})$/i);
+  if (!m) return undefined;
+  const lin = (c: number) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  const [r, g, b] = [0, 2, 4].map((i) => lin(parseInt(m[1].slice(i, i + 2), 16) / 255));
+  const L = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  // white whenever it passes AA (4.5:1), so mid-tone brand colours keep a light, airy ink
+  const ink = 1.05 / (L + 0.05) >= 4.5 ? '#ffffff' : '#000000';
+  const mix = (p: number) => `color-mix(in srgb, ${ink} ${p}%, #${m[1]})`;
+  return [
+    `--bg:#${m[1]}`, `--fg:${ink}`, `--muted:${mix(78)}`, `--faint:${mix(50)}`, `--line:${mix(22)}`,
+    `--surface:${mix(10)}`, `--raised:${mix(14)}`, `--accent:${ink}`, `--hover:${ink}`, `--electric:${ink}`,
+    `--accent-ink:#${m[1]}`, `--accent-glow:transparent`, `color-scheme:${ink === '#ffffff' ? 'dark' : 'light'}`,
+  ].join(';');
+}

@@ -10,6 +10,7 @@ disciplines: [graphic]
 cover: cover.jpeg
 order: 4
 note: "The brand's angled notch became the thread that ties every panel together."
+bg: "#315A51"
 ---
 
 NetZero Group is a leading provider of sustainable energy and decarbonisation solutions in Ireland, uniting specialist companies to deliver large-scale retrofits, solar installations, and advanced heating technologies. Partnering with businesses, local authorities, and residential property owners, NetZero Group drives Ireland's green transition by engineering high-efficiency systems that maximise energy performance and long-term reliability.

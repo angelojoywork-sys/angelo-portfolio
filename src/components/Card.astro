@@ -31,26 +31,61 @@ const sizes = '(max-width: 720px) 100vw, (max-width: 1200px) 30vw, 22vw';
   <p class="label tags">{item.data.type ?? item.data.disciplines.join(' · ')} · {item.data.year}</p>
 </a>
 
+<script>
+  // Cards lean toward the pointer (up to 6°) while lifted; they settle flat again on leave.
+  function bindTilt() {
+    if (!matchMedia('(hover: hover) and (min-width: 721px)').matches) return;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    document.querySelectorAll<HTMLElement>('.card').forEach((card) => {
+      const media = card.querySelector<HTMLElement>('.media');
+      if (!media || card.dataset.tilt) return;
+      card.dataset.tilt = '1';
+      media.addEventListener('pointermove', (e) => {
+        const r = media.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width - 0.5;
+        const y = (e.clientY - r.top) / r.height - 0.5;
+        card.classList.add('tilting');
+        media.style.setProperty('--rx', (x * 12).toFixed(2) + 'deg');
+        media.style.setProperty('--ry', (-y * 12).toFixed(2) + 'deg');
+      });
+      media.addEventListener('pointerleave', () => {
+        card.classList.remove('tilting');
+        media.style.removeProperty('--rx');
+        media.style.removeProperty('--ry');
+      });
+    });
+  }
+  document.addEventListener('astro:page-load', bindTilt);
+</script>
+
 <style>
   .card { display: flex; flex-direction: column; gap: 10px; outline: none; }
-  .media { aspect-ratio: 4 / 3; border-radius: 3px; transition: box-shadow var(--dur-2) var(--ease); }
+  .media {
+    aspect-ratio: 4 / 3; border-radius: 3px;
+    --rx: 0deg; --ry: 0deg; --lift: 0px;
+    transform: perspective(900px) rotateX(var(--ry)) rotateY(var(--rx)) translateY(var(--lift));
+    box-shadow: 0 0 0 transparent;
+    transition: transform var(--dur-3) var(--ease), box-shadow var(--dur-3) var(--ease);
+  }
+  /* while the pointer steers the tilt, follow it closely instead of lagging behind */
+  .card.tilting .media { transition: transform .12s linear, box-shadow var(--dur-3) var(--ease); }
   .media :global(img), .media video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform var(--dur-3) var(--ease), clip-path var(--dur-3) var(--ease); }
   .media .peek { clip-path: inset(0 0 0 100%); }
   .row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-top: 4px; }
-  .title { margin: 0; font-size: 15px; font-weight: 550; letter-spacing: -0.01em; }
+  .title { margin: 0; font-size: 18px; font-weight: 400; letter-spacing: -0.01em; }
   .title::after { content: ' →'; display: inline-block; opacity: 0; transform: translateX(-6px); transition: opacity var(--dur-1), transform var(--dur-2) var(--ease); color: var(--accent); }
   .sum { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.4; max-width: 40ch; }
   .tags { margin-top: 2px; }
 
   /* Hover, keyboard focus and the hero's "lit" state all read the same */
-  .card:is(:hover, :focus-visible, .lit) .media { box-shadow: 0 0 0 3px var(--bg), 0 0 0 4.5px var(--hover), 0 0 24px 2px var(--accent-glow); }
+  .card:is(:hover, :focus-visible, .lit) .media { --lift: -8px; box-shadow: 0 2px 4px rgb(0 0 0 / .06), 0 18px 36px -12px rgb(0 0 0 / .28); }
   .card:is(:hover, :focus-visible, .lit) .media .cover { transform: scale(1.04); }
   .card:is(:hover, :focus-visible, .lit) .title::after { opacity: 1; transform: none; }
   /* the second image peeks in only after a deliberate pause */
   .card:is(:hover, :focus-visible) .media .peek { clip-path: inset(0 0 0 0%); transition-delay: var(--dur-2); }
   /* Phones: no ring or hover effects; the deck in WorkIndex moves the cards */
   @media (max-width: 720px), (hover: none) {
-    .card:is(:hover, :focus-visible, .lit) .media { box-shadow: none; }
+    .card:is(:hover, :focus-visible, .lit) .media { --lift: 0px; --rx: 0deg; --ry: 0deg; box-shadow: none; }
     .card:is(:hover, :focus-visible, .lit) .media .cover { transform: none; }
     .card:is(:hover, :focus-visible) .media .peek { clip-path: inset(0 0 0 100%); }
     .card:is(:hover, :focus-visible, .lit) .title::after { opacity: 0; }
@@ -58,5 +93,6 @@ const sizes = '(max-width: 720px) 100vw, (max-width: 1200px) 30vw, 22vw';
   @media (max-width: 720px) {
     .card:active .media { transform: scale(.985); transition: transform var(--dur-1) var(--ease); }
   }
+  @media (prefers-reduced-motion: reduce) { .media { --rx: 0deg !important; --ry: 0deg !important; } }
 </style>
 

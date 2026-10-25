@@ -6,16 +6,18 @@ import Footer from '../components/Footer.astro';
 import Thinking from '../components/Thinking.astro';
 import Modals from '../components/Modals.astro';
 import Loader from '../components/Loader.astro';
-import { getSite } from '../lib/content';
+import { getSite, themeVars } from '../lib/content';
 
 interface Props {
   title?: string;
   description?: string;
   image?: string;
   page?: 'home' | 'work' | 'experiments' | 'info' | 'other';
+  /** a project's own background colour; the ink flips to white or black to stay readable */
+  theme?: string | null;
 }
 const site = await getSite();
-const { title, description = `${site.data.name} — ${site.data.role}.`, image, page = 'other' } = Astro.props;
+const { title, description = `${site.data.name} — ${site.data.role}.`, image, page = 'other', theme } = Astro.props;
 const fullTitle = title ? `${title} — ${site.data.name}` : `${site.data.name} · ${site.data.role}`;
 const ogImage = image ? new URL(image, Astro.site).href : undefined;
 ---
@@ -32,6 +34,7 @@ const ogImage = image ? new URL(image, Astro.site).href : undefined;
     {ogImage && <meta property="og:image" content={ogImage} />}
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="/fonts/RecklessNeue-Book.ttf" as="font" type="font/ttf" crossorigin />
     <ClientRouter />
     <script is:inline>
       function applyTheme() {
@@ -47,7 +50,7 @@ const ogImage = image ? new URL(image, Astro.site).href : undefined;
       document.addEventListener('astro:after-swap', () => { applyTheme(); document.documentElement.classList.add('nav', 'js'); });
     </script>
   </head>
-  <body data-page={page}>
+  <body data-page={page} data-themed={theme ? '' : undefined} style={themeVars(theme)}>
     <Loader name={site.data.name} />
     <Header page={page} />
     <slot name="full" />

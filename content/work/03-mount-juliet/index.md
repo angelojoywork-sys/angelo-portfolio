@@ -10,6 +10,7 @@ disciplines: [graphic]
 cover: cover.jpg
 order: 3
 note: "One template, three ratios, fifteen campaigns. The system did the heavy lifting."
+bg: "#373A36"
 ---
 
 Ireland’s premier 5-star luxury heritage resort, set across a magnificent 500-acre parkland in County Kilkenny. Home to a historic Georgian Manor House, contemporary country stays at Hunter’s Yard, a Jack Nicklaus Signature Golf Course, and the Michelin-starred Lady Helen restaurant, the estate is part of Marriott’s exclusive Autograph Collection.

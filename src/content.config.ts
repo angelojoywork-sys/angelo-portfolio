@@ -46,6 +46,8 @@ const entry = z.object({
   link: z.object({ label: z.string(), url: z.string() }).nullish(),
   embed: z.union([z.string(), z.array(z.string())]).nullish(),
   note: z.string().nullish(),
+  // background colour for the case study page, e.g. "#008765"
+  bg: z.string().nullish(),
   order: z.number().default(100),
   draft: z.boolean().default(false),
 });

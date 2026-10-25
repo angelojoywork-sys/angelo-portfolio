@@ -1,5 +1,10 @@
-@import '@fontsource-variable/geist';
-@import '@fontsource-variable/geist-mono';
+@font-face {
+  font-family: 'Reckless Neue';
+  src: url('/fonts/RecklessNeue-Book.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 
 :root {
   --bg: #f3f2ee;
@@ -10,13 +15,17 @@
   --faint: #a9a7a0;
   --line: #d9d7d0;
   --accent: #2F6BFF;
+  /* the loader curtain keeps the site colour even on a project page that recolours the rest */
+  --brand: var(--accent);
   --hover: var(--accent);
   --accent-glow: color-mix(in srgb, var(--accent) 35%, transparent);
   --accent-ink: #fff;
   --shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 8px 24px rgb(0 0 0 / 0.08);
 
-  --sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
-  --mono: 'Geist Mono Variable', ui-monospace, Menlo, monospace;
+  /* one face, one weight: hierarchy comes from size */
+  --sans: 'Reckless Neue', Georgia, 'Times New Roman', serif;
+  --mono: var(--sans);
+  --electric: #2B2BFF;
 
   --gutter: clamp(16px, 2.2vw, 32px);
   --header-h: 60px;
@@ -43,6 +52,7 @@
   --faint: #5b5a55;
   --line: #262624;
   --accent: #4D82FF;
+  --electric: #6B6BFF;
   --accent-glow: color-mix(in srgb, var(--accent) 45%, transparent);
   --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.5);
   color-scheme: dark;
@@ -57,6 +67,7 @@ body {
   font-family: var(--sans);
   font-size: 15px;
   line-height: 1.5;
+  font-synthesis: none;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -68,8 +79,8 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 
 .label {
   font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.02em;
+  font-size: 12px;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--muted);
   font-weight: 400;

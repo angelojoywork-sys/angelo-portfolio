@@ -28,21 +28,9 @@ disciplines:
   video: Video
   ai: AI
 
-# The hero text on the home page, one sentence (or phrase) per line.
-# "highlight" = which discipline lights up when someone hovers that sentence.
-# "key: true" = shown in full colour (use for your opening and closing lines).
+# The headline on the home page.
 intro:
-  - text: I'm Angelo, a brand and digital designer in Ireland.
-    key: true
-  - text: I make
-  - text: brands with purpose,
-    highlight: graphic
-  - text: screens that feel good to use,
-    highlight: digital
-  - text: and things that move.
-    highlight: [motion, video]
-  - text: Lately I'm building with AI to find better ways to make them.
-    highlight: ai
+  - text: Designer who listens, observes, and is fearlessly driven to create useful experiences through purposeful planning.
     key: true
 
 # Short headline shown in the Spatial view.

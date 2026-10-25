@@ -14,6 +14,6 @@ const { item, next, prev } = Astro.props as { item: Item; next: Item; prev: Item
 const og = item.cover?.kind === 'image' ? item.cover.image.src : undefined;
 ---
 
-<Base title={item.data.title} description={item.data.summary} image={og} page="experiments">
+<Base title={item.data.title} description={item.data.summary} image={og} page="experiments" theme={item.data.bg}>
   <Detail item={item} next={next} prev={prev} backLabel="All experiments" backHref="/experiments/" />
 </Base>

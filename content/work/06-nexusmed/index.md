@@ -9,6 +9,7 @@ tools: [Illustrator]
 disciplines: [graphic]
 cover: cover.jpg
 order: 6
+bg: "#1E205D"
 ---
 
 ![](01.jpg)

@@ -12,7 +12,7 @@ const experiments = await getItems('experiments');
 <Base page="home">
   <Spatial items={[...work, ...experiments]} slot="full" />
   <div class="home">
-    <div class="left"><Hero work={work} /></div>
+    <div class="left"><Hero /></div>
     <WorkIndex work={work} />
   </div>
 </Base>
@@ -49,87 +49,22 @@ const experiments = await getItems('experiments');
   }
   document.addEventListener('astro:after-swap', restoreLayout);
 
-  // Hero ⇄ work highlighting: hover a sentence to light up matching projects,
-  // hover a project to light up the sentences that describe it. Click to pin.
+  // Discipline chips filter the work: matching projects light up. Click a chip to pin it.
   function init() {
     const home = document.querySelector('.home');
     if (!home) return;
-    const sents = [...home.querySelectorAll<HTMLElement>('.sent[data-hl]')];
     const cards = [...home.querySelectorAll<HTMLElement>('.card, .lrow')];
     const chips = [...home.querySelectorAll<HTMLButtonElement>('.chip')];
     let pinned = '';
-    const phone = matchMedia('(max-width: 720px)');
-
-    // Phones: the first scroll draws the discipline underlines in sequence; back at the top they retract
-    if (phone.matches) {
-      const intro = home.querySelector<HTMLElement>('.intro');
-      let raf = 0;
-      const update = () => {
-        raf = 0;
-        // a little hysteresis so the lines don't flicker around the threshold
-        if (scrollY > 24) intro?.classList.add('ul-on');
-        else if (scrollY < 6) intro?.classList.remove('ul-on');
-      };
-      const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
-      window.addEventListener('scroll', onScroll, { passive: true });
-      document.addEventListener('astro:before-swap', () => window.removeEventListener('scroll', onScroll), { once: true });
-      update();
-    }
-
-    // Hovering the lead-in line hints that the sentences after it are interactive
-    const intro = home.querySelector<HTMLElement>('.intro');
-    sents.forEach((s, i) => s.style.setProperty('--n', String(i)));
-    home.querySelectorAll<HTMLElement>('.sent.lead').forEach((l) => {
-      l.addEventListener('pointerenter', () => intro?.classList.add('hint'));
-      l.addEventListener('pointerleave', () => intro?.classList.remove('hint'));
-    });
 
     const keysOf = (el: HTMLElement, attr: string) => (el.getAttribute(attr) || '').split(' ').filter(Boolean);
 
-    function apply(keys: string[]) {
-      const active = keys.length > 0;
-      home!.classList.toggle('hl-active', active);
-      cards.forEach((c) => {
-        const match = keysOf(c, 'data-disc').some((k) => keys.includes(k));
-        c.classList.toggle('lit', active && match);
-      });
-      sents.forEach((s) => s.classList.toggle('on', active && keysOf(s, 'data-hl').some((k) => keys.includes(k))));
-    }
-    const reset = () => apply(pinned ? [pinned] : []);
-
     function pin(key: string) {
       pinned = pinned === key ? '' : key;
-      sents.forEach((s) => s.setAttribute('aria-pressed', String(!!pinned && keysOf(s, 'data-hl').includes(pinned))));
       chips.forEach((c) => c.setAttribute('aria-pressed', String((c.dataset.filter || '') === pinned)));
-      reset();
+      home!.classList.toggle('hl-active', !!pinned);
+      cards.forEach((c) => c.classList.toggle('lit', !!pinned && keysOf(c, 'data-disc').includes(pinned)));
     }
-
-    // On phones a tap on the headline does nothing special (links still navigate)
-    sents.forEach((s) => {
-      if (phone.matches) { s.removeAttribute('role'); s.removeAttribute('tabindex'); s.removeAttribute('aria-pressed'); return; }
-      const keys = keysOf(s, 'data-hl');
-      s.addEventListener('pointerenter', () => apply(keys));
-      s.addEventListener('focus', () => apply(keys));
-      s.addEventListener('pointerleave', reset);
-      s.addEventListener('blur', reset);
-      if (s.classList.contains('pick')) {
-        s.addEventListener('click', () => pin(keys[0]));
-        s.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pin(keys[0]); }
-        });
-      }
-    });
-
-    cards.forEach((c) => {
-      if (phone.matches) return;
-      c.addEventListener('pointerenter', () => {
-        if (pinned) return;
-        const keys = keysOf(c, 'data-disc');
-        sents.forEach((s) => s.classList.toggle('on', keysOf(s, 'data-hl').some((k) => keys.includes(k))));
-        home!.classList.add('hl-active');
-      });
-      c.addEventListener('pointerleave', reset);
-    });
 
     // "All" clears the pin (pinning the current key again toggles it off)
     chips.forEach((c) => c.addEventListener('click', () => pin(c.dataset.filter || pinned)));
