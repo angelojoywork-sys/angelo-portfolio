@@ -489,9 +489,7 @@ const legend = Object.entries(site.data.disciplines)
       } else tip.classList.remove('show');
     }
 
-    // the clicked node morphs into the case study's hero image
     function open(i: number) {
-      els[i].style.viewTransitionName = 'media-' + data[i].slug.replace('/', '-');
       navigate(data[i].url);
     }
 

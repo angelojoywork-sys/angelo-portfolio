@@ -25,7 +25,6 @@ const disc = d.disciplines.map((k) => site.data.disciplines[k] ?? k);
 const embeds = ([] as string[]).concat(d.embed ?? []);
 const cover = item.cover;
 const media: Media[] = item.gallery;
-const morph = `media-${item.kind}-${item.slug}`;
 ---
 
 <article class="detail">
@@ -42,7 +41,7 @@ const morph = `media-${item.kind}-${item.slug}`;
   </header>
 
   {cover && (
-    <figure class="frame hero" data-hero transition:name={morph}>
+    <figure class="frame hero" data-hero>
       {cover.kind === 'image' ? (
         <Image
           src={cover.image}

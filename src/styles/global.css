@@ -27,7 +27,10 @@
   /* page transitions: one set of timings for every route change, forward or back */
   --vt-out: .18s;
   --vt-in: .32s;
-  --vt-morph: .48s;
+  /* project sheet: fast lift, long soft settle */
+  --vt-sheet: .5s;
+  --ease-sheet-in: cubic-bezier(.24, 1, .29, 1);
+  --ease-sheet-out: cubic-bezier(.24, 1, .22, 1);
   color-scheme: light;
 }
 
@@ -84,26 +87,22 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .frame { background: var(--surface); overflow: hidden; position: relative; }
 .frame img, .frame video { width: 100%; height: 100%; object-fit: cover; }
 
-/* Page transitions: morphing media crops to fit instead of stretching between ratios */
-::view-transition-old(*), ::view-transition-new(*) { height: 100%; object-fit: cover; }
-/* Every moving group (the morphing media, the page) shares one curve and the morph duration */
-::view-transition-group(*) { animation-duration: var(--vt-morph); animation-timing-function: var(--ease); }
-/* The page group finishes together with its fade, so its box never keeps resizing under the new content */
-::view-transition-group(page) { animation-duration: calc(var(--vt-in) + 60ms); }
-/* Whatever isn't named (footer, background) cross-fades with the page content instead of on the browser's own clock */
-::view-transition-old(root), ::view-transition-new(root) { animation-duration: var(--vt-in); animation-timing-function: var(--ease); }
+/* Page transitions: the whole page is one layer (only the header is named, and it holds still) */
 @keyframes page-out { to { opacity: 0; } }
 @keyframes page-in { from { opacity: 0; } }
-/* Named media that exists on only one side of the swap (the other cards) fades with the page, not on its own faster clock */
-::view-transition-new(*):only-child { animation: page-in var(--vt-in) var(--ease) 60ms both !important; }
-::view-transition-old(*):only-child { animation: page-out var(--vt-out) ease-out both !important; }
-/* Phones: a short sideways drift on the page content only (the morphing media stays put) */
-@keyframes page-out-m { to { opacity: 0; transform: translateX(-14px); } }
-@keyframes page-in-m { from { opacity: 0; transform: translateX(14px); } }
-@media (max-width: 720px) {
-  ::view-transition-old(page) { animation: page-out-m var(--vt-out) ease-out both !important; }
-  ::view-transition-new(page) { animation: page-in-m var(--vt-in) var(--ease) 60ms both !important; }
-}
+::view-transition-old(root) { animation: page-out var(--vt-out) ease-out both; }
+::view-transition-new(root) { animation: page-in var(--vt-in) var(--ease) 60ms both; }
+
+/* Into a project: the page behind dims while the case study is revealed from the bottom edge up; the content itself never moves */
+@keyframes vt-wipe-in { from { clip-path: inset(100% 0 0 0); } to { clip-path: inset(0); } }
+/* Out of a project: the sheet retracts upward off the page underneath, which brightens back */
+@keyframes vt-wipe-out { from { clip-path: inset(0); } to { clip-path: inset(0 0 100% 0); } }
+@keyframes vt-dim { to { filter: brightness(.85); } }
+@keyframes vt-undim { from { filter: brightness(.85); } }
+html[data-vt='sheet-in']::view-transition-old(root) { animation: vt-dim var(--vt-sheet) var(--ease-sheet-in) both; }
+html[data-vt='sheet-in']::view-transition-new(root) { animation: vt-wipe-in var(--vt-sheet) var(--ease-sheet-in) both; }
+html[data-vt='sheet-out']::view-transition-new(root) { animation: vt-undim var(--vt-sheet) var(--ease-sheet-out) both; }
+html[data-vt='sheet-out']::view-transition-old(root) { z-index: 1; animation: vt-wipe-out var(--vt-sheet) var(--ease-sheet-out) both; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }

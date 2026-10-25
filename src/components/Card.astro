@@ -14,7 +14,7 @@ const sizes = '(max-width: 720px) 100vw, (max-width: 1200px) 30vw, 22vw';
   data-disc={item.data.disciplines.join(' ')}
   data-card-note={showNote ? item.data.note : undefined}
 >
-  <div class="frame media" transition:name={`media-${item.kind}-${item.slug}`}>
+  <div class="frame media">
     {item.cover?.kind === 'image' && (
       <Image src={item.cover.image} alt={item.data.title} widths={[480, 800, 1200]} sizes={sizes} loading={eager ? 'eager' : 'lazy'} class="cover" />
     )}
@@ -58,17 +58,5 @@ const sizes = '(max-width: 720px) 100vw, (max-width: 1200px) 30vw, 22vw';
   @media (max-width: 720px) {
     .card:active .media { transform: scale(.985); transition: transform var(--dur-1) var(--ease); }
   }
-  /* settle the frame before the page morph captures it: ring fades, zoom eases back, the peek image tucks away */
-  .card.leaving .media { box-shadow: none; transition: box-shadow var(--dur-1) var(--ease); }
-  .card.leaving .media .cover { transform: none; transition: transform var(--dur-1) var(--ease); }
-  .card.leaving .media .peek { clip-path: inset(0 0 0 100%); transition: clip-path var(--dur-1) var(--ease); transition-delay: 0s; }
 </style>
 
-<script>
-  document.addEventListener('click', (e) => {
-    const c = (e.target as HTMLElement).closest<HTMLElement>('.card');
-    if (c && !(e.metaKey || e.ctrlKey || e.shiftKey)) c.classList.add('leaving');
-  });
-  document.addEventListener('astro:after-swap', () => document.querySelectorAll('.card.leaving').forEach((c) => c.classList.remove('leaving')));
-  window.addEventListener('pageshow', () => document.querySelectorAll('.card.leaving').forEach((c) => c.classList.remove('leaving')));
-</script>

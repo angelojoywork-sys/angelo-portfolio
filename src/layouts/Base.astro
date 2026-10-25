@@ -18,13 +18,6 @@ const site = await getSite();
 const { title, description = `${site.data.name} — ${site.data.role}.`, image, page = 'other' } = Astro.props;
 const fullTitle = title ? `${title} — ${site.data.name}` : `${site.data.name} · ${site.data.role}`;
 const ogImage = image ? new URL(image, Astro.site).href : undefined;
-
-// Page content: a quick fade out, then a calm fade in
-const calm = {
-  old: { name: 'page-out', duration: '180ms', easing: 'ease-out', fillMode: 'both' },
-  new: { name: 'page-in', duration: '320ms', easing: 'cubic-bezier(0.2, 0.7, 0.1, 1)', delay: '60ms', fillMode: 'both' },
-};
-const calmAnim = { forwards: calm, backwards: calm };
 ---
 
 <!doctype html>
@@ -59,7 +52,7 @@ const calmAnim = { forwards: calm, backwards: calm };
     <Header page={page} />
     <slot name="full" />
     <div class="page">
-      <main id="main" transition:name="page" transition:animate={calmAnim}>
+      <main id="main">
         <slot />
       </main>
       <Footer />
@@ -67,25 +60,32 @@ const calmAnim = { forwards: calm, backwards: calm };
     <Thinking />
     <Modals />
     <script>
-      // Hold the swap (briefly) until the image the morph lands on is decoded, in either direction:
-      // going in it is the case study's hero, coming back it is the card of the project we just left.
-      // That way the frame always morphs into a picture, never a blank placeholder.
+      // Project pages open as a sheet: the case study wipes up from the bottom over the dimmed page behind it,
+      // and leaving one retracts the sheet upward. Every other route change keeps the plain cross-fade.
+      const isProject = (p: string) => /^\/(work|experiments)\/[^/]+\/?$/.test(p);
+      let vt = '';
       document.addEventListener('astro:before-preparation', (e) => {
+        const into = isProject(e.to.pathname);
+        const from = isProject(e.from.pathname);
+        vt = into && (e.direction !== 'back' || !from) ? 'sheet-in' : from ? 'sheet-out' : '';
+        document.documentElement.dataset.vt = vt;
+
+        // Going in, give the hero a short moment to decode so the sheet usually rises with its picture,
+        // but never long enough for the click to feel slow
+        if (vt !== 'sheet-in') return;
         const load = e.loader;
         e.loader = async () => {
           await load();
-          const next = e.newDocument;
-          const left = document.querySelector<HTMLElement>('[data-hero]')?.style.viewTransitionName;
-          const img =
-            next?.querySelector<HTMLImageElement>('[data-hero] img') ??
-            (left ? [...(next?.querySelectorAll<HTMLElement>('.card .media') ?? [])].find((m) => m.style.viewTransitionName === left)?.querySelector<HTMLImageElement>('img.cover') : undefined);
-          // a beat for the clicked card to settle (ring, zoom) so the morph starts from a clean frame
-          const settle = document.querySelector('.card.leaving') ? new Promise((r) => setTimeout(r, 140)) : Promise.resolve();
-          const ready = img
-            ? (() => { const pre = new Image(); pre.sizes = img.sizes; pre.srcset = img.srcset; pre.src = img.src; return pre.decode().catch(() => {}); })()
-            : Promise.resolve();
-          await Promise.all([settle, Promise.race([ready, new Promise((r) => setTimeout(r, 450))])]);
+          const img = e.newDocument?.querySelector<HTMLImageElement>('[data-hero] img');
+          if (!img) return;
+          const pre = new Image(); pre.sizes = img.sizes; pre.srcset = img.srcset; pre.src = img.src;
+          await Promise.race([pre.decode().catch(() => {}), new Promise((r) => setTimeout(r, 200))]);
         };
+      });
+      // the swap replaces <html>'s attributes; put the mode back before the new page is captured, and drop it once it has played
+      document.addEventListener('astro:after-swap', () => { if (vt) document.documentElement.dataset.vt = vt; });
+      document.addEventListener('astro:before-swap', (e) => {
+        e.viewTransition?.finished.finally(() => { vt = ''; delete document.documentElement.dataset.vt; });
       });
 
       // Remember which path sits at each history index, so "Back to index" knows whether stepping back really lands on the home page.
