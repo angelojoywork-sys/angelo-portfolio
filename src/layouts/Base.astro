@@ -5,6 +5,7 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import Thinking from '../components/Thinking.astro';
 import Modals from '../components/Modals.astro';
+import Loader from '../components/Loader.astro';
 import { getSite } from '../lib/content';
 
 interface Props {
@@ -45,6 +46,8 @@ const calmAnim = { forwards: calm, backwards: calm };
         try { document.documentElement.classList.toggle('thinking', localStorage.getItem('thinking') === '1'); } catch {}
       }
       try { localStorage.removeItem('theme'); } catch {}
+      // first load of a visit: show the intro curtain (not for reduced motion)
+      try { if (!sessionStorage.getItem('loaded') && !matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('has-loader'); } catch {}
       applyTheme();
       document.documentElement.classList.add('js');
       // a swap replaces <html>'s attributes, so restore them; "nav" marks every page after the first
@@ -52,6 +55,7 @@ const calmAnim = { forwards: calm, backwards: calm };
     </script>
   </head>
   <body data-page={page}>
+    <Loader name={site.data.name} />
     <Header page={page} />
     <slot name="full" />
     <div class="page">

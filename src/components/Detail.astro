@@ -120,10 +120,10 @@ const morph = `media-${item.kind}-${item.slug}`;
   .title { margin: 12px 0 0; font-size: clamp(40px, 6.4vw, 88px); line-height: 0.98; letter-spacing: -0.05em; font-weight: 450; text-wrap: balance; }
   .lede { margin: 16px 0 0; max-width: 40ch; color: var(--fg); font-size: 19px; line-height: 1.45; letter-spacing: -0.01em; }
 
-  /* Editorial 4 / 8 split: labels in the margin, text in the wide column, media full width */
-  .meta, .story { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); column-gap: var(--gutter); }
+  /* One column: text shares its left and right edges with the media */
+  .meta, .story { display: grid; grid-template-columns: minmax(0, 1fr); }
   .meta { margin: 40px 0 0; padding-top: 24px; border-top: 1px solid var(--line); row-gap: 16px; }
-  .meta > div { grid-column: 2; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 16px; }
+  .meta > div { grid-column: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 16px; }
   .meta dt { font-weight: 550; font-size: 14px; }
   .meta dd { margin: 0; color: var(--muted); font-size: 14px; }
 
@@ -131,10 +131,9 @@ const morph = `media-${item.kind}-${item.slug}`;
   .hero :global(img), .hero video { width: 100%; height: 100%; object-fit: cover; }
 
   .story { color: var(--muted); font-size: 17px; line-height: 1.6; margin-bottom: clamp(24px, 4vw, 48px); align-items: start; }
-  .story > :global(*) { grid-column: 2; }
+  .story > :global(*) { grid-column: 1; }
   .story > :global(:is(h2, h3)) {
-    grid-column: 1; position: sticky; top: calc(var(--header-h) + 24px);
-    margin: 0.35em 0 1em; font: 400 11px/1.4 var(--mono); letter-spacing: 0.02em; text-transform: uppercase; color: var(--fg);
+    margin: 1.5em 0 0.6em; font: 400 11px/1.4 var(--mono); letter-spacing: 0.02em; text-transform: uppercase; color: var(--fg);
   }
   .story :global(p) { margin: 0 0 1em; }
   .story :global(a) { color: var(--fg); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--faint); transition: text-decoration-color var(--dur-1); }
@@ -149,9 +148,6 @@ const morph = `media-${item.kind}-${item.slug}`;
   .ext { display: inline-flex; gap: 6px; font-weight: 550; text-decoration: none !important; border-bottom: 1px solid var(--fg); padding-bottom: 1px; }
 
   @media (max-width: 760px) {
-    .meta, .story { grid-template-columns: minmax(0, 1fr); }
-    .story > :global(*), .meta > div { grid-column: 1; }
-    .story > :global(:is(h2, h3)) { position: static; margin: 1.5em 0 0.6em; }
     .story { font-size: 16px; }
   }
 
