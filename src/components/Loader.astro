@@ -1,56 +1,73 @@
 ---
-const outer = 'M150 8C168 6 178 22 186 44C206 96 238 170 268 226C280 248 292 258 286 270C278 284 250 280 236 270C222 258 220 238 212 218C206 202 196 196 178 198C160 200 140 202 122 198C104 196 94 204 88 220C80 240 78 262 62 272C46 282 20 278 14 264C8 250 22 238 34 216C58 172 88 108 112 48C120 26 134 10 150 8Z';
-const counter = 'M150 66C140 90 126 124 116 146C112 156 120 160 134 160C152 160 168 160 182 158C192 156 190 148 184 136C174 114 160 88 150 66Z';
-const d = `${outer}${counter}`;
+interface Props { name: string }
+const { name } = Astro.props;
 ---
 
 <div class="loader" aria-hidden="true">
-  <div class="loader__a">
-    <svg class="loader__fill" viewBox="0 0 300 282"><path d={d} fill-rule="evenodd" /></svg>
-    <svg class="loader__line" viewBox="0 0 300 282"><path d={d} fill-rule="evenodd" /></svg>
-  </div>
+  <span class="loader__a">{name.charAt(0)}</span>
 </div>
 
 <style is:global>
   .loader { display: none; }
   html.has-loader { overflow: hidden; }
   html.has-loader .loader {
-    position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; overflow: hidden;
-    background: var(--accent);
-    animation: loader-ground 1.5s linear forwards;
+    position: fixed; inset: 0; z-index: 200; display: block; background: var(--accent); overflow: hidden;
   }
+  /* same face, weight and spacing as the header brand, so the letter can land on it exactly */
   .loader__a {
-    position: relative; width: min(280px, 52vw); aspect-ratio: 300 / 282;
-    transform-origin: 50% 66%;
-    animation: loader-zoom 1.5s linear forwards;
-  }
-  .loader__a svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-  .loader__line path { fill: none; stroke: var(--bg); stroke-width: 2px; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
-  .loader__fill path { fill: var(--bg); }
-  .loader__fill { clip-path: inset(100% -2% -2%); animation: loader-fill 1.5s linear forwards; }
-  html.has-loader .brand-name { animation-delay: 1.3s; }
-
-  @keyframes loader-fill {
-    0%, 6.67% { clip-path: inset(100% -2% -2%); animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1); }
-    46.67%, 100% { clip-path: inset(-2%); }
-  }
-  @keyframes loader-zoom {
-    0%, 46.67% { transform: scale(1); animation-timing-function: cubic-bezier(0.7, 0, 0.84, 0); }
-    83.33%, 100% { transform: scale(60); }
-  }
-  @keyframes loader-ground {
-    0%, 73.33% { background-color: var(--accent); opacity: 1; visibility: visible; }
-    83.33% { background-color: var(--bg); opacity: 1; }
-    99.9% { visibility: visible; }
-    100% { background-color: var(--bg); opacity: 0; visibility: hidden; }
+    position: absolute; top: 0; left: 0; transform-origin: 0 0; white-space: nowrap;
+    font-family: var(--sans); font-weight: 550; letter-spacing: -0.01em; line-height: 1.5;
+    font-size: clamp(180px, 40vw, 380px); color: #fff; opacity: 0;
+    will-change: transform, filter, opacity;
   }
 </style>
 
 <script>
-  const done = () => document.documentElement.classList.remove('has-loader');
-  const el = document.querySelector('.loader');
-  if (el && document.documentElement.classList.contains('has-loader')) {
-    el.addEventListener('animationend', (e) => { if ((e as AnimationEvent).animationName === 'loader-ground') done(); });
+  const root = document.documentElement;
+  const loader = document.querySelector<HTMLElement>('.loader');
+  const letter = document.querySelector<HTMLElement>('.loader__a');
+
+  // Timeline (ms): the letter eases in, holds, then travels to the header brand while the curtain lifts.
+  const ENTER = 420, HOLD = 850, FLY = 850, REST = 1450;
+  const OUT = 'cubic-bezier(0.2, 0.7, 0.1, 1)';
+  const IN_OUT = 'cubic-bezier(0.65, 0, 0.35, 1)';
+
+  const done = () => root.classList.remove('has-loader');
+
+  async function play() {
+    if (!loader || !letter) return done();
+    try { await document.fonts.ready; } catch {}
+    const target = document.querySelector<HTMLElement>('.brand-init');
+    if (!target) return done();
+
+    const a = letter.getBoundingClientRect();
+    const t = target.getBoundingClientRect();
+    const cx = (innerWidth - a.width) / 2, cy = (innerHeight - a.height) / 2;
+    const scale = t.height / a.height;
+    const ink = getComputedStyle(document.body).color;
+    const at = (x: number, y: number, s: number) => `translate(${x}px, ${y}px) scale(${s})`;
+    const total = HOLD + FLY;
+
+    const move = letter.animate([
+      { transform: at(cx, cy, 0.92), opacity: 0, filter: 'blur(14px)', color: '#fff', easing: OUT },
+      { offset: ENTER / total, transform: at(cx, cy, 1), opacity: 1, filter: 'blur(0px)', color: '#fff' },
+      { offset: HOLD / total, transform: at(cx, cy, 1), opacity: 1, filter: 'blur(0px)', color: '#fff', easing: IN_OUT },
+      { transform: at(t.left, t.top, scale), opacity: 1, filter: 'blur(0px)', color: ink },
+    ], { duration: total, fill: 'forwards' });
+
+    loader.animate(
+      [{ backgroundColor: getComputedStyle(loader).backgroundColor }, { backgroundColor: 'rgba(0, 0, 0, 0)' }],
+      { delay: HOLD, duration: FLY * 0.8, easing: IN_OUT, fill: 'forwards' },
+    );
+
+    // the rest of the name rises in just before the letter lands
+    setTimeout(() => root.classList.add('loader-rest'), REST);
+    try { await move.finished; } catch {}
+    done();
+  }
+
+  if (root.classList.contains('has-loader')) {
+    play();
     setTimeout(done, 4000);
   }
 </script>

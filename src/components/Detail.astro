@@ -102,11 +102,16 @@ const morph = `media-${item.kind}-${item.slug}`;
 </article>
 
 <script>
-  // Back to the index: step through history when we came from it, so the scroll position is restored
+  // Back to the index: when the entry just before this one is the home page, step back through history
+  // (same transition and restored scroll as the browser's own Back); otherwise navigate there normally.
   document.addEventListener('click', (e) => {
     const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('.detail .back');
     if (!a || e.metaKey || e.ctrlKey || e.shiftKey || a.getAttribute('href') !== '/#index') return;
-    if (history.length > 1 && document.referrer.startsWith(location.origin)) { e.preventDefault(); history.back(); }
+    try {
+      const i = history.state?.index;
+      const trail = JSON.parse(sessionStorage.getItem('trail') || '{}');
+      if (typeof i === 'number' && i > 0 && trail[i - 1] === '/') { e.preventDefault(); history.back(); }
+    } catch {}
   });
 </script>
 

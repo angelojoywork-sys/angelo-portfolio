@@ -21,8 +21,8 @@ const ogImage = image ? new URL(image, Astro.site).href : undefined;
 
 // Page content: a quick fade out, then a calm fade in
 const calm = {
-  old: { name: 'page-out', duration: '150ms', easing: 'ease-out', fillMode: 'both' },
-  new: { name: 'page-in', duration: '300ms', easing: 'cubic-bezier(0.2, 0.7, 0.1, 1)', delay: '60ms', fillMode: 'both' },
+  old: { name: 'page-out', duration: '180ms', easing: 'ease-out', fillMode: 'both' },
+  new: { name: 'page-in', duration: '320ms', easing: 'cubic-bezier(0.2, 0.7, 0.1, 1)', delay: '60ms', fillMode: 'both' },
 };
 const calmAnim = { forwards: calm, backwards: calm };
 ---
@@ -55,7 +55,7 @@ const calmAnim = { forwards: calm, backwards: calm };
     </script>
   </head>
   <body data-page={page}>
-    <Loader />
+    <Loader name={site.data.name} />
     <Header page={page} />
     <slot name="full" />
     <div class="page">
@@ -67,20 +67,48 @@ const calmAnim = { forwards: calm, backwards: calm };
     <Thinking />
     <Modals />
     <script>
-      // Hold the swap (briefly) until the case study's hero image is decoded,
-      // so the card morphs into a picture rather than a blank frame.
+      // Hold the swap (briefly) until the image the morph lands on is decoded, in either direction:
+      // going in it is the case study's hero, coming back it is the card of the project we just left.
+      // That way the frame always morphs into a picture, never a blank placeholder.
       document.addEventListener('astro:before-preparation', (e) => {
         const load = e.loader;
         e.loader = async () => {
           await load();
-          const img = e.newDocument?.querySelector<HTMLImageElement>('[data-hero] img');
-          if (!img) return;
-          const pre = new Image();
-          pre.sizes = img.sizes;
-          pre.srcset = img.srcset;
-          pre.src = img.src;
-          await Promise.race([pre.decode().catch(() => {}), new Promise((r) => setTimeout(r, 600))]);
+          const next = e.newDocument;
+          const left = document.querySelector<HTMLElement>('[data-hero]')?.style.viewTransitionName;
+          const img =
+            next?.querySelector<HTMLImageElement>('[data-hero] img') ??
+            (left ? [...(next?.querySelectorAll<HTMLElement>('.card .media') ?? [])].find((m) => m.style.viewTransitionName === left)?.querySelector<HTMLImageElement>('img.cover') : undefined);
+          // a beat for the clicked card to settle (ring, zoom) so the morph starts from a clean frame
+          const settle = document.querySelector('.card.leaving') ? new Promise((r) => setTimeout(r, 140)) : Promise.resolve();
+          const ready = img
+            ? (() => { const pre = new Image(); pre.sizes = img.sizes; pre.srcset = img.srcset; pre.src = img.src; return pre.decode().catch(() => {}); })()
+            : Promise.resolve();
+          await Promise.all([settle, Promise.race([ready, new Promise((r) => setTimeout(r, 450))])]);
         };
+      });
+
+      // Remember which path sits at each history index, so "Back to index" knows whether stepping back really lands on the home page.
+      const remember = () => {
+        try {
+          const i = history.state?.index;
+          if (typeof i !== 'number') return;
+          const map = JSON.parse(sessionStorage.getItem('trail') || '{}');
+          map[i] = location.pathname;
+          sessionStorage.setItem('trail', JSON.stringify(map));
+        } catch {}
+      };
+      document.addEventListener('astro:page-load', remember);
+
+      // The persistent-looking chrome is rebuilt on every swap; hand the new copy the old state so nothing blips.
+      document.addEventListener('astro:before-swap', (e) => {
+        const next = e.newDocument;
+        const from = document.querySelector<HTMLElement>('.views');
+        const to = next.querySelector<HTMLElement>('.views');
+        if (from && to) ['--o', '--w', '--x'].forEach((k) => { const v = from.style.getPropertyValue(k); if (v) to.style.setProperty(k, v); });
+        const clock = document.querySelector('.clock');
+        const nextClock = next.querySelector('.clock');
+        if (clock && nextClock) nextClock.textContent = clock.textContent;
       });
     </script>
   </body>

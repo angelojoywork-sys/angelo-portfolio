@@ -58,8 +58,10 @@ const sizes = '(max-width: 720px) 100vw, (max-width: 1200px) 30vw, 22vw';
   @media (max-width: 720px) {
     .card:active .media { transform: scale(.985); transition: transform var(--dur-1) var(--ease); }
   }
-  /* drop the ring before the page morph captures the frame */
-  .card.leaving .media { box-shadow: none; transition: none; }
+  /* settle the frame before the page morph captures it: ring fades, zoom eases back, the peek image tucks away */
+  .card.leaving .media { box-shadow: none; transition: box-shadow var(--dur-1) var(--ease); }
+  .card.leaving .media .cover { transform: none; transition: transform var(--dur-1) var(--ease); }
+  .card.leaving .media .peek { clip-path: inset(0 0 0 100%); transition: clip-path var(--dur-1) var(--ease); transition-delay: 0s; }
 </style>
 
 <script>

@@ -32,7 +32,7 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
   </div>
 
   <div class="grid">
-    {work.map((item, i) => <Card item={item} eager={i < 4} />)}
+    {work.map((item) => <Card item={item} eager />)}
   </div>
 
   <ol class="list" hidden>
@@ -136,7 +136,10 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
     const next = stepper.querySelector<HTMLButtonElement>('[data-step="1"]')!;
     const strip = stepper.querySelector<HTMLElement>('.strip')!;
     const bar = stepper.querySelector<HTMLElement>('.progress i')!;
-    let index = 0, drag = 0, width = 1, settle = true;
+    // coming back from a project lands on the card you left, not on the first one
+    let saved = 0;
+    try { saved = Number(sessionStorage.getItem('deck')) || 0; } catch {}
+    let index = Math.min(Math.max(saved, 0), N - 1), drag = 0, width = 1, settle = true;
     const ac = new AbortController();
     const sig = { signal: ac.signal };
     document.addEventListener('astro:before-swap', () => ac.abort(), { once: true });
@@ -170,6 +173,7 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
       bar.style.setProperty('--p', ((index + 1) / N).toFixed(3));
       prev.disabled = index === 0;
       next.disabled = index === N - 1;
+      try { sessionStorage.setItem('deck', String(index)); } catch {}
     }
 
     function measure() { width = grid.clientWidth || 1; }

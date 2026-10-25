@@ -35,6 +35,20 @@ const experiments = await getItems('experiments');
 </style>
 
 <script>
+  // The saved grid / list choice is applied as the new page is swapped in, before it is first painted,
+  // so coming back never flashes the wrong layout (or changes height under the restored scroll).
+  function restoreLayout() {
+    let saved = '';
+    try { saved = localStorage.getItem('layout') || ''; } catch {}
+    const grid = document.querySelector<HTMLElement>('.home .grid');
+    const list = document.querySelector<HTMLElement>('.home .list');
+    if (!grid || !list || saved !== 'list') return;
+    grid.hidden = true;
+    list.hidden = false;
+    document.querySelectorAll<HTMLButtonElement>('.home [data-layout]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.layout === 'list')));
+  }
+  document.addEventListener('astro:after-swap', restoreLayout);
+
   // Hero ⇄ work highlighting: hover a sentence to light up matching projects,
   // hover a project to light up the sentences that describe it. Click to pin.
   function init() {
