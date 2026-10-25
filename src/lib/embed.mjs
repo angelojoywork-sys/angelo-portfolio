@@ -9,6 +9,16 @@ export function embedUrl(url) {
 }
 
 export const isVideoUrl = (url) => /youtube\.com|youtu\.be|vimeo\.com/.test(url);
+export const isLinkedInUrl = (url) => /linkedin\.com\/(?:embed\/)?feed\/update\/urn:li:/.test(url);
+
+// LinkedIn posts: several links in one paragraph become a grid of portrait cards
+export function linkedInHtml(urls) {
+  const items = urls.map((u, i) => {
+    const urn = u.match(/urn:li:\w+:\d+/)[0];
+    return `<iframe src="https://www.linkedin.com/embed/feed/update/${urn}?collapsed=1" title="LinkedIn post ${i + 1}" loading="lazy"></iframe>`;
+  });
+  return `<figure class="embed-linkedin">${items.join('')}</figure>`;
+}
 
 export function embedHtml(url, title = 'Video') {
   return `<figure class="embed"><iframe src="${embedUrl(url)}" title="${title}" loading="lazy" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></figure>`;

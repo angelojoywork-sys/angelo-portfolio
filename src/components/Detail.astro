@@ -143,11 +143,13 @@ const media: Media[] = item.gallery;
   .story :global(a) { color: var(--fg); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--faint); transition: text-decoration-color var(--dur-1); }
   .story :global(a:hover) { text-decoration-color: var(--hover); }
   .story :global(ul) { padding-left: 1.2em; margin: 0 0 1em; }
-  .story > :global(:is(p:has(img), figure, .embed)) { grid-column: 1 / -1; margin: clamp(24px, 4vw, 48px) 0; }
+  .story > :global(:is(p:has(img), figure, .embed, .embed-linkedin)) { grid-column: 1 / -1; margin: clamp(24px, 4vw, 48px) 0; }
   .story > :global(p:has(img) + p:has(img)) { margin-top: 0; }
   .story :global(img) { width: 100%; height: auto; border-radius: 2px; background: var(--surface); animation: img-in var(--dur-3) var(--ease) both; }
   .story :global(.embed) { aspect-ratio: 16 / 9; background: var(--surface); border-radius: 2px; overflow: hidden; }
   .story :global(.embed iframe) { width: 100%; height: 100%; border: 0; display: block; }
+  .story :global(.embed-linkedin) { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 16px; }
+  .story :global(.embed-linkedin iframe) { width: 100%; height: 640px; border: 0; border-radius: 2px; background: var(--surface); }
   @keyframes img-in { from { opacity: 0; } }
   .ext { display: inline-flex; gap: 6px; font-weight: 550; text-decoration: none !important; border-bottom: 1px solid var(--fg); padding-bottom: 1px; }
 
