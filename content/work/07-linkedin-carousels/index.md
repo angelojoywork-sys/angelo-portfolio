@@ -8,6 +8,7 @@ role: "Designer"
 tools: [Illustrator]
 disciplines: [graphic, digital]
 cover: cover.png
+hideCover: true
 order: 7
 note: "30 posts by 30 people had to read as one movement. The badge did that."
 bg: "#111111"
