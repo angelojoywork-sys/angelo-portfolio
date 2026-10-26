@@ -151,12 +151,14 @@ const legend = Object.entries(site.data.disciplines)
     .hint { bottom: calc(76px + env(safe-area-inset-bottom)); }
     .spatial.filled .ruler { opacity: 0; pointer-events: none; }
     .ruler { transition: opacity var(--dur-2) var(--ease); }
-    .ruler { right: 0; padding: 16px 10px 16px 28px; }
-    .ruler-track { gap: 5px; }
-    .ruler i { width: 6px; }
-    .ruler i:nth-child(7n + 1) { width: 10px; }
-    .ruler-mark { width: 16px; }
-    .ruler-mark em { right: 22px; font-size: 10px; }
+    /* phones: Immerse runs along the bottom edge, left = outside the globe, right = fully immersed */
+    .ruler { left: 0; right: 0; top: auto; bottom: calc(14px + env(safe-area-inset-bottom)); transform: none; padding: 26px var(--gutter) 10px; cursor: ew-resize; }
+    .ruler-track { flex-direction: row; justify-content: space-between; align-items: flex-end; gap: 0; height: 18px; }
+    .ruler i, .ruler i:nth-child(7n + 1) { width: 1px; height: 8px; }
+    .ruler i:nth-child(7n + 1) { height: 14px; }
+    .ruler-fill { left: 0; right: auto; top: auto; bottom: 0; width: calc(var(--zf, 0) * 100%); height: 2px; }
+    .ruler-mark, .ruler:hover .ruler-mark, .ruler.active .ruler-mark, .ruler:focus-visible .ruler-mark { left: calc(var(--zf, 0) * 100%); right: auto; top: auto; bottom: 0; width: 1px; height: 22px; }
+    .ruler-mark em { left: 0; right: auto; top: auto; bottom: calc(100% + 6px); font-size: 10px; transform: translateX(calc(var(--zf, 0) * -100%)); white-space: nowrap; }
     .caption { bottom: calc(112px + env(safe-area-inset-bottom)); max-width: none; right: var(--gutter); }
     .stitle { font-size: clamp(20px, 5.6vw, 24px); line-height: 1.12; }
     .fcap { bottom: calc(76px + env(safe-area-inset-bottom)); }
@@ -481,6 +483,7 @@ const legend = Object.entries(site.data.disciplines)
       else if (imm < 0.25) root.classList.remove('zoomed');
       root.style.setProperty('--imm', ease.toFixed(3));
       ruler.style.setProperty('--zy', ((1 - clamp01(imm)) * 100).toFixed(2) + '%');
+      ruler.style.setProperty('--zf', clamp01(imm).toFixed(4));
       const val = Math.round(immT * 100);
       if (val !== shownVal) { ruler.setAttribute('aria-valuenow', String(val)); shownVal = val; }
       raf = requestAnimationFrame(frame);
@@ -634,9 +637,13 @@ const legend = Object.entries(site.data.disciplines)
     }, sig);
 
     // Immerse ruler: drag the marker (up = in), click a tick, or use the keyboard
-    const fromY = (y: number) => {
+    const phone = matchMedia('(max-width: 720px)');
+    const syncOrientation = () => ruler.setAttribute('aria-orientation', phone.matches ? 'horizontal' : 'vertical');
+    syncOrientation();
+    phone.addEventListener('change', syncOrientation, sig);
+    const fromPointer = (e: PointerEvent) => {
       const r = track.getBoundingClientRect();
-      const v = 1 - (y - r.top) / r.height;
+      const v = phone.matches ? (e.clientX - r.left) / r.width : 1 - (e.clientY - r.top) / r.height;
       if (focus >= 0) { if (v < 0.95) exitFocus(v); }
       else if (v >= 0.99) enterFocus();
       else setImm(v);
@@ -649,9 +656,9 @@ const legend = Object.entries(site.data.disciplines)
       try { ruler.setPointerCapture(e.pointerId); } catch {}
       ruler.classList.add('active');
       ruler.focus({ preventScroll: true });
-      fromY(e.clientY);
+      fromPointer(e);
     }, sig);
-    ruler.addEventListener('pointermove', (e) => { if (e.pointerId === rulerId) fromY(e.clientY); }, sig);
+    ruler.addEventListener('pointermove', (e) => { if (e.pointerId === rulerId) fromPointer(e); }, sig);
     const rulerUp = (e: PointerEvent) => { if (e.pointerId === rulerId) { rulerId = -1; ruler.classList.remove('active'); } };
     ruler.addEventListener('pointerup', rulerUp, sig);
     ruler.addEventListener('pointercancel', rulerUp, sig);
