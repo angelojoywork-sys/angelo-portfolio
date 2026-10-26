@@ -45,7 +45,7 @@ const legend = Object.entries(site.data.disciplines)
 
   <div class="caption">
     <h1 class="stitle">{site.data.spatialTitle}</h1>
-    <p class="sub"><span class="fine">Scroll to immerse</span><span class="touch">Tap a piece to open it</span></p>
+    <p class="sub fine">Scroll to immerse</p>
   </div>
 
   <div class="fcap">
@@ -149,8 +149,6 @@ const legend = Object.entries(site.data.disciplines)
   @media (max-width: 720px) {
     .legend { display: none; }
     .hint { bottom: calc(76px + env(safe-area-inset-bottom)); }
-    .caption { bottom: calc(112px + env(safe-area-inset-bottom)); }
-    .fcap { bottom: calc(76px + env(safe-area-inset-bottom)); }
     .spatial.filled .ruler { opacity: 0; pointer-events: none; }
     .ruler { transition: opacity var(--dur-2) var(--ease); }
     .ruler { right: 0; padding: 16px 10px 16px 28px; }
@@ -159,6 +157,9 @@ const legend = Object.entries(site.data.disciplines)
     .ruler i:nth-child(7n + 1) { width: 10px; }
     .ruler-mark { width: 16px; }
     .ruler-mark em { right: 22px; font-size: 10px; }
+    .caption { bottom: calc(112px + env(safe-area-inset-bottom)); max-width: none; right: var(--gutter); }
+    .stitle { font-size: clamp(20px, 5.6vw, 24px); line-height: 1.12; }
+    .fcap { bottom: calc(76px + env(safe-area-inset-bottom)); }
   }
 </style>
 
@@ -259,10 +260,18 @@ const legend = Object.entries(site.data.disciplines)
 
     const resize = () => {
       W = stage.clientWidth; H = stage.clientHeight;
-      CY = H * (W < 720 ? 0.44 : 0.45);
-      // the lowest nodes reach ~1.2R below centre; keep them clear of the headline
       const titleTop = caption.offsetTop + title.offsetTop;
-      R = Math.min(Math.min(W, H) * (W < 720 ? 0.36 : 0.34), (titleTop - 16 - CY) / 1.2);
+      if (W < 720) {
+        // phones: centre the globe in the free band between header and headline, equal padding both sides
+        const top = document.querySelector('.site-header')?.getBoundingClientRect().bottom ?? 60;
+        const pad = 20;
+        CY = (top + titleTop) / 2;
+        R = Math.min(W * 0.36, ((titleTop - top) / 2 - pad) / 1.2);
+        return;
+      }
+      CY = H * 0.45;
+      // the lowest nodes reach ~1.2R below centre; keep them clear of the headline
+      R = Math.min(Math.min(W, H) * 0.34, (titleTop - 16 - CY) / 1.2);
     };
     const measure = () => { availTop = 72; availBot = fcap.offsetTop - 16; };
     resize();
