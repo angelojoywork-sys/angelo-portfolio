@@ -1,5 +1,5 @@
 ---
-title: "30 Women 30 Stories: Campaign Identity"
+title: "30 Women 30 Stories: Campaign"
 summary: "A bold carousel system that made 30 posts from 30 people feel like one movement."
 year: 2026
 client: "30 Women 30 Stories"

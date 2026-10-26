@@ -22,8 +22,8 @@ links:
 # The disciplines you work in. The short word on the left is a "key"
 # you use in projects (disciplines: [graphic, motion]) and in the hero below.
 disciplines:
-  graphic: Graphic
-  digital: Digital & UI
+  graphic: Graphic design
+  digital: UI/UX
   motion: Motion
   video: Video
   ai: AI

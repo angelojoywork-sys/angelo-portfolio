@@ -1,5 +1,5 @@
 ---
-title: "Social & Hoarding Graphics"
+title: "Personal project: Digital & Print creatives"
 summary: "Social posts, carousels and large-format site hoardings."
 year: 2025
 type: "Social · Large format"
@@ -7,7 +7,7 @@ role: "Designer"
 tools: [Illustrator, Photoshop]
 disciplines: [graphic]
 cover: cover.png
-order: 9
+order: 8
 ---
 
 ![](01.png)

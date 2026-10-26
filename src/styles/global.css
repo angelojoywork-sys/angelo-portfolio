@@ -1,12 +1,4 @@
-@import '@fontsource-variable/fraunces/full.css';
-
-@font-face {
-  font-family: 'Reckless Neue';
-  src: url('/fonts/RecklessNeue-Book.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
+@import '@fontsource-variable/instrument-sans/index.css';
 
 :root {
   --bg: #f3f2ee;
@@ -24,11 +16,11 @@
   --accent-ink: #fff;
   --shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 8px 24px rgb(0 0 0 / 0.08);
 
-  /* one face, one weight: hierarchy comes from size */
-  --sans: 'Reckless Neue', Georgia, 'Times New Roman', serif;
+  /* body and labels: Instrument Sans Regular */
+  --sans: 'Instrument Sans Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --mono: var(--sans);
-  /* bold display face for headlines and titles (Reckless Neue only ships in Book) */
-  --display: 'Fraunces Variable', 'Reckless Neue', Georgia, serif;
+  /* New Spirit Medium (Adobe Fonts) for headlines and titles */
+  --display: 'new-spirit', Georgia, 'Times New Roman', serif;
   --electric: #2B2BFF;
 
   --gutter: clamp(16px, 2.2vw, 32px);
@@ -91,8 +83,8 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   margin: 0;
 }
 .mono { font-family: var(--mono); }
-/* the display face: sharp (no soft or wonky forms), synthesis allowed because it is variable */
-.display, h1, h2, h3 { font-variation-settings: 'SOFT' 0, 'WONK' 0; font-synthesis: weight; }
+/* the display face is always Medium; never synthesise bold */
+.display, h1, h2, h3 { font-weight: 500; font-synthesis: none; }
 .u { text-decoration: underline; text-decoration-color: var(--faint); text-underline-offset: 3px; transition: text-decoration-color var(--dur-1); }
 .u:hover { text-decoration-color: currentColor; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

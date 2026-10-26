@@ -1,5 +1,5 @@
 ---
-title: "NexusMed: Brand Identity"
+title: "NexusMed: Brand identity"
 summary: "A calm, trustworthy identity for a healthcare company."
 year: 2026
 client: "NexusMed"

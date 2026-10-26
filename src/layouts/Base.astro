@@ -34,7 +34,8 @@ const ogImage = image ? new URL(image, Astro.site).href : undefined;
     {ogImage && <meta property="og:image" content={ogImage} />}
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="preload" href="/fonts/RecklessNeue-Book.ttf" as="font" type="font/ttf" crossorigin />
+    <!-- New Spirit via Adobe Fonts -->
+    <link rel="stylesheet" href="https://use.typekit.net/rhn0udc.css" />
     <ClientRouter />
     <script is:inline>
       function applyTheme() {

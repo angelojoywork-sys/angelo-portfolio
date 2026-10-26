@@ -13,9 +13,8 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
 
 <section class="work" aria-label="Work">
   <div class="bar">
-    <h2 class="label">Work <span class="count">({String(work.length).padStart(2, '0')})</span></h2>
+    <h2 class="label"><span class="heading">All</span> <span class="count">({String(work.length).padStart(2, '0')})</span></h2>
     <div class="chips" role="group" aria-label="Filter by discipline">
-      <button type="button" class="chip" data-filter="" aria-pressed="true">All</button>
       {used.map(([k, v]) => <button type="button" class="chip" data-filter={k} aria-pressed="false">{v}</button>)}
     </div>
     <div class="layout" role="group" aria-label="Layout">
@@ -43,7 +42,6 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
           <span class="ltitle">{item.data.title}</span>
           <span class="lmeta">{item.data.type}</span>
           <span class="lmeta hide-sm">{item.data.client}</span>
-          <span class="label lyear">{item.data.year}</span>
         </a>
       </li>
     ))}
@@ -108,9 +106,8 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
     transition: padding var(--dur-2) var(--ease), opacity var(--dur-2), color var(--dur-2);
   }
   .lrow:hover { padding-left: 10px; }
-  .ltitle { font-family: var(--display); font-weight: 600; letter-spacing: -0.01em; }
+  .ltitle { font-family: var(--display); font-weight: 500; letter-spacing: -0.01em; }
   .lmeta { color: var(--muted); font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .lyear { text-align: right; }
   @media (max-width: 720px) { .lrow { grid-template-columns: 32px 1fr auto; } .lmeta { display: none; } }
 
   .preview {
