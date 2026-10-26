@@ -66,6 +66,11 @@ const legend = Object.entries(site.data.disciplines)
       <span class="ruler-fill"></span>
       <span class="ruler-mark"><em class="label">Immerse</em></span>
     </div>
+    <div class="ruler-dial" aria-hidden="true">
+      <div class="dial-strip">{Array.from({ length: 61 }, () => <i></i>)}</div>
+      <span class="dial-needle"></span>
+      <em class="label dial-label">Immerse</em>
+    </div>
   </div>
 
   <script type="application/json" class="spatial-data" set:html={JSON.stringify(nodes)} />
@@ -142,6 +147,7 @@ const legend = Object.entries(site.data.disciplines)
   .ruler:focus-visible .ruler-mark { background: var(--accent); width: 30px; }
   .ruler-mark em { position: absolute; right: 38px; top: -6px; font-style: normal; transition: color var(--dur-1); }
   .ruler:hover .ruler-mark em, .ruler.active .ruler-mark em { color: var(--fg); }
+  .ruler-dial { display: none; }
 
   @media (prefers-reduced-motion: reduce) { .fc-title.in, .fc-meta.in { animation: none; } }
   .touch { display: none; }
@@ -151,14 +157,17 @@ const legend = Object.entries(site.data.disciplines)
     .hint { bottom: calc(76px + env(safe-area-inset-bottom)); }
     .spatial.filled .ruler { opacity: 0; pointer-events: none; }
     .ruler { transition: opacity var(--dur-2) var(--ease); }
-    /* phones: Immerse runs along the bottom edge, left = outside the globe, right = fully immersed */
-    .ruler { left: 0; right: 0; top: auto; bottom: calc(14px + env(safe-area-inset-bottom)); transform: none; padding: 26px var(--gutter) 10px; cursor: ew-resize; }
-    .ruler-track { flex-direction: row; justify-content: space-between; align-items: flex-end; gap: 0; height: 18px; }
-    .ruler i, .ruler i:nth-child(7n + 1) { width: 1px; height: 8px; }
-    .ruler i:nth-child(7n + 1) { height: 14px; }
-    .ruler-fill { left: 0; right: auto; top: auto; bottom: 0; width: calc(var(--zf, 0) * 100%); height: 2px; }
-    .ruler-mark, .ruler:hover .ruler-mark, .ruler.active .ruler-mark, .ruler:focus-visible .ruler-mark { left: calc(var(--zf, 0) * 100%); right: auto; top: auto; bottom: 0; width: 1px; height: 22px; }
-    .ruler-mark em { left: 0; right: auto; top: auto; bottom: calc(100% + 6px); font-size: 10px; transform: translateX(calc(var(--zf, 0) * -100%)); white-space: nowrap; }
+    /* phones: Immerse is a scrolling dial like the iPhone Photos adjust slider. A fixed needle
+       sits in the centre and the ticks slide under it, so a drag anywhere on the strip works. */
+    .ruler { left: 0; right: 0; top: auto; bottom: calc(14px + env(safe-area-inset-bottom)); transform: none; padding: 0; height: 56px; cursor: grab; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+    .ruler.active { cursor: grabbing; }
+    .ruler-track { display: none; }
+    .ruler-dial { display: block; position: absolute; inset: 0; overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent); mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent); }
+    .dial-strip { position: absolute; left: 50%; bottom: 8px; display: flex; align-items: flex-end; gap: 7px; transform: translate3d(calc(var(--zf, 0) * var(--travel, 480px) * -1), 0, 0); will-change: transform; }
+    .ruler .dial-strip i { display: block; flex: none; width: 1px; height: 12px; background: var(--faint); }
+    .ruler .dial-strip i:nth-child(5n + 1) { width: 1px; height: 18px; background: var(--muted); }
+    .dial-needle { position: absolute; left: 50%; bottom: 8px; width: 2px; height: 30px; margin-left: -1px; border-radius: 1px; background: var(--fg); }
+    .dial-label { position: absolute; left: 50%; bottom: 42px; transform: translateX(-50%); font-style: normal; font-size: 10px; color: var(--fg); white-space: nowrap; }
     .caption { bottom: calc(112px + env(safe-area-inset-bottom)); max-width: none; right: var(--gutter); }
     .stitle { font-size: clamp(20px, 5.6vw, 24px); line-height: 1.12; }
     .fcap { bottom: calc(76px + env(safe-area-inset-bottom)); }
@@ -231,6 +240,7 @@ const legend = Object.entries(site.data.disciplines)
     // immerse: 0 = looking at the globe, 1 = camera inside it. imm chases immT on a critically-damped spring.
     let rotY = 0.6, rotX = -0.25, vy = 0, vx = 0;
     let imm = 0, immV = 0, immT = 0, ease = 0, shownVal = -1;
+    let dialV = 0, dialVSample = 0; // immerse units per second, from a flick on the phone dial
     let hovered = -1, legendKey = '';
     let dragging = false, moved = 0, lastX = 0, lastY = 0, lastT = 0, prevT = performance.now();
     let W = 0, H = 0, R = 0, CY = 0, D = 2.6, F = 2.6;
@@ -483,7 +493,14 @@ const legend = Object.entries(site.data.disciplines)
       else if (imm < 0.25) root.classList.remove('zoomed');
       root.style.setProperty('--imm', ease.toFixed(3));
       ruler.style.setProperty('--zy', ((1 - clamp01(imm)) * 100).toFixed(2) + '%');
-      ruler.style.setProperty('--zf', clamp01(imm).toFixed(4));
+      // the dial tracks the finger directly while dragging, the spring-smoothed value otherwise
+      ruler.style.setProperty('--zf', (rulerId >= 0 && phone.matches ? immT : clamp01(imm)).toFixed(4));
+      if (dialV && rulerId < 0) {
+        const nv = immT + dialV * dt;
+        dialV *= Math.exp(-dt * 5);
+        if (Math.abs(dialV) < 0.02 || nv <= 0 || nv >= 1) dialV = 0;
+        applyValue(nv);
+      }
       const val = Math.round(immT * 100);
       if (val !== shownVal) { ruler.setAttribute('aria-valuenow', String(val)); shownVal = val; }
       raf = requestAnimationFrame(frame);
@@ -641,25 +658,50 @@ const legend = Object.entries(site.data.disciplines)
     const syncOrientation = () => ruler.setAttribute('aria-orientation', phone.matches ? 'horizontal' : 'vertical');
     syncOrientation();
     phone.addEventListener('change', syncOrientation, sig);
-    const fromPointer = (e: PointerEvent) => {
-      const r = track.getBoundingClientRect();
-      const v = phone.matches ? (e.clientX - r.left) / r.width : 1 - (e.clientY - r.top) / r.height;
+    const applyValue = (v: number) => {
       if (focus >= 0) { if (v < 0.95) exitFocus(v); }
       else if (v >= 0.99) enterFocus();
       else setImm(v);
       used();
     };
+    // desktop: absolute position on the vertical ruler
+    const fromPointer = (e: PointerEvent) => {
+      const r = track.getBoundingClientRect();
+      applyValue(1 - (e.clientY - r.top) / r.height);
+    };
+    // phones: relative drag on the dial. Dragging left moves ticks left, i.e. further in.
+    const TRAVEL = 480; // 60 ticks * 8px
+    ruler.style.setProperty('--travel', TRAVEL + 'px');
+    let dragX = 0, dragV0 = 0, lastRX = 0, lastRT = 0;
+    const fromDial = (e: PointerEvent) => {
+      const now = performance.now();
+      const v = clamp01(dragV0 - (e.clientX - dragX) / TRAVEL);
+      const dtm = Math.max(8, now - lastRT);
+      dialVSample = (-(e.clientX - lastRX) / TRAVEL / dtm) * 1000;
+      lastRX = e.clientX; lastRT = now;
+      applyValue(v);
+    };
     let rulerId = -1;
     ruler.addEventListener('pointerdown', (e) => {
       e.preventDefault();
       rulerId = e.pointerId;
+      dialV = 0; dialVSample = 0;
       try { ruler.setPointerCapture(e.pointerId); } catch {}
       ruler.classList.add('active');
       ruler.focus({ preventScroll: true });
-      fromPointer(e);
+      if (phone.matches) { dragX = lastRX = e.clientX; lastRT = performance.now(); dragV0 = focus >= 0 ? 1 : immT; }
+      else fromPointer(e);
     }, sig);
-    ruler.addEventListener('pointermove', (e) => { if (e.pointerId === rulerId) fromPointer(e); }, sig);
-    const rulerUp = (e: PointerEvent) => { if (e.pointerId === rulerId) { rulerId = -1; ruler.classList.remove('active'); } };
+    ruler.addEventListener('pointermove', (e) => {
+      if (e.pointerId !== rulerId) return;
+      if (phone.matches) fromDial(e); else fromPointer(e);
+    }, sig);
+    const rulerUp = (e: PointerEvent) => {
+      if (e.pointerId !== rulerId) return;
+      rulerId = -1; ruler.classList.remove('active');
+      // a flick keeps a little momentum; a held finger does not
+      if (phone.matches && focus < 0 && performance.now() - lastRT < 60 && Math.abs(dialVSample) > 0.25) dialV = Math.max(-2.5, Math.min(2.5, dialVSample));
+    };
     ruler.addEventListener('pointerup', rulerUp, sig);
     ruler.addEventListener('pointercancel', rulerUp, sig);
     ruler.addEventListener('keydown', (e) => {
