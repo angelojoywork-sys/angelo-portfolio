@@ -1,16 +1,16 @@
 ---
-title: "FlexManager - Art Direction & Multimedia"
-summary: "A scalable short-form video system for an 80+ module compliance platform."
+title: "FlexManager: Product Video System"
+summary: "A template-led video system explaining 80+ software modules."
 year: 2026
 client: "FlexManager"
-type: "Motion · Video production"
+type: "Motion · Art direction"
 role: "Art Director & Multimedia Designer"
 tools: [After Effects, Illustrator, Premiere Pro, Claude, ElevenLabs]
 disciplines: [motion, video]
 cover: cover.jpg
 order: 5
 note: "Templates first, videos second. The drag-and-drop library is what made 80+ modules possible."
-bg: "#F05A22"
+bg: "#424242"
 ---
 
 https://vimeo.com/1141059004/6f0a863ef1

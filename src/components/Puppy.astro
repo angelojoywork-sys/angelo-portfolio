@@ -1,0 +1,240 @@
+---
+// A tiny beagle that runs to wherever you click, woofs, and leaves hearts behind.
+---
+
+<button type="button" class="pup" aria-label="Play with the puppy">
+  <span class="label hint" aria-hidden="true">Click to play</span>
+  <span class="dog" aria-hidden="true">
+    <span class="bubble">Woof!</span>
+    <span class="face">
+      <span class="bob">
+        <svg viewBox="0 0 100 80" width="84" height="67" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <!-- tail: tan with a white tip, wags from its base -->
+          <g class="tail">
+            <path d="M23 40 C17 34 13 26 12 17" stroke="#b9732f" stroke-width="5" />
+            <path d="M12.6 22 C12.2 20 12 18.5 12 17" stroke="#fff" stroke-width="5" />
+          </g>
+          <!-- far legs sit behind the body, a shade darker -->
+          <g class="leg leg-bf"><rect x="31" y="50" width="6" height="25" rx="3" fill="#e9e4dc" /></g>
+          <g class="leg leg-ff"><rect x="63" y="50" width="6" height="25" rx="3" fill="#e9e4dc" /></g>
+          <!-- body: white belly, tan flank, black saddle -->
+          <g class="body">
+            <ellipse cx="45" cy="44" rx="26" ry="13" fill="#fff" stroke="#3a2a1d" stroke-width="1.2" />
+            <path d="M21 42 C21 33 30 31 38 31 L60 31 C67 31 71 36 71 42 C64 46 30 47 21 42 Z" fill="#c8833d" />
+            <path d="M28 36 C30 31 37 31.2 44 31.2 L58 31.4 C61 33 62 37 59 40 C50 43 36 43 28 39 Z" fill="#1d1a17" />
+            <path d="M62 34 C68 38 70 46 66 54" stroke="#fff" stroke-width="7" />
+          </g>
+          <!-- near legs in front -->
+          <g class="leg leg-bn"><rect x="24" y="50" width="7" height="26" rx="3.5" fill="#fff" stroke="#3a2a1d" stroke-width="1" /></g>
+          <g class="leg leg-fn"><rect x="56" y="50" width="7" height="26" rx="3.5" fill="#fff" stroke="#3a2a1d" stroke-width="1" /></g>
+          <!-- head: tan skull, white blaze and muzzle, dark nose -->
+          <g class="head">
+            <circle cx="74" cy="27" r="12.5" fill="#c8833d" stroke="#3a2a1d" stroke-width="1.2" />
+            <path d="M77 15.5 C78.5 21 80 26 82 30" stroke="#fff" stroke-width="3.2" />
+            <path d="M78 29 C82 27 92 27 94 31 C96 36 90 40 82 39.5 C78 39 76 35 78 29 Z" fill="#fff" stroke="#3a2a1d" stroke-width="1.2" />
+            <ellipse cx="93" cy="30.5" rx="3.2" ry="2.6" fill="#1d1a17" />
+            <path d="M86 37.5 C88 38.5 90 38.3 91.5 37" stroke="#3a2a1d" stroke-width="1" />
+            <g class="eye"><ellipse cx="80" cy="24.5" rx="1.9" ry="2.2" fill="#1d1a17" /><circle cx="80.6" cy="23.7" r=".6" fill="#fff" /></g>
+            <!-- ear: long and floppy, flops from where it joins the head -->
+            <g class="ear">
+              <path d="M69 18 C63 18 61 24 62 32 C63 39 65 45 69 46 C73 46 74 40 73 33 C72.5 27 73 21 69 18 Z" fill="#6b3f1d" stroke="#3a2a1d" stroke-width="1.1" />
+            </g>
+          </g>
+        </svg>
+      </span>
+    </span>
+  </span>
+</button>
+
+<style>
+  .pup {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 140px;
+    text-align: left;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  /* ground line */
+  .pup::after { content: ''; position: absolute; left: 0; right: 0; bottom: 8px; border-bottom: 1px dashed var(--line); }
+
+  .hint { position: absolute; top: 0; right: 0; transition: opacity var(--dur-3) var(--ease); pointer-events: none; }
+  .pup.played .hint { opacity: 0; }
+
+  .dog { position: absolute; left: 0; bottom: 9px; width: 84px; height: 67px; transform: translateX(8px); will-change: transform; pointer-events: none; }
+  .face, .bob { display: block; width: 100%; height: 100%; }
+  .face { transition: transform var(--dur-1) var(--ease); }
+  .dog.left .face { transform: scaleX(-1); }
+  svg { display: block; overflow: visible; }
+
+  /* SVG parts animate around their own boxes */
+  .tail, .leg, .ear, .eye, .head { transform-box: fill-box; }
+  .tail { transform-origin: 100% 100%; animation: wag 0.9s ease-in-out infinite alternate; }
+  .leg { transform-origin: 50% 0; }
+  .ear { transform-origin: 50% 0; animation: flick 7s var(--ease) infinite; }
+  .eye { transform-origin: 50% 50%; animation: blink 5s infinite; }
+  .head { transform-origin: 20% 80%; transition: transform var(--dur-2) var(--ease); }
+
+  @keyframes wag { from { transform: rotate(-14deg); } to { transform: rotate(12deg); } }
+  @keyframes blink { 0%, 95%, 100% { transform: scaleY(1); } 97% { transform: scaleY(.1); } }
+  @keyframes flick { 0%, 84%, 100% { transform: rotate(0); } 87% { transform: rotate(-18deg); } 91% { transform: rotate(6deg); } }
+
+  /* running: legs scissor, body bounces, ears stream back, tail goes wild */
+  .dog.run .leg { animation: stride .28s ease-in-out infinite alternate; }
+  .dog.run .leg-bf, .dog.run .leg-fn { animation-delay: -.14s; }
+  .dog.run .bob { animation: bounce .14s ease-in-out infinite alternate; }
+  .dog.run .ear { animation: none; transform: rotate(28deg); }
+  .dog.run .tail { animation-duration: .2s; }
+  .dog.run .head { transform: rotate(-6deg); }
+  @keyframes stride { from { transform: rotate(-28deg); } to { transform: rotate(28deg); } }
+  @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-4px); } }
+
+  /* arrival hop */
+  .dog.hop .bob { animation: hop .42s var(--ease); }
+  .dog.hop .ear { animation: earflop .42s var(--ease); }
+  @keyframes hop { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-14px) rotate(-4deg); } 70% { transform: translateY(0) scaleY(.94); } }
+  @keyframes earflop { 40% { transform: rotate(-30deg); } 75% { transform: rotate(10deg); } }
+
+  .bubble {
+    position: absolute;
+    bottom: 100%;
+    left: 58%;
+    margin-bottom: 2px;
+    padding: 3px 9px 4px;
+    border: 1.5px solid var(--electric);
+    border-radius: 999px 999px 999px 4px;
+    background: var(--bg);
+    color: var(--electric);
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 15px;
+    line-height: 1.1;
+    white-space: nowrap;
+    opacity: 0;
+    transform-origin: 0 100%;
+  }
+  /* bubble opens toward the middle so it never pokes past the edges */
+  .dog.bl .bubble { left: auto; right: 58%; border-radius: 999px 999px 4px 999px; transform-origin: 100% 100%; }
+  .dog.woof .bubble { animation: woof 1.1s var(--ease) both; }
+  @keyframes woof {
+    0% { opacity: 0; transform: scale(.4) translateY(6px); }
+    15% { opacity: 1; transform: scale(1.08); }
+    25%, 70% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: translateY(-6px); }
+  }
+
+  /* hearts are created by the script, so they need :global */
+  .pup :global(.heart) {
+    position: absolute;
+    bottom: 56px;
+    color: #ff4d8d;
+    font-size: 14px;
+    line-height: 1;
+    pointer-events: none;
+    animation: float 1.3s var(--ease) forwards;
+  }
+  @keyframes float {
+    0% { opacity: 0; transform: translate(0, 0) scale(.5); }
+    15% { opacity: 1; transform: translate(0, -6px) scale(1); }
+    100% { opacity: 0; transform: translate(var(--dx), -54px) scale(.9) rotate(var(--r)); }
+  }
+
+  /* reduced motion: the dog stays put; the bubble and hearts only fade (beats the global kill switch) */
+  @media (prefers-reduced-motion: reduce) {
+    .tail, .ear, .eye { animation: none !important; }
+    .dog.woof .bubble { animation: fade 1.1s linear both !important; }
+    .pup :global(.heart) { animation: fade 1.3s linear forwards !important; }
+    @keyframes fade { 0%, 100% { opacity: 0; } 15%, 60% { opacity: 1; } }
+  }
+</style>
+
+<script>
+  const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // restart a one-shot animation class
+  function replay(el: HTMLElement, cls: string) {
+    el.classList.remove(cls);
+    void el.offsetWidth;
+    el.classList.add(cls);
+  }
+
+  function mount(root: HTMLElement) {
+    if (root.dataset.bound) return;
+    root.dataset.bound = '1';
+    const dog = root.querySelector<HTMLElement>('.dog')!;
+    let x = 8;
+    let run = 0; // token so a retargeted run cancels the old arrival
+    let timer = 0;
+
+    // where the dog actually is right now, even mid-transition
+    const currentX = () => new DOMMatrixReadOnly(getComputedStyle(dog).transform).m41 || x;
+
+    function hearts() {
+      const facingLeft = dog.classList.contains('left');
+      const headX = x + (facingLeft ? 14 : dog.offsetWidth - 14);
+      const n = 3 + Math.floor(Math.random() * 3);
+      for (let i = 0; i < n; i++) {
+        const h = document.createElement('span');
+        h.className = 'heart';
+        h.textContent = '♥';
+        h.setAttribute('aria-hidden', 'true');
+        h.style.left = `${headX + (Math.random() - 0.5) * 24}px`;
+        h.style.setProperty('--dx', `${(Math.random() - 0.5) * 36}px`);
+        h.style.setProperty('--r', `${(Math.random() - 0.5) * 40}deg`);
+        h.style.animationDelay = `${i * 70}ms`;
+        h.style.fontSize = `${11 + Math.random() * 7}px`;
+        root.appendChild(h);
+        setTimeout(() => h.remove(), 1400 + i * 70);
+      }
+    }
+
+    function arrive() {
+      dog.classList.remove('run');
+      dog.classList.toggle('bl', x + dog.offsetWidth / 2 > root.clientWidth / 2);
+      if (!reduce()) replay(dog, 'hop');
+      replay(dog, 'woof');
+      hearts();
+    }
+
+    root.addEventListener('click', (e) => {
+      root.classList.add('played');
+      const id = ++run;
+      clearTimeout(timer);
+
+      if (reduce()) { arrive(); return; }
+
+      const max = Math.max(0, root.clientWidth - dog.offsetWidth);
+      const from = currentX();
+      let to: number;
+      if (e.detail > 0) {
+        // pointer: centre the dog on the click
+        to = e.clientX - root.getBoundingClientRect().left - dog.offsetWidth / 2;
+      } else {
+        // keyboard: somewhere noticeably different
+        do { to = Math.random() * max; } while (max > 120 && Math.abs(to - from) < 60);
+      }
+      to = Math.min(max, Math.max(0, to));
+
+      const dist = Math.abs(to - from);
+      if (dist > 2) dog.classList.toggle('left', to < from);
+      if (dist < 6) { x = to; arrive(); return; }
+
+      const dur = Math.round(Math.min(900, Math.max(400, 300 + dist * 1.6)));
+      dog.classList.remove('hop');
+      dog.classList.add('run');
+      // pin the current spot, then glide to the new one
+      dog.style.transition = 'none';
+      dog.style.transform = `translateX(${from}px)`;
+      void dog.offsetWidth;
+      dog.style.transition = `transform ${dur}ms cubic-bezier(.4, .1, .35, 1)`;
+      dog.style.transform = `translateX(${to}px)`;
+      x = to;
+      timer = window.setTimeout(() => { if (id === run) arrive(); }, dur);
+    });
+  }
+
+  document.addEventListener('astro:page-load', () => {
+    document.querySelectorAll<HTMLElement>('.pup').forEach(mount);
+  });
+</script>

@@ -34,7 +34,7 @@ const items = await getItems('experiments');
 
 <style>
   .intro { padding: clamp(24px, 8vh, 96px) 0 clamp(32px, 6vh, 64px); max-width: 760px; }
-  h1 { margin: 12px 0 16px; font-size: clamp(36px, 5vw, 72px); line-height: 1; letter-spacing: -0.045em; font-weight: 450; text-wrap: balance; }
+  h1 { margin: 12px 0 16px; font-size: clamp(36px, 5vw, 72px); line-height: 1; letter-spacing: -0.03em; font-family: var(--display); font-weight: 700; text-wrap: balance; }
   .lede { margin: 0; color: var(--muted); font-size: 17px; max-width: 56ch; }
 
   .masonry { columns: 3 300px; column-gap: var(--gutter); }
@@ -45,6 +45,6 @@ const items = await getItems('experiments');
   .tools { position: absolute; left: 10px; bottom: 10px; background: var(--bg); color: var(--fg); padding: 4px 7px; border-radius: 3px; opacity: 0; transform: translateY(6px); transition: opacity .3s, transform .4s var(--ease); }
   .exp:hover .tools { opacity: 1; transform: none; }
   .row { display: flex; justify-content: space-between; align-items: baseline; margin-top: 4px; }
-  h2 { margin: 0; font-size: 15px; font-weight: 550; letter-spacing: -0.01em; }
+  h2 { margin: 0; font-family: var(--display); font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
   .exp p { margin: 0; color: var(--muted); font-size: 14px; }
 </style>

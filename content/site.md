@@ -8,7 +8,7 @@ name: Angelo Joy
 role: Digital & Graphic Designer
 location: Based in Ireland
 timezone: Europe/Dublin   # for the live clock in the footer (e.g. Europe/London, America/New_York)
-available: Open for freelance & full-time
+available: Open for freelance & full-time roles
 email: angelojoyirl@gmail.com
 # Portrait for the About pop-up (file lives in /public)
 photo: /portrait.jpg
@@ -34,7 +34,7 @@ intro:
     key: true
 
 # Short headline shown in the Spatial view.
-spatialTitle: Designer of brands, screens and things that move
+spatialTitle: 'Welcome to my creative world: expression shaped by culture, emotion and meaning.'
 
 # Shown on the Info page.
 services:
@@ -50,10 +50,12 @@ clients:
   - Sample Client Three
 ---
 
-I'm a <strong>digital and graphic designer</strong> based in Ireland, moving between print, screens and motion.
+<p class="greet">Hi! I'm Angelo Joy.</p>
 
-I like projects where a brand has to work as hard on a poster as it does in an app or a ten-second loop. Most days that means <strong>Figma, the Adobe suite and After Effects</strong>.
+I'm a <strong>digital designer</strong> with a passion for bringing solutions and aesthetics together. I've appreciated art for its beauty for as long as I can remember, but I've always wanted my work to do more: to be functional, intuitive and meaningful.
 
-On the side I test what <strong>AI</strong> can add to the craft, mostly to find out where it helps and where it gets in the way.
+From doodling in class as a kid in Dubai, I moved across the world to earn a Master's in Media & Communications from the <strong>University of Galway</strong>, then refined my craft with a Professional Diploma in UX Design from the <strong>UX Design Institute</strong> in Dublin.
 
-If something here sparks an idea, say hello through <strong>Contact</strong>. I'm open to freelance and full-time work.
+That journey turned an early love of graphic design into a dedicated practice: creating immersive digital experiences and design strategies that deliver for users and businesses alike.
+
+Outside of work you'll find me animating in <strong>After Effects</strong>, at the gym, or at home getting inspired by BPS.space and The Diary of a CEO. Or, put simply, I make things for the love of the game.

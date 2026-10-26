@@ -49,25 +49,36 @@ const experiments = await getItems('experiments');
   }
   document.addEventListener('astro:after-swap', restoreLayout);
 
-  // Discipline chips filter the work: matching projects light up. Click a chip to pin it.
+  // Discipline chips filter the work. Clicking the active chip again goes back to All.
   function init() {
     const home = document.querySelector('.home');
     if (!home) return;
-    const cards = [...home.querySelectorAll<HTMLElement>('.card, .lrow')];
+    // grid cards hide themselves; list rows hide their <li>
+    const items = [...home.querySelectorAll<HTMLElement>('.grid .card, .list .lrow')].map((el) => ({
+      el: el.classList.contains('lrow') ? (el.parentElement as HTMLElement) : el,
+      keys: (el.dataset.disc || '').split(' ').filter(Boolean),
+      card: el.classList.contains('card'),
+    }));
     const chips = [...home.querySelectorAll<HTMLButtonElement>('.chip')];
-    let pinned = '';
+    const count = home.querySelector<HTMLElement>('.work .count');
+    let active = '';
 
-    const keysOf = (el: HTMLElement, attr: string) => (el.getAttribute(attr) || '').split(' ').filter(Boolean);
-
-    function pin(key: string) {
-      pinned = pinned === key ? '' : key;
-      chips.forEach((c) => c.setAttribute('aria-pressed', String((c.dataset.filter || '') === pinned)));
-      home!.classList.toggle('hl-active', !!pinned);
-      cards.forEach((c) => c.classList.toggle('lit', !!pinned && keysOf(c, 'data-disc').includes(pinned)));
+    function filter(key: string) {
+      active = key && active !== key ? key : '';
+      chips.forEach((c) => c.setAttribute('aria-pressed', String((c.dataset.filter || '') === active)));
+      const shown = items.filter(({ el, keys }) => {
+        el.classList.remove('reveal');
+        return !(el.hidden = !!active && !keys.includes(active));
+      });
+      void (home as HTMLElement).offsetWidth; // restart the fade
+      shown.forEach(({ el }) => el.classList.add('reveal'));
+      const n = shown.filter((i) => i.card).length;
+      if (count) count.textContent = `(${String(n).padStart(2, '0')})`;
+      document.dispatchEvent(new CustomEvent('view-change', { detail: { filter: true } }));
     }
 
-    // "All" clears the pin (pinning the current key again toggles it off)
-    chips.forEach((c) => c.addEventListener('click', () => pin(c.dataset.filter || pinned)));
+    chips.forEach((c) => c.addEventListener('click', () => filter(c.dataset.filter || '')));
+    home.addEventListener('animationend', (e) => (e.target as HTMLElement).classList?.remove('reveal'));
 
     // Grid / list layout
     const grid = home.querySelector<HTMLElement>('.grid')!;

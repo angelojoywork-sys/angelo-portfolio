@@ -1,9 +1,19 @@
 ---
 import { Image } from 'astro:assets';
-import type { Item, Media } from '../lib/content';
+import type { ImageMetadata } from 'astro';
+import type { Item } from '../lib/content';
 interface Props { item: Item; eager?: boolean; showNote?: boolean }
 const { item, eager = false, showNote = true } = Astro.props;
-const peek: Media | undefined = item.gallery.find((m) => m.kind === 'image');
+// Up to four stills from inside the project make the hover preview reel: the gallery
+// first, then images the write-up places inline (most projects keep them all there).
+const stills = import.meta.glob<ImageMetadata>('/content/**/*.{jpg,jpeg,png,webp,avif,gif,JPG,JPEG,PNG}', { eager: true, import: 'default' });
+const folder = '/' + (item.body.filePath ?? '').replace(/\\/g, '/').replace(/index\.md$/, '');
+const inline = [...(item.body.body ?? '').matchAll(/\]\((?:\.\/)?([^)\s/]+\.(?:jpe?g|png|webp|avif|gif))/gi)].map((m) => m[1]);
+const files = [...new Set([...item.gallery.filter((m) => m.kind === 'image').map((m) => m.file), ...inline])];
+const previews = files
+  .filter((f) => f !== item.cover?.file && stills[folder + f])
+  .slice(0, 4)
+  .map((f) => stills[folder + f]);
 const sizes = '(max-width: 720px) 100vw, (max-width: 1200px) 30vw, 22vw';
 ---
 
@@ -19,8 +29,14 @@ const sizes = '(max-width: 720px) 100vw, (max-width: 1200px) 30vw, 22vw';
       <Image src={item.cover.image} alt={item.data.title} widths={[480, 800, 1200]} sizes={sizes} loading={eager ? 'eager' : 'lazy'} class="cover" />
     )}
     {item.cover?.kind === 'video' && <video src={item.cover.src} muted loop playsinline autoplay class="cover" />}
-    {peek?.kind === 'image' && (
-      <Image src={peek.image} alt="" widths={[480, 800]} sizes={sizes} loading="lazy" class="peek" aria-hidden="true" />
+    {previews.map((m, i) => (
+      <Image src={m} alt="" widths={[480, 800]} sizes={sizes} loading="lazy" class="pv" data-i={i} aria-hidden="true" />
+    ))}
+    {previews.length > 0 && (
+      <>
+        <div class="ticks" aria-hidden="true">{previews.map(() => <i />)}</div>
+        <span class="label pv-label" aria-hidden="true">Preview · <b>1</b>/{previews.length}</span>
+      </>
     )}
   </div>
   <div class="row">
@@ -32,30 +48,78 @@ const sizes = '(max-width: 720px) 100vw, (max-width: 1200px) 30vw, 22vw';
 </a>
 
 <script>
-  // Cards lean toward the pointer (up to 6°) while lifted; they settle flat again on leave.
-  function bindTilt() {
+  // Cards lean toward the pointer (up to 6°) while lifted, and play a reel of
+  // the project's stills: auto-advancing, or scrubbed by moving across the image.
+  const STEP = 900, WAIT = 250, IDLE = 1000;
+  const resets = new Set<() => void>();
+
+  function bindCards() {
     if (!matchMedia('(hover: hover) and (min-width: 721px)').matches) return;
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
     document.querySelectorAll<HTMLElement>('.card').forEach((card) => {
       const media = card.querySelector<HTMLElement>('.media');
       if (!media || card.dataset.tilt) return;
       card.dataset.tilt = '1';
+      const pvs = [...media.querySelectorAll<HTMLElement>('.pv')];
+      const ticks = [...media.querySelectorAll<HTMLElement>('.ticks i')];
+      const count = media.querySelector('.pv-label b');
+      const n = pvs.length;
+      let at = -1, timer = 0, lastX = 0;
+
+      const show = (k: number) => {
+        at = k;
+        card.classList.add('previewing');
+        pvs.forEach((p, j) => p.classList.toggle('on', j === k));
+        ticks.forEach((t, j) => { t.classList.toggle('done', j < k); t.classList.toggle('on', j === k); });
+        if (count) count.textContent = String(k + 1);
+      };
+      const play = () => {
+        card.classList.remove('scrub');
+        show((at + 1) % n);
+        if (!still && n > 1) timer = window.setTimeout(play, STEP);
+      };
+      const reset = () => {
+        clearTimeout(timer);
+        at = -1;
+        card.classList.remove('previewing', 'scrub');
+        pvs.forEach((p) => p.classList.remove('on'));
+        ticks.forEach((t) => t.classList.remove('on', 'done'));
+      };
+      if (n) resets.add(reset);
+
+      media.addEventListener('pointerenter', (e) => {
+        lastX = e.clientX;
+        if (n) timer = window.setTimeout(play, WAIT);
+      });
       media.addEventListener('pointermove', (e) => {
         const r = media.getBoundingClientRect();
-        const x = (e.clientX - r.left) / r.width - 0.5;
+        const x = (e.clientX - r.left) / r.width;
         const y = (e.clientY - r.top) / r.height - 0.5;
-        card.classList.add('tilting');
-        media.style.setProperty('--rx', (x * 12).toFixed(2) + 'deg');
-        media.style.setProperty('--ry', (-y * 12).toFixed(2) + 'deg');
+        if (!still) {
+          card.classList.add('tilting');
+          media.style.setProperty('--rx', ((x - 0.5) * 12).toFixed(2) + 'deg');
+          media.style.setProperty('--ry', (-y * 12).toFixed(2) + 'deg');
+        }
+        // horizontal movement scrubs the reel; auto-advance resumes after a pause
+        const dx = Math.abs(e.clientX - lastX);
+        lastX = e.clientX;
+        if (still || n < 2 || at < 0 || dx < 2) return;
+        clearTimeout(timer);
+        card.classList.add('scrub');
+        const k = Math.min(n - 1, Math.max(0, Math.floor(x * n)));
+        if (k !== at) show(k);
+        timer = window.setTimeout(play, IDLE);
       });
       media.addEventListener('pointerleave', () => {
+        reset();
         card.classList.remove('tilting');
         media.style.removeProperty('--rx');
         media.style.removeProperty('--ry');
       });
     });
   }
-  document.addEventListener('astro:page-load', bindTilt);
+  document.addEventListener('astro:page-load', bindCards);
+  document.addEventListener('astro:before-swap', () => { resets.forEach((r) => r()); resets.clear(); });
 </script>
 
 <style>
@@ -69,30 +133,48 @@ const sizes = '(max-width: 720px) 100vw, (max-width: 1200px) 30vw, 22vw';
   }
   /* while the pointer steers the tilt, follow it closely instead of lagging behind */
   .card.tilting .media { transition: transform .12s linear, box-shadow var(--dur-3) var(--ease); }
-  .media :global(img), .media video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform var(--dur-3) var(--ease), clip-path var(--dur-3) var(--ease); }
-  .media .peek { clip-path: inset(0 0 0 100%); }
+  .media :global(img), .media video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform var(--dur-3) var(--ease); }
+  /* Preview reel: stills cross-fade over the cover, story-style ticks on top */
+  .media .pv { opacity: 0; transition: opacity var(--dur-2) var(--ease), transform var(--dur-3) var(--ease); }
+  .media .pv.on { opacity: 1; }
+  .ticks { position: absolute; top: 8px; left: 8px; right: 8px; display: flex; gap: 3px; opacity: 0; transition: opacity var(--dur-1); }
+  .ticks i { flex: 1; height: 2px; border-radius: 1px; background: rgb(255 255 255 / .35); overflow: hidden; }
+  .ticks i::after { content: ''; display: block; height: 100%; background: #fff; transform: scaleX(0); transform-origin: left; }
+  .ticks i.done::after, .card.scrub .ticks i.on::after { transform: none; }
+  .card:not(.scrub) .ticks i.on::after { animation: tick .9s linear forwards; }
+  @keyframes tick { to { transform: none; } }
+  .pv-label {
+    position: absolute; left: 8px; bottom: 8px; padding: 3px 8px; border-radius: 999px;
+    font-size: 11px; color: #fff; background: rgb(0 0 0 / .45); backdrop-filter: blur(6px);
+    opacity: 0; transition: opacity var(--dur-1);
+  }
+  .pv-label b { font-weight: inherit; }
+  .card.previewing :is(.ticks, .pv-label) { opacity: 1; }
+  /* keyboard focus just shows the first still */
+  .card:focus-visible:not(.previewing) .pv[data-i="0"] { opacity: 1; }
   .row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-top: 4px; }
-  .title { margin: 0; font-size: 18px; font-weight: 400; letter-spacing: -0.01em; }
+  .title { margin: 0; font-family: var(--display); font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
   .title::after { content: ' →'; display: inline-block; opacity: 0; transform: translateX(-6px); transition: opacity var(--dur-1), transform var(--dur-2) var(--ease); color: var(--accent); }
   .sum { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.4; max-width: 40ch; }
   .tags { margin-top: 2px; }
 
   /* Hover, keyboard focus and the hero's "lit" state all read the same */
   .card:is(:hover, :focus-visible, .lit) .media { --lift: -8px; box-shadow: 0 2px 4px rgb(0 0 0 / .06), 0 18px 36px -12px rgb(0 0 0 / .28); }
-  .card:is(:hover, :focus-visible, .lit) .media .cover { transform: scale(1.04); }
+  .card:is(:hover, :focus-visible, .lit) .media :is(.cover, .pv) { transform: scale(1.04); }
   .card:is(:hover, :focus-visible, .lit) .title::after { opacity: 1; transform: none; }
-  /* the second image peeks in only after a deliberate pause */
-  .card:is(:hover, :focus-visible) .media .peek { clip-path: inset(0 0 0 0%); transition-delay: var(--dur-2); }
   /* Phones: no ring or hover effects; the deck in WorkIndex moves the cards */
   @media (max-width: 720px), (hover: none) {
     .card:is(:hover, :focus-visible, .lit) .media { --lift: 0px; --rx: 0deg; --ry: 0deg; box-shadow: none; }
     .card:is(:hover, :focus-visible, .lit) .media .cover { transform: none; }
-    .card:is(:hover, :focus-visible) .media .peek { clip-path: inset(0 0 0 100%); }
+    .media :is(.pv, .ticks, .pv-label) { display: none; }
     .card:is(:hover, :focus-visible, .lit) .title::after { opacity: 0; }
   }
   @media (max-width: 720px) {
     .card:active .media { transform: scale(.985); transition: transform var(--dur-1) var(--ease); }
   }
-  @media (prefers-reduced-motion: reduce) { .media { --rx: 0deg !important; --ry: 0deg !important; } }
+  @media (prefers-reduced-motion: reduce) {
+    .media { --rx: 0deg !important; --ry: 0deg !important; }
+    .ticks { display: none; }
+  }
 </style>
 

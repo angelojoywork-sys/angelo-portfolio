@@ -1,5 +1,6 @@
 ---
 import { getSite } from '../lib/content';
+import Puppy from './Puppy.astro';
 const site = await getSite();
 const headline = site.data.intro.map((s) => s.text).join(' ');
 const [availLead, ...availTail] = (site.data.available ?? '').split(' & ');
@@ -14,6 +15,8 @@ const availRest = availTail.length ? '& ' + availTail.join(' & ') : '';
     {site.data.location && <div><dt class="label">Location</dt><dd>{site.data.location}</dd></div>}
     {site.data.available && <div><dt class="label">Status</dt><dd><span class="avail"></span>{availLead}{availRest && <><br />{availRest}</>}</dd></div>}
   </dl>
+
+  <Puppy />
 </section>
 
 <style>
@@ -23,7 +26,8 @@ const availRest = availTail.length ? '& ' + availTail.join(' & ') : '';
     font-size: clamp(30px, 3.1vw, 50px);
     line-height: 1.08;
     letter-spacing: -0.02em;
-    font-weight: 400;
+    font-family: var(--display);
+    font-weight: 700;
     max-width: 18em;
     color: var(--electric);
     text-wrap: pretty;

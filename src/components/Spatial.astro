@@ -45,7 +45,7 @@ const legend = Object.entries(site.data.disciplines)
 
   <div class="caption">
     <h1 class="stitle">{site.data.spatialTitle}</h1>
-    <p class="sub"><span class="fine">Hover a piece to see what it's connected to</span><span class="touch">Tap a piece to open it</span></p>
+    <p class="sub"><span class="fine">Scroll to immerse</span><span class="touch">Tap a piece to open it</span></p>
   </div>
 
   <div class="fcap">
@@ -98,7 +98,7 @@ const legend = Object.entries(site.data.disciplines)
   .spatial.focused .nodes :global(a:not(.focus)) { pointer-events: none; }
 
   .tip { position: absolute; left: 0; top: 0; pointer-events: none; background: var(--fg); color: var(--bg); padding: 7px 10px; border-radius: 6px; font-size: 13px; line-height: 1.25; opacity: 0; transition: opacity var(--dur-1); white-space: nowrap; z-index: 99999; }
-  .tip b { display: block; font-weight: 550; }
+  .tip b { display: block; font-family: var(--display); font-weight: 600; }
   .tip span { font: 10px var(--mono); opacity: .65; text-transform: uppercase; }
   .tip.show { opacity: 1; }
 
@@ -107,7 +107,7 @@ const legend = Object.entries(site.data.disciplines)
   .spatial.used .hint, .spatial.zoomed .hint { opacity: 0; }
   .caption { position: absolute; left: var(--gutter); bottom: clamp(24px, 5vh, 56px); pointer-events: none; max-width: min(660px, 80vw); transition: opacity var(--dur-2) var(--ease), transform var(--dur-3) var(--ease); }
   .spatial.zoomed .caption { opacity: 0; transform: translateY(12px); }
-  .stitle { margin: 0; font-size: clamp(28px, 3.4vw, 52px); line-height: 1; letter-spacing: -0.045em; font-weight: 450; text-wrap: balance; }
+  .stitle { margin: 0; font-size: clamp(28px, 3.4vw, 52px); line-height: 1; letter-spacing: -0.03em; font-family: var(--display); font-weight: 700; text-wrap: balance; }
   .sub { margin: 14px 0 0; color: var(--muted); }
 
   /* focus mode: one project fills the view, its caption replaces the headline */
@@ -116,7 +116,7 @@ const legend = Object.entries(site.data.disciplines)
   .spatial.focused .fc-open { pointer-events: auto; }
   .fc-meta { display: flex; gap: 14px; margin: 0 0 10px; }
   .fc-count { color: var(--fg); font-variant-numeric: tabular-nums; }
-  .fc-title { margin: 0; font-size: clamp(24px, 2.6vw, 40px); line-height: 1.05; letter-spacing: -0.035em; font-weight: 450; text-wrap: balance; }
+  .fc-title { margin: 0; font-size: clamp(24px, 2.6vw, 40px); line-height: 1.05; letter-spacing: -0.025em; font-family: var(--display); font-weight: 700; text-wrap: balance; }
   .fc-title.in, .fc-meta.in { animation: fc-in var(--dur-3) var(--ease) both; }
   @keyframes fc-in { from { opacity: 0; transform: translateY(6px); } }
   .fc-open { display: inline-block; margin-top: 14px; font-size: 14px; padding-bottom: 2px; border-bottom: 1px solid currentColor; }

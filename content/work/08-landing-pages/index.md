@@ -1,9 +1,9 @@
 ---
-title: "Landing page design"
-summary: "Event landing page redesigns built around clear hierarchy and less copy."
+title: "Augment: Event Landing Pages"
+summary: "Event pages redesigned for faster scanning, with clearer hierarchy and less copy."
 year: 2026
 client: "Augment"
-type: "Web · UI"
+type: "Web · UI design"
 role: "Designer"
 tools: [Figma]
 disciplines: [digital]

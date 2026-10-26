@@ -11,9 +11,9 @@ const previews = await Promise.all(
 const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w) => w.data.disciplines.includes(k)));
 ---
 
-<section class="work" aria-label="Selected work">
+<section class="work" aria-label="Work">
   <div class="bar">
-    <h2 class="label">Selected work <span class="count">({String(work.length).padStart(2, '0')})</span></h2>
+    <h2 class="label">Work <span class="count">({String(work.length).padStart(2, '0')})</span></h2>
     <div class="chips" role="group" aria-label="Filter by discipline">
       <button type="button" class="chip" data-filter="" aria-pressed="true">All</button>
       {used.map(([k, v]) => <button type="button" class="chip" data-filter={k} aria-pressed="false">{v}</button>)}
@@ -26,7 +26,7 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
 
   <div class="stepper" aria-label="Project navigation">
     <button type="button" class="step" data-step="-1" aria-label="Previous project"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3L5 8l5 5"/></svg></button>
-    <span class="step-count" aria-live="polite"><span class="roll"><span class="strip">{work.map((_, i) => <b>{i + 1}</b>)}</span></span> of {work.length}</span>
+    <span class="step-count" aria-live="polite"><span class="roll"><span class="strip">{work.map((_, i) => <b>{i + 1}</b>)}</span></span> of <span class="total">{work.length}</span></span>
     <span class="progress" aria-hidden="true"><i></i></span>
     <button type="button" class="step" data-step="1" aria-label="Next project"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3l5 5-5 5"/></svg></button>
   </div>
@@ -53,7 +53,11 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
 
 <style>
   .work { min-width: 0; }
-  .grid[hidden], .list[hidden] { display: none; }
+  .grid[hidden], .list[hidden], .grid :global(.card[hidden]), .list li[hidden] { display: none; }
+  /* filtered-in projects fade up */
+  .grid :global(.card.reveal), .list li.reveal { animation: reveal var(--dur-3) var(--ease) both; }
+  @keyframes reveal { from { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .grid :global(.card.reveal), .list li.reveal { animation: none; } }
   .bar { display: flex; align-items: center; justify-content: space-between; gap: 12px 20px; flex-wrap: wrap; margin-bottom: 20px; }
   .count { color: var(--faint); }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-right: auto; }
@@ -104,11 +108,9 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
     transition: padding var(--dur-2) var(--ease), opacity var(--dur-2), color var(--dur-2);
   }
   .lrow:hover { padding-left: 10px; }
-  .ltitle { font-weight: 550; letter-spacing: -0.01em; }
+  .ltitle { font-family: var(--display); font-weight: 600; letter-spacing: -0.01em; }
   .lmeta { color: var(--muted); font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .lyear { text-align: right; }
-  .lrow.lit { padding-left: 10px; }
-  .lrow.lit .ltitle { color: var(--accent); }
   @media (max-width: 720px) { .lrow { grid-template-columns: 32px 1fr auto; } .lmeta { display: none; } }
 
   .preview {
@@ -130,12 +132,15 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
     if (!work || !grid || !stepper) return;
     const phone = matchMedia('(max-width: 720px)');
     const calm = matchMedia('(prefers-reduced-motion: reduce)');
-    const cards = [...grid.querySelectorAll<HTMLElement>('.card')];
-    const N = cards.length;
+    const all = [...grid.querySelectorAll<HTMLElement>('.card')];
+    // only cards the filter leaves visible are in the deck
+    let cards = all.filter((c) => !c.hidden);
+    let N = cards.length;
     const prev = stepper.querySelector<HTMLButtonElement>('[data-step="-1"]')!;
     const next = stepper.querySelector<HTMLButtonElement>('[data-step="1"]')!;
     const strip = stepper.querySelector<HTMLElement>('.strip')!;
     const bar = stepper.querySelector<HTMLElement>('.progress i')!;
+    const total = stepper.querySelector<HTMLElement>('.total')!;
     // coming back from a project lands on the card you left, not on the first one
     let saved = 0;
     try { saved = Number(sessionStorage.getItem('deck')) || 0; } catch {}
@@ -170,9 +175,10 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
       strip.style.setProperty('--i', String(index));
       strip.classList.toggle('settle', settle);
       bar.classList.toggle('settle', settle);
-      bar.style.setProperty('--p', ((index + 1) / N).toFixed(3));
+      bar.style.setProperty('--p', ((index + 1) / Math.max(N, 1)).toFixed(3));
+      total.textContent = String(N);
       prev.disabled = index === 0;
-      next.disabled = index === N - 1;
+      next.disabled = index >= N - 1;
       try { sessionStorage.setItem('deck', String(index)); } catch {}
     }
 
@@ -234,7 +240,16 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
 
     phone.addEventListener('change', () => { measure(); render(); }, sig);
     window.addEventListener('resize', () => { measure(); render(); }, sig);
-    document.addEventListener('view-change', render, sig);
+    document.addEventListener('view-change', (e) => {
+      if ((e as CustomEvent).detail?.filter) {
+        // filter changed: rebuild the deck from the visible cards and start over
+        all.forEach((c) => { c.style.cssText = ''; c.classList.remove('deck-settle', 'deck-off'); c.inert = false; c.removeAttribute('aria-hidden'); });
+        cards = all.filter((c) => !c.hidden);
+        N = cards.length;
+        index = 0; drag = 0; settle = false;
+      }
+      render();
+    }, sig);
     measure(); render();
   }
   document.addEventListener('astro:page-load', initDeck);

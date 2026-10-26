@@ -1,8 +1,8 @@
 ---
-title: "Social media/Hoarding designs"
-summary: "Social media posts, carousels and hoarding designs."
+title: "Social & Hoarding Graphics"
+summary: "Social posts, carousels and large-format site hoardings."
 year: 2025
-type: "Social · Print"
+type: "Social · Large format"
 role: "Designer"
 tools: [Illustrator, Photoshop]
 disciplines: [graphic]

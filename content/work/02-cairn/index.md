@@ -1,12 +1,12 @@
 ---
-title: Cairn Homes - Hampden Hill Donabate
-summary: Cairn Homes is one of Ireland’s leading home and community builders
+title: "Cairn Homes: Hampden Hill Launch"
+summary: "Sales launch collateral for a new Donabate development, delivered in two days."
 year: 2026
 client: Cairn Homes
-type: Print design
+type: "Print · Property marketing"
 role: Digital & Graphic Designer
 tools: [Adobe InDesign, Illustrator, Photoshop]
-disciplines: [Print]
+disciplines: [graphic]
 cover: cover.jpg
 order: 2
 note: "Two days, two languages, and a 1:10 scale file. Leaving the QR code off was the easy call."

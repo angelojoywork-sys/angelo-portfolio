@@ -1,9 +1,9 @@
 ---
-title: Mount Juliet
-summary: Ireland’s premier 5-star luxury heritage resort.
+title: "Mount Juliet Estate: Seasonal Ads"
+summary: "10 to 15 Meta campaigns in three formats for a 5-star heritage resort, in one week."
 year: 2026
 client: Mount Juliet
-type: Campaign design
+type: "Paid social · Campaign"
 role: Digital Designer
 tools: [Illustrator]
 disciplines: [graphic]

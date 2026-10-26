@@ -4,12 +4,16 @@ interface Props { page: string }
 const { page } = Astro.props;
 const site = await getSite();
 const isHome = page === 'home';
+// last word gets its own span so it can nudge on hover
+const rest = site.data.name.slice(1);
+const cut = rest.lastIndexOf(' ') + 1;
+const restLead = rest.slice(0, cut), lastWord = rest.slice(cut);
 const showThinking = page === 'home' || page === 'experiments';
 ---
 
 <header class="site-header" transition:name="site-header" transition:animate="none">
   <a href="/" class="brand" aria-label={`${site.data.name}, home`}>
-    <span class="brand-name" aria-hidden="true"><span class="brand-init">{site.data.name.charAt(0)}</span><span class="brand-rest">{site.data.name.slice(1)}</span></span>
+    <span class="brand-name" aria-hidden="true"><span class="brand-init">{site.data.name.charAt(0)}</span><span class="brand-rest">{restLead}<span class="brand-last">{lastWord}</span></span></span>
   </a>
 
   <nav class="views" aria-label="Work views">
@@ -48,7 +52,7 @@ const showThinking = page === 'home' || page === 'experiments';
     backdrop-filter: blur(14px) saturate(1.2);
     -webkit-backdrop-filter: blur(14px) saturate(1.2);
   }
-  .brand { display: inline-flex; align-items: center; font-weight: 550; letter-spacing: -0.01em; justify-self: start; }
+  .brand { display: inline-flex; align-items: center; font-family: var(--display); font-weight: 600; letter-spacing: -0.01em; justify-self: start; }
 
   .views {
     position: relative;
@@ -83,6 +87,10 @@ const showThinking = page === 'home' || page === 'experiments';
   /* Name: the loader's "A" lands on the initial, then the rest rises in behind it. */
   .brand-name { display: inline-block; line-height: 1.5; }
   .brand-init, .brand-rest { display: inline-block; }
+  .brand-rest { white-space: pre; }
+  .brand-last { display: inline-block; transition: transform var(--dur-2) var(--ease); }
+  .brand:hover .brand-last, .brand:focus-visible .brand-last { transform: translateX(6px); }
+  @media (prefers-reduced-motion: reduce) { .brand:hover .brand-last, .brand:focus-visible .brand-last { transform: none; } }
   /* while the intro plays the brand waits; the loader hands over and clears has-loader */
   :global(html.has-loader) .brand-name { opacity: 0; }
   :global(html.has-loader.loader-rest) .brand-name { opacity: 1; }

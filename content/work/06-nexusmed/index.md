@@ -1,6 +1,6 @@
 ---
-title: "NexusMed - Brand Identity Design"
-summary: "Brand identity for a healthcare company."
+title: "NexusMed: Brand Identity"
+summary: "A calm, trustworthy identity for a healthcare company."
 year: 2026
 client: "NexusMed"
 type: "Brand identity"

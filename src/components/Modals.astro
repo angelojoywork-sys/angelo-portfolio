@@ -58,7 +58,7 @@ const ext = (u: string) => (u.startsWith('http') ? { target: '_blank', rel: 'noo
   </button>
   <div class="m-body about" class:list={{ 'has-photo': !!d.photo }}>
     <div class="m-text">
-      <h2 id="ma-title" class="m-head">Hey there, I'm {d.name}.</h2>
+      <h2 id="ma-title" class="m-head">Hi! I'm {d.name}.</h2>
       <div class="m-prose"><Content /></div>
     </div>
     {d.photo && <img class="m-photo" src={d.photo} alt={d.name} width="800" height="600" decoding="async" fetchpriority="high" />}
@@ -88,9 +88,9 @@ const ext = (u: string) => (u.startsWith('http') ? { target: '_blank', rel: 'noo
   .m-body { padding: clamp(28px, 4vw, 54px); }
   .m-close { position: absolute; top: 18px; right: 18px; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; color: var(--muted); transition: color var(--dur-1), background var(--dur-1), transform var(--dur-2) var(--ease); }
   .m-close:hover { color: var(--fg); background: var(--surface); transform: rotate(90deg); }
-  .m-head { margin: 0 36px 24px 0; font-size: 20px; font-weight: 450; letter-spacing: -0.03em; line-height: 1.2; }
+  .m-head { margin: 0 36px 24px 0; font-family: var(--display); font-size: 22px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.2; }
   .m-line { margin: 0; color: var(--muted); font-size: 17px; letter-spacing: -0.025em; }
-  .m-line a, .m-prose a, .m-prose strong { color: var(--fg); font-weight: 450; }
+  .m-line a, .m-prose a, .m-prose strong { color: var(--fg); font-weight: 400; }
   .m-line a:hover { text-decoration: underline; text-underline-offset: 3px; }
 
   .m-body.contact { padding: clamp(24px, 4vw, 40px); display: grid; gap: 24px; }
@@ -109,6 +109,8 @@ const ext = (u: string) => (u.startsWith('http') ? { target: '_blank', rel: 'noo
   .about.has-photo { grid-template-columns: minmax(0, 1fr) minmax(0, 0.55fr); gap: clamp(28px, 4vw, 56px); }
   .m-prose { color: var(--muted); font-size: 18px; line-height: 1.5; letter-spacing: -0.025em; }
   .m-prose p { margin: 0 0 1.1em; }
+  /* the greeting is already the heading here */
+  .m-prose .greet { display: none; }
   .m-photo { width: 100%; border-radius: 10px; object-fit: cover; align-self: end; aspect-ratio: 5 / 7; }
   @media (max-width: 720px) {
     .about.has-photo { grid-template-columns: 1fr; }

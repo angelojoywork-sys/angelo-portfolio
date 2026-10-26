@@ -1,12 +1,12 @@
 ---
-title: Respond - Elsac campaign creatives
-summary: One of Ireland's largest not-for-profit housing associations.
+title: "Respond: ELSAC Recruitment Campaign"
+summary: "Recruiting early-years educators across print and social for one of Ireland's largest housing charities."
 year: 2026
 client: Respond
-type: Digital/Print
-role: Lead designer
+type: "Campaign · Print & Social"
+role: Lead Designer
 tools: [Illustrator, Photoshop, InDesign]
-disciplines: [Graphic design]
+disciplines: [graphic, digital]
 cover: cover.jpg
 order: 1
 note: "A QR code did more for these banners than any extra line of copy could."

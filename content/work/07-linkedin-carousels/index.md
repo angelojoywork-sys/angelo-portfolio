@@ -1,9 +1,9 @@
 ---
-title: "LinkedIn Carousel designs"
-summary: "30 Women 30 Stories: a loud, cohesive carousel identity for a grassroots STEM campaign."
+title: "30 Women 30 Stories: Campaign Identity"
+summary: "A bold carousel system that made 30 posts from 30 people feel like one movement."
 year: 2026
 client: "30 Women 30 Stories"
-type: "Social media"
+type: "Social · Campaign identity"
 role: "Designer"
 tools: [Illustrator]
 disciplines: [graphic, digital]

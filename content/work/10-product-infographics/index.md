@@ -1,6 +1,6 @@
 ---
-title: "Product Infographic design"
-summary: "Product infographics that make features easy to scan."
+title: "Product Infographics"
+summary: "Feature-led infographics that make products easy to compare at a glance."
 year: 2025
 type: "Infographic"
 role: "Designer"

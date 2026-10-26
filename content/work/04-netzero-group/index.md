@@ -1,9 +1,9 @@
 ---
-title: NetZero Group
-summary: NetZero Group is a leading provider of sustainable energy and decarbonisation solutions in Ireland
+title: "NetZero Group: Sales Brochure"
+summary: "Technical product tiers and SEAI grant info made clear and on-brand."
 year: 2026
 client: NetZero Group
-type: Editorial
+type: "Editorial · Print"
 role: Designer
 tools: [InDesign, Photoshop]
 disciplines: [graphic]
