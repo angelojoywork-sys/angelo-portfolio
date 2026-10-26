@@ -108,7 +108,7 @@ const ogImage = image ? new URL(image, Astro.site).href : undefined;
       // never ends on one or two stray words (text-wrap: pretty alone doesn't guarantee that).
       function tieEnds() {
         document.querySelectorAll<HTMLElement>('.page :is(p, li, dd, figcaption, h1, h2, h3, .pt, .lede, .sum)').forEach((el) => {
-          if (el.dataset.tied) return;
+          if (el.dataset.tied || el.matches('.intro')) return;
           el.dataset.tied = '1';
           const words = (el.textContent ?? '').trim().split(/\s+/).length;
           const tie = words >= 10 ? 3 : words >= 6 ? 2 : words >= 3 ? 1 : 0;
