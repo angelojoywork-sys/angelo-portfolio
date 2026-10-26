@@ -1,6 +1,6 @@
 ---
-title: "Respond: Campaign creatives"
-summary: "Recruiting early-years educators across print and social for one of Ireland's largest housing charities."
+title: "Respond: Recruitment Campaign"
+summary: "Print and social creative recruiting early-years educators for a leading Irish housing charity."
 year: 2026
 client: Respond
 type: "Campaign · Print & Social"

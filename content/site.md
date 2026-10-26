@@ -30,11 +30,11 @@ disciplines:
 
 # The headline on the home page.
 intro:
-  - text: Designer who listens, observes, and is fearlessly driven to create useful experiences through purposeful planning.
+  - text: Designer shaping useful experiences through listening, observation and purposeful planning.
     key: true
 
 # Short headline shown in the Spatial view.
-spatialTitle: 'Welcome to my creative world: expression shaped by culture, emotion and meaning.'
+spatialTitle: 'A creative world shaped by culture, emotion and meaning.'
 
 # Shown on the Info page.
 services:

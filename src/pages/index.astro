@@ -19,16 +19,24 @@ const experiments = await getItems('experiments');
 
 <style>
   .home {
+    --home-top: clamp(var(--space-3), 8vh, var(--space-12));
     display: grid;
     grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-    gap: clamp(32px, 5vw, 96px);
-    padding-top: clamp(24px, 8vh, 96px);
+    gap: clamp(var(--space-4), 5vw, var(--space-12));
+    padding-top: var(--home-top);
     align-items: start;
   }
-  .left { position: sticky; top: calc(var(--header-h) + clamp(24px, 8vh, 96px)); }
+  .left {
+    position: sticky;
+    top: calc(var(--header-h) + var(--home-top));
+    /* fills the viewport under the header so Lycan sits at the fold, level with the card grid's first screen */
+    height: calc(100svh - var(--header-h) - var(--home-top) - var(--space-5));
+    min-height: 440px;
+  }
   @media (max-width: 960px) {
     .home { grid-template-columns: minmax(0, 1fr); padding-top: 24px; }
-    .left { position: static; }
+    .left { position: static; height: auto; min-height: 0; }
+    .left :global(.hero) { gap: var(--space-4); }
   }
   :global(body.spatial-on) { overflow: hidden; }
   :global(body.spatial-on .page) { display: none; }

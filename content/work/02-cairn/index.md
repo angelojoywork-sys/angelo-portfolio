@@ -1,6 +1,6 @@
 ---
-title: "Cairn Homes: Press ads"
-summary: "Sales launch collateral for a new Donabate development, delivered in two days."
+title: "Cairn Homes: Launch Press Ads"
+summary: "Sales-launch press collateral for a new Donabate development, designed and delivered in two days."
 year: 2026
 client: Cairn Homes
 type: "Print · Property marketing"

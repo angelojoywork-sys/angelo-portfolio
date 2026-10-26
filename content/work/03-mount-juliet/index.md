@@ -1,6 +1,6 @@
 ---
-title: "Mount Juliet: Meta ads"
-summary: "10 to 15 Meta campaigns in three formats for a 5-star heritage resort, in one week."
+title: "Mount Juliet: Meta Campaigns"
+summary: "Up to 15 Meta ads across three formats for a 5-star heritage resort, shipped in one week."
 year: 2026
 client: Mount Juliet
 type: "Paid social · Campaign"

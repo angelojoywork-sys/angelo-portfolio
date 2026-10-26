@@ -56,7 +56,7 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
   .grid :global(.card.reveal), .list li.reveal { animation: reveal var(--dur-3) var(--ease) both; }
   @keyframes reveal { from { opacity: 0; } }
   @media (prefers-reduced-motion: reduce) { .grid :global(.card.reveal), .list li.reveal { animation: none; } }
-  .bar { display: flex; align-items: center; justify-content: space-between; gap: 12px 20px; flex-wrap: wrap; margin-bottom: 20px; }
+  .bar { display: flex; align-items: center; justify-content: space-between; gap: 12px 20px; flex-wrap: wrap; margin-bottom: var(--space-3); }
   .count { color: var(--faint); }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-right: auto; }
   .chip { font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); transition: all var(--dur-1) var(--ease); }
@@ -66,7 +66,7 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
   .layout button { padding: 6px; color: var(--faint); border-radius: 4px; }
   .layout button[aria-pressed='true'] { color: var(--fg); background: var(--surface); }
 
-  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px var(--gutter); }
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5) var(--gutter); }
   @media (min-width: 1700px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
   @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
 
