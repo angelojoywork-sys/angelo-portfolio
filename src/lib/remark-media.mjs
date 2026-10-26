@@ -11,6 +11,18 @@ function walk(node, fn) {
 
 export default function remarkMedia() {
   return (tree) => {
+    // ":::grid" … ":::" paragraphs wrap the images between them in a grid
+    const wrap = (kids) => {
+      const out = [];
+      for (const k of kids) {
+        const t = k.type === 'paragraph' && k.children?.length === 1 && k.children[0].type === 'text' ? k.children[0].value.trim() : '';
+        if (t === ':::grid') out.push({ type: 'html', value: '<div class="img-grid">' });
+        else if (t === ':::') out.push({ type: 'html', value: '</div>' });
+        else out.push(k);
+      }
+      return out;
+    };
+    tree.children = wrap(tree.children);
     walk(tree, (node) => {
       if (node.type === 'image' && !/^([a-z]+:|\/|\.)/i.test(node.url)) node.url = `./${node.url}`;
       // Write-up images sit in a column of at most 1100px, so size the srcset for that

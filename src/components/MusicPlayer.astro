@@ -1,0 +1,111 @@
+---
+// Small "now playing" card. Tracks are listed in /public/music/tracks.json
+// ([{ "title", "artist", "file" }]); with an empty list the player stays hidden.
+// Never autoplays, and stops when you leave the page.
+---
+
+<div class="mp" hidden>
+  <p class="label mp-label">Now playing</p>
+  <div class="mp-row">
+    <button class="mp-btn mp-play" type="button" aria-label="Play" aria-pressed="false">
+      <svg class="i-play" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5v11l9-5.5z" fill="currentColor" /></svg>
+      <svg class="i-pause" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5h3v11H3zM8 1.5h3v11H8z" fill="currentColor" /></svg>
+    </button>
+    <div class="mp-meta">
+      <p class="mp-title"></p>
+      <p class="mp-artist"></p>
+    </div>
+    <span class="mp-eq" aria-hidden="true"><i></i><i></i><i></i></span>
+    <button class="mp-btn mp-prev" type="button" aria-label="Previous track">
+      <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 2h1.5v10H3zM12 2v10L5.5 7z" fill="currentColor" /></svg>
+    </button>
+    <button class="mp-btn mp-next" type="button" aria-label="Next track">
+      <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M9.5 2H11v10H9.5zM2 2l6.5 5L2 12z" fill="currentColor" /></svg>
+    </button>
+  </div>
+  <div class="mp-bar"><i></i></div>
+</div>
+
+<script>
+  type Track = { title: string; artist?: string; file: string };
+  let audio: HTMLAudioElement | null = null;
+
+  async function init() {
+    audio?.pause();
+    audio = null;
+    const root = document.querySelector<HTMLElement>('.mp');
+    if (!root) return;
+    let tracks: Track[] = [];
+    try {
+      const res = await fetch('/music/tracks.json');
+      if (res.ok) tracks = await res.json();
+    } catch {}
+    if (!Array.isArray(tracks) || !tracks.length) return;
+
+    root.hidden = false;
+    const a = (audio = new Audio());
+    a.preload = 'none';
+    const play = root.querySelector<HTMLButtonElement>('.mp-play')!;
+    const title = root.querySelector<HTMLElement>('.mp-title')!;
+    const artist = root.querySelector<HTMLElement>('.mp-artist')!;
+    const bar = root.querySelector<HTMLElement>('.mp-bar i')!;
+    let at = 0;
+
+    const load = (k: number) => {
+      at = (k + tracks.length) % tracks.length;
+      const t = tracks[at];
+      a.src = `/music/${t.file}`;
+      title.textContent = t.title;
+      artist.textContent = t.artist ?? '';
+      bar.style.transform = 'scaleX(0)';
+    };
+    const sync = () => {
+      const on = !a.paused;
+      root.classList.toggle('playing', on);
+      play.setAttribute('aria-pressed', String(on));
+      play.setAttribute('aria-label', on ? 'Pause' : 'Play');
+    };
+    load(0);
+
+    play.addEventListener('click', () => { a.paused ? a.play().catch(() => {}) : a.pause(); });
+    root.querySelector('.mp-prev')!.addEventListener('click', () => { const was = !a.paused; load(at - 1); if (was) a.play().catch(() => {}); });
+    root.querySelector('.mp-next')!.addEventListener('click', () => { const was = !a.paused; load(at + 1); if (was) a.play().catch(() => {}); });
+    a.addEventListener('play', sync);
+    a.addEventListener('pause', sync);
+    a.addEventListener('ended', () => { load(at + 1); a.play().catch(() => {}); });
+    a.addEventListener('timeupdate', () => {
+      if (a.duration) bar.style.transform = `scaleX(${a.currentTime / a.duration})`;
+    });
+  }
+
+  document.addEventListener('astro:page-load', init);
+  document.addEventListener('astro:before-swap', () => { audio?.pause(); audio = null; });
+</script>
+
+<style>
+  .mp { width: min(100%, 320px); padding: var(--space-2); border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+  .mp[hidden] { display: none; }
+  .mp-label { margin: 0 0 var(--space-1); color: var(--muted); }
+  .mp-row { display: flex; align-items: center; gap: var(--space-1); }
+  .mp-btn { display: grid; place-items: center; width: 32px; height: 32px; flex: none; border-radius: 50%; color: var(--fg); transition: background var(--dur-1), transform var(--dur-1) var(--ease); }
+  .mp-btn:hover { background: var(--line); }
+  .mp-btn:active { transform: scale(0.92); }
+  .mp-play { background: var(--fg); color: var(--bg); }
+  .mp-play:hover { background: var(--fg); opacity: 0.85; }
+  .mp-play .i-pause, .mp.playing .mp-play .i-play { display: none; }
+  .mp.playing .mp-play .i-pause { display: block; }
+  .mp-meta { flex: 1; min-width: 0; }
+  .mp-title, .mp-artist { margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mp-title { font-size: 14px; }
+  .mp-artist { font-size: 12px; color: var(--muted); }
+  .mp-artist:empty { display: none; }
+  .mp-eq { display: flex; align-items: flex-end; gap: 2px; height: 14px; flex: none; }
+  .mp-eq i { width: 2px; height: 3px; background: var(--electric); border-radius: 1px; }
+  .mp.playing .mp-eq i { animation: mp-eq 0.9s var(--ease) infinite alternate; }
+  .mp.playing .mp-eq i:nth-child(2) { animation-delay: -0.3s; }
+  .mp.playing .mp-eq i:nth-child(3) { animation-delay: -0.6s; }
+  @keyframes mp-eq { to { height: 14px; } }
+  .mp-bar { height: 2px; margin-top: var(--space-2); border-radius: 2px; background: var(--line); overflow: hidden; }
+  .mp-bar i { display: block; height: 100%; background: var(--fg); transform-origin: left; transform: scaleX(0); }
+  @media (prefers-reduced-motion: reduce) { .mp.playing .mp-eq i { animation: none; height: 8px; } }
+</style>
