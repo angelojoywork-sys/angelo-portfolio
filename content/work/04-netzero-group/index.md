@@ -1,6 +1,6 @@
 ---
-title: "NetZero Group: Promotional creatives"
-summary: "Technical product tiers and SEAI grant info made clear and on-brand."
+title: "NetZero: Product Promotion"
+summary: "Technical product tiers and SEAI grant details, made clear, credible and on-brand."
 year: 2026
 client: NetZero Group
 type: "Editorial · Print"

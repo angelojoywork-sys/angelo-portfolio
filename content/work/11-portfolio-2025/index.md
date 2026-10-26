@@ -1,6 +1,6 @@
 ---
 title: "Design Portfolio 2025"
-summary: "Selected graphic design work from 2025."
+summary: "A selection of graphic design work from 2025."
 year: 2025
 type: "Graphic design"
 role: "Designer"
