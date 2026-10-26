@@ -39,7 +39,7 @@ const media: Media[] = item.gallery;
     </dl>
   </header>
 
-  {cover && (
+  {cover && !d.hideCover && (
     <figure class="frame hero" data-hero>
       {cover.kind === 'image' ? (
         <Image
