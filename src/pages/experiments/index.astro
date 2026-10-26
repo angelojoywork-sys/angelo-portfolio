@@ -6,36 +6,64 @@ const items = await getItems('experiments');
 ---
 
 <Base title="Experiments" description="Experiments with AI, motion and image-making." page="experiments">
-  <header class="intro">
-    <p class="label">Experiments ({String(items.length).padStart(2, '0')})</p>
-    <h1>A playground for AI, motion and product design.</h1>
-  </header>
+  <div class="page-exp">
+    <header class="left">
+      <p class="label">Experiments ({String(items.length).padStart(2, '0')})</p>
+      <h1>A playground for AI, motion<br />and product design.</h1>
+    </header>
 
-  <div class="masonry">
-    {items.map((it) => (
-      <a href={it.url} class="exp" data-card-note={it.data.note ?? 'Note to come.'}>
-        <div class="frame">
-          {it.cover?.kind === 'image' && (
-            <Image src={it.cover.image} alt={it.data.title} widths={[480, 800, 1200]} sizes="(max-width: 720px) 100vw, 33vw" />
-          )}
-          {it.cover?.kind === 'video' && <video src={it.cover.src} autoplay muted loop playsinline />}
-          <span class="tools label">{it.data.tools.join(' · ')}</span>
-        </div>
-        <div class="row">
-          <h2>{it.data.title}</h2>
-        </div>
-        <p>{it.data.summary}</p>
-      </a>
-    ))}
+    <div class="masonry">
+      {items.map((it) => (
+        <a href={it.url} class="exp" data-card-note={it.data.note ?? 'Note to come.'}>
+          <div class="frame">
+            {it.cover?.kind === 'image' && (
+              <Image src={it.cover.image} alt={it.data.title} widths={[480, 800, 1200]} sizes="(max-width: 960px) 100vw, 40vw" />
+            )}
+            {it.cover?.kind === 'video' && <video src={it.cover.src} autoplay muted loop playsinline />}
+            <span class="tools label">{it.data.tools.join(' · ')}</span>
+          </div>
+          <div class="row">
+            <h2>{it.data.title}</h2>
+          </div>
+          <p>{it.data.summary}</p>
+        </a>
+      ))}
+    </div>
   </div>
 </Base>
 
 <style>
-  .intro { padding: clamp(24px, 8vh, 96px) 0 clamp(32px, 6vh, 64px); max-width: 760px; }
-  h1 { margin: 12px 0 0; font-size: clamp(36px, 5vw, 72px); line-height: 1; letter-spacing: -0.03em; font-family: var(--display); font-weight: 500; text-wrap: balance; }
+  /* same split as the home page: sticky headline on the left, cards on the right */
+  .page-exp {
+    --home-top: clamp(var(--space-3), 8vh, var(--space-12));
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(var(--space-4), 5vw, var(--space-12));
+    padding-top: var(--home-top);
+    align-items: start;
+  }
+  .left { position: sticky; top: calc(var(--header-h) + var(--home-top)); container-type: inline-size; }
+  h1 {
+    margin: var(--space-2) 0 0;
+    font-size: calc(100cqw / 14.5);
+    line-height: 1.06;
+    letter-spacing: -0.025em;
+    font-family: var(--display);
+    font-weight: 500;
+    color: var(--electric);
+    white-space: nowrap;
+  }
+  @media (max-width: 960px) {
+    .page-exp { grid-template-columns: minmax(0, 1fr); padding-top: 24px; }
+    .left { position: static; }
+    h1 { font-size: clamp(26px, calc((100vw - 32px) / 14.5), 56px); }
+  }
+  @media (max-width: 560px) { h1 { white-space: normal; font-size: calc((100vw - 36px) / 12.5); } }
 
   /* grid (not multicol) so card pins at the column edges are never fragmented or clipped */
-  .masonry { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 40px var(--gutter); align-items: start; padding-top: 12px; }
+  .masonry { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5) var(--gutter); align-items: start; }
+  @media (min-width: 1700px) { .masonry { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 560px) { .masonry { grid-template-columns: 1fr; } }
   .exp { display: flex; flex-direction: column; gap: 8px; }
   .frame { border-radius: 3px; }
   .frame :global(img), .frame video { width: 100%; height: auto; transition: transform 0.9s var(--ease); }
