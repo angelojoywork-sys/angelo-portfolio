@@ -26,7 +26,7 @@ const cover = item.cover;
 const media: Media[] = item.gallery;
 ---
 
-<article class="detail">
+<article class="detail" data-gap={d.gap}>
   <a href={backHref} class="back label"><span aria-hidden="true">←</span> {backLabel}</a>
 
   <header class="head">
@@ -150,7 +150,7 @@ const media: Media[] = item.gallery;
   .head { padding: clamp(32px, 6vh, 72px) 0 clamp(32px, 5vh, 56px); display: grid; }
   .kicker { color: var(--muted); }
   .title { margin: 12px 0 0; font-size: clamp(40px, 6.4vw, 88px); line-height: 1; letter-spacing: -0.03em; font-family: var(--display); font-weight: 500; text-wrap: balance; }
-  .lede { margin: 16px 0 0; max-width: 40ch; color: var(--fg); font-size: 19px; line-height: 1.45; letter-spacing: -0.01em; }
+  .lede { margin: 16px 0 0; color: var(--fg); font-size: 19px; text-wrap: balance; line-height: 1.45; letter-spacing: -0.01em; }
 
   /* One column: text shares its left and right edges with the media */
   .meta, .story { display: grid; grid-template-columns: minmax(0, 1fr); }
@@ -173,6 +173,14 @@ const media: Media[] = item.gallery;
   .story :global(ul) { padding-left: 1.2em; margin: 0 0 1em; }
   .story > :global(:is(p:has(img), figure, .embed, .embed-linkedin)) { grid-column: 1 / -1; margin: clamp(24px, 4vw, 48px) 0; }
   .story > :global(p:has(img) + p:has(img)) { margin-top: 0; }
+  .story :global(.img-grid) { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; align-items: start; margin: clamp(24px, 4vw, 48px) 0; }
+  .story :global(.img-grid p) { margin: 0 !important; }
+  @media (max-width: 760px) { .story :global(.img-grid) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .detail[data-gap='tight'] .story > :global(:is(p:has(img), figure, .embed)) { margin: 8px 0; }
+  .detail[data-gap='tight'] .gallery { gap: 8px; }
+  .detail[data-gap='none'] .story > :global(:is(p:has(img), figure, .embed)) { margin: 0; }
+  .detail[data-gap='none'] .story { margin-bottom: 0; }
+  .detail[data-gap='none'] .gallery { gap: 0; }
   .story :global(img) { width: 100%; height: auto; border-radius: 2px; background: var(--surface); animation: img-in var(--dur-3) var(--ease) both; }
   .story :global(.embed) { aspect-ratio: 16 / 9; background: var(--surface); border-radius: 2px; overflow: hidden; }
   .story :global(.embed iframe) { width: 100%; height: 100%; border: 0; display: block; }
@@ -196,7 +204,7 @@ const media: Media[] = item.gallery;
   .pager { display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; gap: 24px; margin-top: clamp(56px, 10vh, 120px); padding-top: 24px; border-top: 1px solid var(--line); }
   .pg { display: flex; flex-direction: column; gap: 8px; }
   .next { text-align: right; align-items: flex-end; }
-  .pt { font-size: clamp(18px, 2vw, 26px); letter-spacing: -0.02em; font-family: var(--display); font-weight: 500; color: var(--muted); transition: color var(--dur-1); }
+  .pt { text-wrap: balance; line-height: 1.1; font-size: clamp(18px, 2vw, 26px); letter-spacing: -0.02em; font-family: var(--display); font-weight: 500; color: var(--muted); transition: color var(--dur-1); }
   .next .pt { font-size: clamp(22px, 2.8vw, 36px); color: var(--fg); letter-spacing: -0.03em; font-weight: 500; }
   .pg:hover .pt { color: var(--accent); }
   .top:hover { color: var(--fg); }

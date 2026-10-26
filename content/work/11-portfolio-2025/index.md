@@ -8,6 +8,8 @@ tools: [Illustrator, Photoshop, InDesign]
 disciplines: [graphic]
 cover: cover.png
 order: 10
+hideCover: true
+gap: tight
 ---
 
 ![](01.gif)
@@ -51,6 +53,8 @@ order: 10
 
 ![](19.png)
 
+:::grid
+
 ![](20.png)
 
 ![](21.png)
@@ -67,7 +71,11 @@ order: 10
 
 ![](27.png)
 
+:::
+
 ![](28.png)
+
+:::grid
 
 ![](29.png)
 
@@ -100,5 +108,7 @@ order: 10
 ![](43.png)
 
 ![](44.png)
+
+:::
 
 ![](45.png)

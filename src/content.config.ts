@@ -43,6 +43,7 @@ const entry = z.object({
   disciplines: z.array(z.string()).default([]),
   cover: z.string().nullish(),
   hideCover: z.boolean().default(false),
+  gap: z.enum(['default', 'tight', 'none']).default('default'),
   captions: z.record(z.string()).default({}),
   link: z.object({ label: z.string(), url: z.string() }).nullish(),
   embed: z.union([z.string(), z.array(z.string())]).nullish(),

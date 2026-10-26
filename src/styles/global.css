@@ -126,3 +126,7 @@ html[data-vt='sheet-out']::view-transition-old(root) { z-index: 1; animation: vt
   *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
   ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation-duration: 0.01ms !important; animation-delay: 0s !important; }
 }
+
+/* no widows: balanced headings, prose never ends on a lone word */
+h1, h2, h3 { text-wrap: balance; }
+p, li, dd, figcaption { text-wrap: pretty; }
