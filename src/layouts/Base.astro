@@ -104,6 +104,30 @@ const ogImage = image ? new URL(image, Astro.site).href : undefined;
       };
       document.addEventListener('astro:page-load', remember);
 
+      // No widows: the last words of every text block are tied together with non-breaking spaces, so a line
+      // never ends on one or two stray words (text-wrap: pretty alone doesn't guarantee that).
+      function tieEnds() {
+        document.querySelectorAll<HTMLElement>('.page :is(p, li, dd, figcaption, h1, h2, h3, .pt, .lede, .sum)').forEach((el) => {
+          if (el.dataset.tied) return;
+          el.dataset.tied = '1';
+          const words = (el.textContent ?? '').trim().split(/\s+/).length;
+          const tie = words >= 10 ? 3 : words >= 6 ? 2 : words >= 3 ? 1 : 0;
+          if (!tie) return;
+          const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+          let last: Text | null = null;
+          while (walker.nextNode()) if ((walker.currentNode as Text).data.trim()) last = walker.currentNode as Text;
+          if (!last) return;
+          let data = last.data.replace(/\s+$/, '');
+          for (let i = 0; i < tie; i++) {
+            const at = data.lastIndexOf(' ');
+            if (at < 1) break;
+            data = data.slice(0, at) + ' ' + data.slice(at + 1);
+          }
+          last.data = data + last.data.slice(last.data.replace(/\s+$/, '').length);
+        });
+      }
+      document.addEventListener('astro:page-load', tieEnds);
+
       // The persistent-looking chrome is rebuilt on every swap; hand the new copy the old state so nothing blips.
       document.addEventListener('astro:before-swap', (e) => {
         const next = e.newDocument;

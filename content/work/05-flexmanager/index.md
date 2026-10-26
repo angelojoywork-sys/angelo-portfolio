@@ -11,6 +11,7 @@ cover: cover.jpg
 order: 5
 note: "Templates first, videos second. The drag-and-drop library is what made 80+ modules possible."
 bg: "#424242"
+hideCover: true
 ---
 
 https://vimeo.com/1141059004/6f0a863ef1
