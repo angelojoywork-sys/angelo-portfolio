@@ -2,17 +2,20 @@
 // Lycan, a tiny beagle who sleeps in the grass until you tap. Then he wakes, runs over, woofs and plays.
 // Sprite frames (public/beagle.png, made by scripts/make-beagle.py):
 // 0 stand, 1 sit, 2 crouch, 3 sleep, 4 sleep (breath in), 5-6 roll on back, 7 on side, 8-15 run cycle.
+// A natural meadow: a pair, a stray, a lone tall one in the middle, a stray, then another pair.
 const flowers = [
-  { x: 6, c: 0, d: 0, t: 9 }, { x: 17, c: 1, d: 2.4, t: 7.5 }, { x: 29, c: 2, d: 5, t: 10 },
-  { x: 41, c: 0, d: 1.2, t: 8 }, { x: 53, c: 1, d: 3.8, t: 9.5 }, { x: 66, c: 2, d: 0.6, t: 7 },
-  { x: 77, c: 0, d: 4.4, t: 10.5 }, { x: 89, c: 1, d: 2, t: 8.5 }, { x: 97, c: 2, d: 6, t: 9 },
+  { x: 8, c: 0, s: 1, d: 0, t: 9 }, { x: 12.5, c: 1, s: 0.8, d: 2.4, t: 7.5 },
+  { x: 31, c: 2, s: 0.75, d: 5, t: 10 },
+  { x: 50, c: 0, s: 1.15, d: 1.2, t: 8 },
+  { x: 70, c: 1, s: 0.8, d: 3.8, t: 9.5 },
+  { x: 88, c: 2, s: 1, d: 0.6, t: 7 }, { x: 92.5, c: 0, s: 0.85, d: 4.4, t: 10.5 },
 ];
 ---
 
 <button type="button" class="pup" aria-label="Play with Lycan">
   <span class="label hint" aria-hidden="true">Play with Lycan</span>
   <span class="flowers" aria-hidden="true">
-    {flowers.map((f) => <span class="flower" style={`left:${f.x}%;--row:${f.c};--delay:-${f.d}s;--dur:${f.t}s`}></span>)}
+    {flowers.map((f) => <span class="flower" style={`left:${f.x}%;--row:${f.c};--s:${f.s};--delay:-${f.d}s;--dur:${f.t}s`}></span>)}
   </span>
   <span class="grass" aria-hidden="true"></span>
   <span class="dog asleep" aria-hidden="true">
@@ -98,7 +101,7 @@ const flowers = [
   /* pixel flowers: bud > open > wide > close, staggered so the meadow never blooms in unison */
   .flowers { position: absolute; left: 0; right: 0; bottom: 10px; height: 36px; pointer-events: none; }
   .flower {
-    position: absolute; bottom: 0; width: 27px; height: 36px; margin-left: -13px; transform-origin: 50% 100%;
+    position: absolute; bottom: 0; width: 27px; height: 36px; margin-left: -13px; transform-origin: 50% 100%; scale: var(--s, 1);
     background: url('/flowers.png') 0 calc(var(--row) * -36px) / 108px 108px no-repeat; image-rendering: pixelated;
     animation: bloom var(--dur) steps(1, end) var(--delay) infinite;
   }
@@ -197,6 +200,8 @@ const flowers = [
     const timers = new Set<number>();
     let breath = 0;
 
+    const bob = root.querySelector<HTMLElement>('.bob')!;
+    const lean = (deg: number, sx = 1, sy = 1) => { bob.style.transform = deg || sx !== 1 || sy !== 1 ? `rotate(${deg}deg) scale(${sx}, ${sy})` : ''; };
     const frame = (n: number) => sprite.style.setProperty('--f', String(n));
     const later = (fn: () => void, ms: number) => {
       const id = window.setTimeout(() => { timers.delete(id); fn(); }, ms);
@@ -296,7 +301,7 @@ const flowers = [
       const from = currentX();
       faceTowards(to, from);
       const dist = Math.abs(to - from);
-      if (dist < 6) { place(to); arrive(); return; }
+      if (dist < 6) { place(to); lean(0); arrive(); return; }
       const dur = Math.min(2200, Math.max(600, 500 + dist * 3));
       const dir = to > from ? 1 : -1;
       pose();
@@ -308,14 +313,22 @@ const flowers = [
         const t = Math.min(1, (now - start) / dur);
         const px = from + (to - from) * easeInOut(t);
         const v = Math.abs(px - x); // px moved this frame
+        const dt = Math.max(1, now - last);
         place(px);
         phase += v / STRIDE;
-        if (t < 0.9) frame(F.run + (Math.floor(phase) % RUN_FRAMES));
-        else frame(F.stand); // slowing right down: he stops pumping his legs and settles
+        if (t < 0.9) {
+          frame(F.run + (Math.floor(phase) % RUN_FRAMES));
+          // lean into the sprint (follow-through), stretching a touch with speed
+          const sp = Math.min(1, (v / dt) * 16 / 6);
+          lean(sp * 5, 1 + sp * 0.04, 1 - sp * 0.03);
+        } else {
+          frame(F.stand); // legs stop pumping: he plants, rocks back on his heels, then settles
+          lean(-4 * (1 - (t - 0.9) / 0.1), 1.03, 0.97);
+        }
         brush(px);
         last = now;
         if (t < 1) requestAnimationFrame(step);
-        else { place(to); arrive(); }
+        else { place(to); lean(0); arrive(); }
       };
       requestAnimationFrame(step);
     }
@@ -341,6 +354,7 @@ const flowers = [
       if (reduce()) { run++; faceTowards(to, from); arrive(); return; }
 
       ++run; // cancel any run in flight
+      lean(0);
       faceTowards(to, from);
       if (wasAsleep) {
         // anticipation: ears up, a quick crouch, then go

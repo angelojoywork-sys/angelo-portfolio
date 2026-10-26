@@ -59,9 +59,18 @@ const sizes = '(max-width: 720px) 100vw, (max-width: 1200px) 30vw, 22vw';
       card.dataset.tilt = '1';
       const pvs = [...media.querySelectorAll<HTMLElement>('.pv')];
       const n = pvs.length;
-      let at = -1, timer = 0, lastX = 0;
+      let at = -1, timer = 0, prevTimer = 0, lastX = 0;
 
       const show = (k: number) => {
+        // the outgoing still stays opaque underneath while the next one fades in on top,
+        // so the cover never shows through mid-transition
+        const prev = pvs[at];
+        if (prev && at !== k) {
+          pvs.forEach((p) => p.classList.remove('prev'));
+          prev.classList.add('prev');
+          clearTimeout(prevTimer);
+          prevTimer = window.setTimeout(() => prev.classList.remove('prev'), 1100);
+        }
         at = k;
         card.classList.add('previewing');
         pvs.forEach((p, j) => p.classList.toggle('on', j === k));
@@ -72,9 +81,10 @@ const sizes = '(max-width: 720px) 100vw, (max-width: 1200px) 30vw, 22vw';
       };
       const reset = () => {
         clearTimeout(timer);
+        clearTimeout(prevTimer);
         at = -1;
         card.classList.remove('previewing');
-        pvs.forEach((p) => p.classList.remove('on'));
+        pvs.forEach((p) => p.classList.remove('on', 'prev'));
       };
       if (n) resets.add(reset);
 
@@ -126,7 +136,8 @@ const sizes = '(max-width: 720px) 100vw, (max-width: 1200px) 30vw, 22vw';
   .media :global(img), .media video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform var(--dur-3) var(--ease); }
   /* Preview reel: stills cross-fade slowly over the cover */
   .media .pv { opacity: 0; transition: opacity 1s var(--ease), transform var(--dur-3) var(--ease); }
-  .media .pv.on { opacity: 1; }
+  .media .pv.prev { opacity: 1; z-index: 1; }
+  .media .pv.on { opacity: 1; z-index: 2; }
   /* Rounded tag pills slide up inside the image on hover */
   .pills { position: absolute; left: 12px; right: 12px; bottom: 12px; display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; pointer-events: none; }
   .pills li {

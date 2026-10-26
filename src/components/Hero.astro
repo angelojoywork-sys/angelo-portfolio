@@ -18,23 +18,21 @@ const headline = site.data.intro.map((s) => s.text).join(' ');
 </section>
 
 <style>
-  .hero { display: flex; flex-direction: column; gap: var(--space-5); min-height: 100%; }
-  /* Lycan anchors to the bottom of the column: headline, facts, then the meadow */
-  .hero :global(.pup) { margin-top: auto; }
+  .hero { display: flex; flex-direction: column; gap: var(--space-5); }
   .intro {
     margin: 0;
-    font-size: clamp(21px, 2vw, 40px);
-    line-height: 1.08;
-    letter-spacing: -0.02em;
+    font-size: clamp(30px, 3.5vw, 60px);
+    line-height: 1.06;
+    letter-spacing: -0.025em;
     font-family: var(--display);
     font-weight: 500;
-    max-width: 19em;
+    max-width: 16em;
     color: var(--electric);
     text-wrap: balance;
   }
 
-  @media (max-width: 960px) { .intro { font-size: clamp(19px, calc((100vw - 68px) / 17.8), 40px); } }
-  @media (max-width: 560px) { .intro { font-size: calc((100vw - 36px) / 17.8); } }
+  @media (max-width: 960px) { .intro { font-size: clamp(26px, calc((100vw - 68px) / 12), 56px); max-width: 18em; } }
+  @media (max-width: 560px) { .intro { font-size: calc((100vw - 36px) / 12.5); } }
 
   .facts { display: flex; flex-wrap: wrap; gap: 16px clamp(24px, 3vw, 48px); margin: 0; }
   .facts dd { text-wrap: balance; }
