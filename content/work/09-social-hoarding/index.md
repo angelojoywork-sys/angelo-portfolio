@@ -3,6 +3,7 @@ title: "Personal: Social and Print"
 summary: "Social posts, carousels and large-format site hoardings in one visual language."
 year: 2025
 type: "Social · Large format"
+hideCover: true
 role: "Designer"
 tools: [Illustrator, Photoshop]
 disciplines: [graphic]

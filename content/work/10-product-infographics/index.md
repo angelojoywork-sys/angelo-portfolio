@@ -3,6 +3,7 @@ title: "Personal: Product Infographics"
 summary: "Feature-led infographics that make products easy to compare at a glance."
 year: 2025
 type: "Infographic"
+hideCover: true
 role: "Designer"
 tools: [Illustrator, Photoshop]
 disciplines: [graphic]
