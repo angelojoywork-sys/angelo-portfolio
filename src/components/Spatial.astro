@@ -41,11 +41,11 @@ const legend = Object.entries(site.data.disciplines)
     <div class="tip" aria-hidden="true"><b></b><span></span></div>
   </div>
 
-  <p class="hint label"><span class="fine">Drag to rotate · scroll to immerse</span><span class="touch">Drag to rotate · pinch to immerse · tap to open</span></p>
+  <p class="hint label"><span class="fine">Drag to rotate · scroll to immerse</span><span class="touch">Drag to rotate</span></p>
 
   <div class="caption">
     <h1 class="stitle">{site.data.spatialTitle}</h1>
-    <p class="sub"><span class="fine">Scroll to immerse</span><span class="touch">Tap a piece to open it</span></p>
+    <p class="sub fine">Scroll to immerse</p>
   </div>
 
   <div class="fcap">
@@ -55,6 +55,14 @@ const legend = Object.entries(site.data.disciplines)
     <p class="fc-hint label"><span class="fine">Drag sideways to browse · up/down to zoom out</span><span class="touch">Swipe to browse</span></p>
   </div>
   <p class="visually-hidden fc-live" aria-live="polite"></p>
+
+  <div class="actions">
+    <span class="a-hint label"><span class="a-hint-browse">Drag to rotate</span><span class="a-hint-focus">Swipe to browse</span></span>
+    <button type="button" class="a-btn" aria-label="Immerse into the globe">
+      <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M10.5 10.5 14 14M5 7h4" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/><path class="a-plus" d="M7 5v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      <span class="a-label">Immerse</span>
+    </button>
+  </div>
 
   <ul class="legend" aria-label="Disciplines">
     {legend.map((l) => <li><button type="button" data-k={l.k}><span class="sw"></span>{l.v}<span class="label">{String(l.n).padStart(2, '0')}</span></button></li>)}
@@ -124,6 +132,7 @@ const legend = Object.entries(site.data.disciplines)
   .fc-open:hover span { transform: translateX(3px); }
   .fc-hint { margin: 18px 0 0; }
 
+  .actions { display: none; }
   .legend { position: absolute; right: var(--gutter); bottom: clamp(24px, 5vh, 56px); list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; align-items: flex-end; transition: opacity var(--dur-2) var(--ease); }
   .spatial.zoomed .legend { opacity: 0; pointer-events: none; }
   .legend button { display: inline-flex; gap: 8px; align-items: center; font-size: 13px; color: var(--muted); padding: 3px 0; transition: color var(--dur-1); }
@@ -147,18 +156,19 @@ const legend = Object.entries(site.data.disciplines)
   .touch { display: none; }
   @media (hover: none) { .fine { display: none; } .touch { display: inline; } }
   @media (max-width: 720px) {
-    .legend { display: none; }
-    .hint { bottom: calc(76px + env(safe-area-inset-bottom)); }
-    .caption { bottom: calc(112px + env(safe-area-inset-bottom)); }
-    .fcap { bottom: calc(76px + env(safe-area-inset-bottom)); }
-    .spatial.filled .ruler { opacity: 0; pointer-events: none; }
-    .ruler { transition: opacity var(--dur-2) var(--ease); }
-    .ruler { right: 0; padding: 16px 10px 16px 28px; }
-    .ruler-track { gap: 5px; }
-    .ruler i { width: 6px; }
-    .ruler i:nth-child(7n + 1) { width: 10px; }
-    .ruler-mark { width: 16px; }
-    .ruler-mark em { right: 22px; font-size: 10px; }
+    .legend, .ruler, .hint { display: none; }
+    /* bottom to top: Index/Spatial pill, action bar, headline, globe */
+    .actions { position: absolute; z-index: 2000; left: var(--gutter); right: var(--gutter); bottom: calc(76px + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .a-hint { color: var(--muted); }
+    .fc-hint { display: none; }
+    .spatial.focused .a-plus { display: none; }
+    .a-hint-focus, .spatial.focused .a-hint-browse { display: none; }
+    .spatial.focused .a-hint-focus { display: inline; }
+    .a-btn { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 20px; border-radius: 999px; background: var(--fg); color: var(--bg); font-size: 15px; font-weight: 500; box-shadow: var(--shadow); touch-action: manipulation; }
+    .a-btn:active { transform: scale(.97); }
+    .caption { bottom: calc(132px + env(safe-area-inset-bottom)); max-width: none; right: var(--gutter); }
+    .stitle { font-size: clamp(20px, 5.6vw, 24px); line-height: 1.12; }
+    .fcap { bottom: calc(132px + env(safe-area-inset-bottom)); }
   }
 </style>
 
@@ -182,6 +192,8 @@ const legend = Object.entries(site.data.disciplines)
     const ruler = root.querySelector<HTMLElement>('.ruler')!;
     const track = root.querySelector<HTMLElement>('.ruler-track')!;
     const caption = root.querySelector<HTMLElement>('.caption')!;
+    const aBtn = root.querySelector<HTMLButtonElement>('.a-btn')!;
+    const aLabel = aBtn.querySelector<HTMLElement>('.a-label')!;
     const title = root.querySelector<HTMLElement>('.stitle')!;
     const fcap = root.querySelector<HTMLElement>('.fcap')!;
     const fcMeta = fcap.querySelector<HTMLElement>('.fc-meta')!;
@@ -259,10 +271,18 @@ const legend = Object.entries(site.data.disciplines)
 
     const resize = () => {
       W = stage.clientWidth; H = stage.clientHeight;
-      CY = H * (W < 720 ? 0.44 : 0.45);
-      // the lowest nodes reach ~1.2R below centre; keep them clear of the headline
       const titleTop = caption.offsetTop + title.offsetTop;
-      R = Math.min(Math.min(W, H) * (W < 720 ? 0.36 : 0.34), (titleTop - 16 - CY) / 1.2);
+      if (W < 720) {
+        // phones: centre the globe in the free band between header and headline, equal padding both sides
+        const top = document.querySelector('.site-header')?.getBoundingClientRect().bottom ?? 60;
+        const pad = 20;
+        CY = (top + titleTop) / 2;
+        R = Math.min(W * 0.36, ((titleTop - top) / 2 - pad) / 1.2);
+        return;
+      }
+      CY = H * 0.45;
+      // the lowest nodes reach ~1.2R below centre; keep them clear of the headline
+      R = Math.min(Math.min(W, H) * 0.34, (titleTop - 16 - CY) / 1.2);
     };
     const measure = () => { availTop = 72; availBot = fcap.offsetTop - 16; };
     resize();
@@ -474,6 +494,8 @@ const legend = Object.entries(site.data.disciplines)
       if (imm > 0.35) root.classList.add('zoomed');
       else if (imm < 0.25) root.classList.remove('zoomed');
       root.style.setProperty('--imm', ease.toFixed(3));
+      const lbl = focus >= 0 ? 'Back' : 'Immerse';
+      if (aLabel.textContent !== lbl) { aLabel.textContent = lbl; aBtn.setAttribute('aria-label', focus >= 0 ? 'Back to the globe' : 'Immerse into the globe'); }
       ruler.style.setProperty('--zy', ((1 - clamp01(imm)) * 100).toFixed(2) + '%');
       const val = Math.round(immT * 100);
       if (val !== shownVal) { ruler.setAttribute('aria-valuenow', String(val)); shownVal = val; }
@@ -510,6 +532,11 @@ const legend = Object.entries(site.data.disciplines)
       if (focus < 0 || e.metaKey || e.ctrlKey || e.shiftKey) return;
       e.preventDefault();
       open(focusNode());
+    }, sig);
+
+    aBtn.addEventListener('click', () => {
+      if (focus >= 0) exitFocus(0.75); else enterFocus();
+      used();
     }, sig);
 
     const pinchDist = () => {
