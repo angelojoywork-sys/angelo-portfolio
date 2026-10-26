@@ -44,7 +44,6 @@ const first = site.data.name.split(' ')[0];
     transition: transform var(--dur-1) var(--ease);
   }
   .th-pin:hover .av, .th-pin:focus .av { transform: scale(1.12); }
-  .th-pin .av sup { position: absolute; top: -4px; right: -5px; font: 9px/1 var(--mono); background: var(--fg); color: var(--bg); border-radius: 6px; padding: 2px 3px; }
   .th-tip {
     position: absolute; top: 28px; right: 12px; width: min(260px, 70vw);
     background: var(--fg); color: var(--bg); border-radius: 8px; padding: 10px 12px;
@@ -65,12 +64,12 @@ const first = site.data.name.split(' ')[0];
     document.querySelectorAll('.th-gen').forEach((n) => n.remove());
   }
 
-  function pin(host: HTMLElement, text: string, i: number, n: number) {
+  function pin(host: HTMLElement, text: string) {
     const p = document.createElement('span');
     p.className = 'th-pin th-gen';
     p.tabIndex = 0;
     p.setAttribute('role', 'note');
-    p.innerHTML = `<span class="av">${data.initial}${n > 1 ? `<sup>${i + 1}</sup>` : ''}</span><span class="th-tip"><small>${data.first} · note ${i + 1} of ${n}</small></span>`;
+    p.innerHTML = `<span class="av">${data.initial}</span><span class="th-tip"><small>${data.first}'s note</small></span>`;
     p.querySelector('.th-tip')!.append(text);
     p.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); });
     host.append(p);
@@ -85,7 +84,7 @@ const first = site.data.name.split(' ')[0];
     document.querySelectorAll<HTMLElement>('.th-grid span').forEach((s, i) => s.style.setProperty('--i', String(i)));
 
     const cards = [...document.querySelectorAll<HTMLElement>('[data-card-note]')].filter((c) => c.offsetParent);
-    cards.forEach((c, i) => pin(c, c.dataset.cardNote!, i, cards.length));
+    cards.forEach((c) => pin(c, c.dataset.cardNote!));
   }
 
   let t: number | undefined;

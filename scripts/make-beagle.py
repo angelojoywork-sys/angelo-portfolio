@@ -61,14 +61,25 @@ class Canvas:
             for i, c in enumerate(row):
                 if c != '.' and 0 <= y+j < H and 0 <= x+i < W: self.px[y+j][x+i] = c
 
-def leg(cv, x, y0, height, col, slant=0):
-    """A 4px-wide leg; slant shifts the foot sideways (+ right, - left) over its length."""
+def leg(cv, x, y0, height, col, slant=0, bend=0):
+    """A 3px-wide leg with a knee: the thigh swings a little, the shin carries the rest of the slant,
+    and `bend` pushes the knee the other way (folded legs while airborne). Slant + is right, - is left."""
     f = 'w' if col == 'w' else 's'
-    for j in range(max(0, height)):
-        # thigh stays vertical for two rows, then the shin angles out to the paw
-        off = round(slant * max(0, j - 1) / max(1, height - 2))
-        row = ['k', f, f, f, 'k'] if j < height - 1 else ['k', 'k', 'k', 'k', 'k']
+    slant = round(slant * 0.6)  # keep the angle gentle: the legs are only ~6px tall
+    height = max(0, height)
+    knee = max(1, height // 2)
+    for j in range(height):
+        if j < knee:
+            off = round(slant * 0.35 * j / knee) + (bend if j else 0)
+        else:
+            off = round(slant * 0.35 + (slant * 0.65 + (-bend)) * (j - knee + 1) / max(1, height - knee))
+        last = j == height - 1
+        row = ['k', 'k', 'k', 'k', 'k'] if last else ['k', f, f, f, 'k']
         cv.stamp([row], x + off - 1, y0 + j)
+        if last and slant > 0:  # paw points the way the foot travels
+            cv.stamp([['k']], x + off + 4, y0 + j)
+        elif last and slant < 0:
+            cv.stamp([['k']], x + off - 2, y0 + j)
 
 def flip_v(part): return part[::-1]
 
@@ -82,8 +93,8 @@ def stand_like(cv, by, legs, head_dy=0, ear_dy=0, tail_dy=0, tail_dx=0, closed=F
     """Shared side-on pose. legs: [(x, colour, slant, lift)] drawn far-to-near."""
     body, ear, tail = parse(BODY), parse(EAR), parse(TAIL)
     top = by + 8
-    for x, col, slant, lift in legs:
-        leg(cv, x, top, H - top - lift, col, slant)
+    for x, col, slant, lift, *bend in legs:
+        leg(cv, x, top, H - top - lift, col, slant, bend[0] if bend else 0)
     cv.stamp(body, 3, by)
     cv.stamp(tail, 2 + tail_dx, by - 4 + tail_dy)
     hy = by - 5 + head_dy
@@ -92,16 +103,17 @@ def stand_like(cv, by, legs, head_dy=0, ear_dy=0, tail_dy=0, tail_dx=0, closed=F
     cv.stamp(head_part(closed), 20, hy)
     cv.stamp(ear, 21, hy + 2 + ear_dy)
 
-# run cycle: (body y, tail dy, ear dy, [near-front, far-front, near-back, far-back] as (slant, lift))
+# gallop cycle, 8 frames: (body y, tail dy, ear dy, near-front, far-front, near-back, far-back)
+# each leg is (slant, lift, knee bend). Beats: reach > land > pull > gather (airborne) > extend > reach
 RUN = [
-    (10, 0, 0, (4, 0), (3, 1), (-1, 2), (-2, 2)),
-    (10, 1, 1, (2, 0), (2, 0), (-3, 1), (-4, 0)),
-    (9, 1, 1, (0, 2), (1, 2), (-4, 0), (-4, 1)),
-    (8, 2, 2, (4, 3), (4, 3), (-5, 3), (-5, 3)),
-    (8, 2, 3, (1, 4), (2, 4), (1, 4), (0, 4)),
-    (9, 1, 2, (3, 2), (4, 1), (1, 2), (0, 3)),
-    (10, 0, 1, (4, 0), (4, 0), (0, 2), (-1, 2)),
-    (10, 0, 0, (1, 0), (2, 1), (-2, 0), (-2, 1)),
+    (10, 0, 0, (5, 0, 0),  (4, 1, 0),  (-3, 1, 0), (-4, 2, -1)),   # 0 front reaches, back pushing off
+    (10, 1, 1, (3, 0, 0),  (3, 0, 0),  (-5, 2, -1), (-5, 3, -1)),  # 1 front lands, back trails
+    (9, 1, 1,  (0, 1, 0),  (1, 1, 0),  (-3, 3, -1), (-2, 4, -1)),  # 2 pulling over the front legs
+    (8, 2, 2,  (-3, 3, -1), (-2, 4, -1), (2, 3, 1),  (3, 4, 1)),   # 3 gather: all four tucked, airborne top
+    (8, 2, 3,  (2, 4, 0),  (3, 4, 0),  (4, 2, 1),  (5, 3, 1)),     # 4 extend: legs reach out, still airborne
+    (9, 1, 2,  (5, 2, 0),  (6, 1, 0),  (3, 1, 0),  (2, 2, 0)),     # 5 front reaches down, back lands
+    (10, 0, 1, (5, 0, 0),  (4, 0, 0),  (1, 0, 0),  (0, 0, 0)),     # 6 back plants
+    (10, 0, 0, (2, 0, 0),  (3, 1, 0),  (-1, 0, 0), (-2, 1, 0)),    # 7 push through
 ]
 
 def frame(kind, f=0):
@@ -151,9 +163,8 @@ def frame(kind, f=0):
             cv.stamp(ear, 21, by - 1)
     elif kind == 'run':
         by, tdy, edy, nf, ff, nb, fb = RUN[f]
+        # far/near back legs sit at x=10/5, front at 23/18; far legs are drawn first so the near ones overlap
         legs = [(10, 's', *fb), (23, 's', *ff), (5, 'w', *nb), (18, 'w', *nf)]
-        # far/near back legs sit at x=10/5, front at 23/18
-        legs = [(10, 's', fb[0], fb[1]), (23, 's', ff[0], ff[1]), (5, 'w', nb[0], nb[1]), (18, 'w', nf[0], nf[1])]
         stand_like(cv, by, legs, tail_dy=tdy, ear_dy=edy)
     return cv
 

@@ -29,13 +29,10 @@ const experiments = await getItems('experiments');
   .left {
     position: sticky;
     top: calc(var(--header-h) + var(--home-top));
-    /* fills the viewport under the header so Lycan sits at the fold, level with the card grid's first screen */
-    height: calc(100svh - var(--header-h) - var(--home-top) - var(--space-5));
-    min-height: 440px;
   }
   @media (max-width: 960px) {
     .home { grid-template-columns: minmax(0, 1fr); padding-top: 24px; }
-    .left { position: static; height: auto; min-height: 0; }
+    .left { position: static; }
     .left :global(.hero) { gap: var(--space-4); }
   }
   :global(body.spatial-on) { overflow: hidden; }

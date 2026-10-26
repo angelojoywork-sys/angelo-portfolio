@@ -8,13 +8,12 @@ const items = await getItems('experiments');
 <Base title="Experiments" description="Experiments with AI, motion and image-making." page="experiments">
   <header class="intro">
     <p class="label">Experiments ({String(items.length).padStart(2, '0')})</p>
-    <h1>A lab for things that might not work.</h1>
-    <p class="lede">Side projects with AI image and video tools, generative type and motion tests. Quick, unpolished on purpose, and where most of my new ideas start.</p>
+    <h1>A playground for AI, motion and product design.</h1>
   </header>
 
   <div class="masonry">
     {items.map((it) => (
-      <a href={it.url} class="exp" data-card-note={it.data.note}>
+      <a href={it.url} class="exp" data-card-note={it.data.note ?? 'Note to come.'}>
         <div class="frame">
           {it.cover?.kind === 'image' && (
             <Image src={it.cover.image} alt={it.data.title} widths={[480, 800, 1200]} sizes="(max-width: 720px) 100vw, 33vw" />
@@ -33,11 +32,11 @@ const items = await getItems('experiments');
 
 <style>
   .intro { padding: clamp(24px, 8vh, 96px) 0 clamp(32px, 6vh, 64px); max-width: 760px; }
-  h1 { margin: 12px 0 16px; font-size: clamp(36px, 5vw, 72px); line-height: 1; letter-spacing: -0.03em; font-family: var(--display); font-weight: 500; text-wrap: balance; }
-  .lede { margin: 0; color: var(--muted); font-size: 17px; max-width: 56ch; }
+  h1 { margin: 12px 0 0; font-size: clamp(36px, 5vw, 72px); line-height: 1; letter-spacing: -0.03em; font-family: var(--display); font-weight: 500; text-wrap: balance; }
 
-  .masonry { columns: 3 300px; column-gap: var(--gutter); }
-  .exp { break-inside: avoid; display: flex; flex-direction: column; gap: 8px; margin-bottom: 40px; }
+  /* grid (not multicol) so card pins at the column edges are never fragmented or clipped */
+  .masonry { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 40px var(--gutter); align-items: start; padding-top: 12px; }
+  .exp { display: flex; flex-direction: column; gap: 8px; }
   .frame { border-radius: 3px; }
   .frame :global(img), .frame video { width: 100%; height: auto; transition: transform 0.9s var(--ease); }
   .exp:hover .frame :global(img) { transform: scale(1.03); }
