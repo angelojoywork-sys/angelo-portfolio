@@ -6,5 +6,6 @@ type: Graphic design
 tools: [Figma]
 disciplines: [graphic]
 cover: cover.jpg
+hideCover: true
 order: 7
 ---
