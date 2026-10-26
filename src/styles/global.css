@@ -23,6 +23,15 @@
   --display: 'new-spirit', Georgia, 'Times New Roman', serif;
   --electric: #2B2BFF;
 
+  /* 8px spacing scale */
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 40px;
+  --space-6: 48px;
+  --space-8: 64px;
+  --space-12: 96px;
   --gutter: clamp(16px, 2.2vw, 32px);
   --header-h: 60px;
   --ease: cubic-bezier(0.2, 0.7, 0.1, 1);

@@ -140,9 +140,13 @@ const sizes = '(max-width: 720px) 100vw, (max-width: 1200px) 30vw, 22vw';
   /* keyboard focus just shows the first still */
   .card:focus-visible:not(.previewing) .pv[data-i="0"] { opacity: 1; }
   .row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-top: 4px; }
-  .title { margin: 0; font-family: var(--display); font-size: 18px; font-weight: 500; letter-spacing: -0.01em; }
+  .title { margin: 0; font-family: var(--display); font-size: 18px; font-weight: 500; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1 1 auto; }
   .title::after { content: ' →'; display: inline-block; opacity: 0; transform: translateX(-6px); transition: opacity var(--dur-1), transform var(--dur-2) var(--ease); color: var(--accent); }
-  .sum { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.4; max-width: 40ch; }
+  .sum { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.4; max-width: 40ch; text-wrap: balance; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; min-height: 2.8em; }
+  @media (max-width: 1400px) { .title { font-size: 16px; } }
+  @media (max-width: 1180px) { .title { font-size: 13px; } .sum { font-size: 13px; -webkit-line-clamp: 3; line-clamp: 3; min-height: 4.2em; } }
+  @media (max-width: 720px) { .title { font-size: 18px; } .sum { font-size: 14px; -webkit-line-clamp: 2; line-clamp: 2; min-height: 2.8em; } }
+  @media (min-width: 1700px) { .title { font-size: 16px; } }
 
   /* Hover, keyboard focus and the hero's "lit" state all read the same */
   .card:is(:hover, :focus-visible, .lit) .media { --lift: -8px; box-shadow: 0 2px 4px rgb(0 0 0 / .06), 0 18px 36px -12px rgb(0 0 0 / .28); }

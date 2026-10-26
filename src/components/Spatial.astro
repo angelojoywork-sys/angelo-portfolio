@@ -41,7 +41,7 @@ const legend = Object.entries(site.data.disciplines)
     <div class="tip" aria-hidden="true"><b></b><span></span></div>
   </div>
 
-  <p class="hint label"><span class="fine">Drag to rotate · scroll to immerse</span><span class="touch">Drag to rotate · pinch to immerse · tap to open</span></p>
+  <p class="hint label"><span class="touch">Drag to rotate · pinch to immerse · tap to open</span></p>
 
   <div class="caption">
     <h1 class="stitle">{site.data.spatialTitle}</h1>
@@ -105,7 +105,7 @@ const legend = Object.entries(site.data.disciplines)
   .hint, .caption, .legend, .ruler { z-index: 2000; }
   .hint { position: absolute; bottom: clamp(24px, 5vh, 56px); left: 50%; transform: translateX(-50%); pointer-events: none; white-space: nowrap; transition: opacity var(--dur-3) var(--ease); }
   .spatial.used .hint, .spatial.zoomed .hint { opacity: 0; }
-  .caption { position: absolute; left: var(--gutter); bottom: clamp(24px, 5vh, 56px); pointer-events: none; max-width: min(660px, 80vw); transition: opacity var(--dur-2) var(--ease), transform var(--dur-3) var(--ease); }
+  .caption { position: absolute; left: var(--gutter); bottom: clamp(24px, 5vh, 56px); pointer-events: none; max-width: min(980px, 88vw); transition: opacity var(--dur-2) var(--ease), transform var(--dur-3) var(--ease); }
   .spatial.zoomed .caption { opacity: 0; transform: translateY(12px); }
   .stitle { margin: 0; font-size: clamp(28px, 3.4vw, 52px); line-height: 1; letter-spacing: -0.03em; font-family: var(--display); font-weight: 500; text-wrap: balance; }
   .sub { margin: 14px 0 0; color: var(--muted); }
@@ -260,18 +260,15 @@ const legend = Object.entries(site.data.disciplines)
 
     const resize = () => {
       W = stage.clientWidth; H = stage.clientHeight;
+      // centre the globe in the free band between the header and the headline, equal gap above and below
+      const hdr = document.querySelector<HTMLElement>('.site-header');
+      const top = hdr ? Math.max(0, hdr.getBoundingClientRect().bottom) : 72;
       const titleTop = caption.offsetTop + title.offsetTop;
-      if (W < 720) {
-        // phones: centre the globe in the free band between header and headline, equal padding both sides
-        const top = document.querySelector('.site-header')?.getBoundingClientRect().bottom ?? 60;
-        const pad = 20;
-        CY = (top + titleTop) / 2;
-        R = Math.min(W * 0.36, ((titleTop - top) / 2 - pad) / 1.2);
-        return;
-      }
-      CY = H * 0.45;
-      // the lowest nodes reach ~1.2R below centre; keep them clear of the headline
-      R = Math.min(Math.min(W, H) * 0.34, (titleTop - 16 - CY) / 1.2);
+      const pad = 20;
+      const bandTop = top + pad, bandBot = titleTop - pad;
+      CY = (bandTop + bandBot) / 2;
+      // nodes reach ~1.2R from centre (perspective), so fit that inside half the band
+      R = Math.min(Math.min(W, H) * 0.40, (bandBot - bandTop) / 2 / 1.2);
     };
     const measure = () => { availTop = 72; availBot = fcap.offsetTop - 16; };
     resize();

@@ -1,6 +1,6 @@
 ---
-title: "FlexManager: Motion guide"
-summary: "A template-led video system explaining 80+ software modules."
+title: "FlexManager: Motion Guide"
+summary: "A template-led video system that explains 80+ software modules with clarity."
 year: 2026
 client: "FlexManager"
 type: "Motion · Art direction"
