@@ -3,8 +3,6 @@ import { getSite } from '../lib/content';
 import Puppy from './Puppy.astro';
 const site = await getSite();
 const headline = site.data.intro.map((s) => s.text).join(' ');
-const [availLead, ...availTail] = (site.data.available ?? '').split(' & ');
-const availRest = availTail.length ? '& ' + availTail.join(' & ') : '';
 ---
 
 <section class="hero" aria-label="About">
@@ -13,7 +11,7 @@ const availRest = availTail.length ? '& ' + availTail.join(' & ') : '';
   <dl class="facts">
     <div><dt class="label">Role</dt><dd>{site.data.role}</dd></div>
     {site.data.location && <div><dt class="label">Location</dt><dd>{site.data.location}</dd></div>}
-    {site.data.available && <div><dt class="label">Status</dt><dd><span class="avail"></span>{availLead}{availRest && <><br />{availRest}</>}</dd></div>}
+    {site.data.available && <div><dt class="label">Status</dt><dd><span class="avail"></span>{site.data.available}</dd></div>}
   </dl>
 
   <Puppy />
@@ -27,13 +25,15 @@ const availRest = availTail.length ? '& ' + availTail.join(' & ') : '';
     line-height: 1.08;
     letter-spacing: -0.02em;
     font-family: var(--display);
-    font-weight: 700;
+    font-weight: 500;
     max-width: 18em;
     color: var(--electric);
     text-wrap: pretty;
   }
 
-  .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr)); gap: 16px 24px; margin: 0; max-width: 34em; }
+  .facts { display: flex; flex-wrap: wrap; gap: 16px clamp(24px, 3vw, 48px); margin: 0; }
+  .facts dd { text-wrap: balance; }
+  @media (min-width: 721px) { .facts dd { white-space: nowrap; } }
   .facts dd { margin: 4px 0 0; font-size: 14px; }
   .avail { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #22c55e; margin-right: 8px; vertical-align: 2px; }
 </style>

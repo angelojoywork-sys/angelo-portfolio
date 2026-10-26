@@ -1,5 +1,5 @@
 ---
-title: "Respond: ELSAC Recruitment Campaign"
+title: "Respond: Campaign creatives"
 summary: "Recruiting early-years educators across print and social for one of Ireland's largest housing charities."
 year: 2026
 client: Respond

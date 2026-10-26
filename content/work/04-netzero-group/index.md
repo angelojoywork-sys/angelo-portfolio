@@ -1,5 +1,5 @@
 ---
-title: "NetZero Group: Sales Brochure"
+title: "NetZero Group: Promotional creatives"
 summary: "Technical product tiers and SEAI grant info made clear and on-brand."
 year: 2026
 client: NetZero Group

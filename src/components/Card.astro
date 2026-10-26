@@ -14,6 +14,7 @@ const previews = files
   .filter((f) => f !== item.cover?.file && stills[folder + f])
   .slice(0, 4)
   .map((f) => stills[folder + f]);
+const pills = (item.data.type ?? '').split(/\s*[·&,]\s*/).filter(Boolean);
 const sizes = '(max-width: 720px) 100vw, (max-width: 1200px) 30vw, 22vw';
 ---
 
@@ -32,11 +33,8 @@ const sizes = '(max-width: 720px) 100vw, (max-width: 1200px) 30vw, 22vw';
     {previews.map((m, i) => (
       <Image src={m} alt="" widths={[480, 800]} sizes={sizes} loading="lazy" class="pv" data-i={i} aria-hidden="true" />
     ))}
-    {previews.length > 0 && (
-      <>
-        <div class="ticks" aria-hidden="true">{previews.map(() => <i />)}</div>
-        <span class="label pv-label" aria-hidden="true">Preview · <b>1</b>/{previews.length}</span>
-      </>
+    {pills.length > 0 && (
+      <ul class="pills" aria-hidden="true">{pills.map((p, i) => <li style={`--i:${i}`}>{p}</li>)}</ul>
     )}
   </div>
   <div class="row">
@@ -44,13 +42,12 @@ const sizes = '(max-width: 720px) 100vw, (max-width: 1200px) 30vw, 22vw';
     <span class="label num">{item.number}</span>
   </div>
   <p class="sum">{item.data.summary}</p>
-  <p class="label tags">{item.data.type ?? item.data.disciplines.join(' · ')} · {item.data.year}</p>
 </a>
 
 <script>
   // Cards lean toward the pointer (up to 6°) while lifted, and play a reel of
   // the project's stills: auto-advancing, or scrubbed by moving across the image.
-  const STEP = 900, WAIT = 250, IDLE = 1000;
+  const STEP = 1700, WAIT = 350, IDLE = 1200;
   const resets = new Set<() => void>();
 
   function bindCards() {
@@ -61,8 +58,6 @@ const sizes = '(max-width: 720px) 100vw, (max-width: 1200px) 30vw, 22vw';
       if (!media || card.dataset.tilt) return;
       card.dataset.tilt = '1';
       const pvs = [...media.querySelectorAll<HTMLElement>('.pv')];
-      const ticks = [...media.querySelectorAll<HTMLElement>('.ticks i')];
-      const count = media.querySelector('.pv-label b');
       const n = pvs.length;
       let at = -1, timer = 0, lastX = 0;
 
@@ -70,20 +65,16 @@ const sizes = '(max-width: 720px) 100vw, (max-width: 1200px) 30vw, 22vw';
         at = k;
         card.classList.add('previewing');
         pvs.forEach((p, j) => p.classList.toggle('on', j === k));
-        ticks.forEach((t, j) => { t.classList.toggle('done', j < k); t.classList.toggle('on', j === k); });
-        if (count) count.textContent = String(k + 1);
       };
       const play = () => {
-        card.classList.remove('scrub');
         show((at + 1) % n);
         if (!still && n > 1) timer = window.setTimeout(play, STEP);
       };
       const reset = () => {
         clearTimeout(timer);
         at = -1;
-        card.classList.remove('previewing', 'scrub');
+        card.classList.remove('previewing');
         pvs.forEach((p) => p.classList.remove('on'));
-        ticks.forEach((t) => t.classList.remove('on', 'done'));
       };
       if (n) resets.add(reset);
 
@@ -105,7 +96,6 @@ const sizes = '(max-width: 720px) 100vw, (max-width: 1200px) 30vw, 22vw';
         lastX = e.clientX;
         if (still || n < 2 || at < 0 || dx < 2) return;
         clearTimeout(timer);
-        card.classList.add('scrub');
         const k = Math.min(n - 1, Math.max(0, Math.floor(x * n)));
         if (k !== at) show(k);
         timer = window.setTimeout(play, IDLE);
@@ -134,29 +124,25 @@ const sizes = '(max-width: 720px) 100vw, (max-width: 1200px) 30vw, 22vw';
   /* while the pointer steers the tilt, follow it closely instead of lagging behind */
   .card.tilting .media { transition: transform .12s linear, box-shadow var(--dur-3) var(--ease); }
   .media :global(img), .media video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform var(--dur-3) var(--ease); }
-  /* Preview reel: stills cross-fade over the cover, story-style ticks on top */
-  .media .pv { opacity: 0; transition: opacity var(--dur-2) var(--ease), transform var(--dur-3) var(--ease); }
+  /* Preview reel: stills cross-fade slowly over the cover */
+  .media .pv { opacity: 0; transition: opacity 1s var(--ease), transform var(--dur-3) var(--ease); }
   .media .pv.on { opacity: 1; }
-  .ticks { position: absolute; top: 8px; left: 8px; right: 8px; display: flex; gap: 3px; opacity: 0; transition: opacity var(--dur-1); }
-  .ticks i { flex: 1; height: 2px; border-radius: 1px; background: rgb(255 255 255 / .35); overflow: hidden; }
-  .ticks i::after { content: ''; display: block; height: 100%; background: #fff; transform: scaleX(0); transform-origin: left; }
-  .ticks i.done::after, .card.scrub .ticks i.on::after { transform: none; }
-  .card:not(.scrub) .ticks i.on::after { animation: tick .9s linear forwards; }
-  @keyframes tick { to { transform: none; } }
-  .pv-label {
-    position: absolute; left: 8px; bottom: 8px; padding: 3px 8px; border-radius: 999px;
-    font-size: 11px; color: #fff; background: rgb(0 0 0 / .45); backdrop-filter: blur(6px);
-    opacity: 0; transition: opacity var(--dur-1);
+  /* Rounded tag pills slide up inside the image on hover */
+  .pills { position: absolute; left: 12px; right: 12px; bottom: 12px; display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; pointer-events: none; }
+  .pills li {
+    padding: 6px 12px; border-radius: 999px; font-size: 12px; line-height: 1; color: #111; background: rgb(255 255 255 / .92);
+    backdrop-filter: blur(6px); box-shadow: 0 2px 8px rgb(0 0 0 / .12);
+    opacity: 0; transform: translateY(18px);
+    transition: opacity var(--dur-2) var(--ease), transform var(--dur-3) var(--ease);
+    transition-delay: calc(var(--i) * 60ms);
   }
-  .pv-label b { font-weight: inherit; }
-  .card.previewing :is(.ticks, .pv-label) { opacity: 1; }
+  .card:is(:hover, :focus-visible, .lit) .pills li { opacity: 1; transform: none; }
   /* keyboard focus just shows the first still */
   .card:focus-visible:not(.previewing) .pv[data-i="0"] { opacity: 1; }
   .row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-top: 4px; }
-  .title { margin: 0; font-family: var(--display); font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+  .title { margin: 0; font-family: var(--display); font-size: 18px; font-weight: 500; letter-spacing: -0.01em; }
   .title::after { content: ' →'; display: inline-block; opacity: 0; transform: translateX(-6px); transition: opacity var(--dur-1), transform var(--dur-2) var(--ease); color: var(--accent); }
   .sum { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.4; max-width: 40ch; }
-  .tags { margin-top: 2px; }
 
   /* Hover, keyboard focus and the hero's "lit" state all read the same */
   .card:is(:hover, :focus-visible, .lit) .media { --lift: -8px; box-shadow: 0 2px 4px rgb(0 0 0 / .06), 0 18px 36px -12px rgb(0 0 0 / .28); }
@@ -166,7 +152,7 @@ const sizes = '(max-width: 720px) 100vw, (max-width: 1200px) 30vw, 22vw';
   @media (max-width: 720px), (hover: none) {
     .card:is(:hover, :focus-visible, .lit) .media { --lift: 0px; --rx: 0deg; --ry: 0deg; box-shadow: none; }
     .card:is(:hover, :focus-visible, .lit) .media .cover { transform: none; }
-    .media :is(.pv, .ticks, .pv-label) { display: none; }
+    .media :is(.pv, .pills) { display: none; }
     .card:is(:hover, :focus-visible, .lit) .title::after { opacity: 0; }
   }
   @media (max-width: 720px) {
@@ -174,7 +160,7 @@ const sizes = '(max-width: 720px) 100vw, (max-width: 1200px) 30vw, 22vw';
   }
   @media (prefers-reduced-motion: reduce) {
     .media { --rx: 0deg !important; --ry: 0deg !important; }
-    .ticks { display: none; }
+    .pills li { transition: opacity var(--dur-1); transform: none; }
   }
 </style>
 

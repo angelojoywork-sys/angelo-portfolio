@@ -1,5 +1,5 @@
 ---
-title: "Graphic Design Archive 2025"
+title: "Design Portfolio 2025"
 summary: "Selected graphic design work from 2025."
 year: 2025
 type: "Graphic design"
@@ -7,7 +7,7 @@ role: "Designer"
 tools: [Illustrator, Photoshop, InDesign]
 disciplines: [graphic]
 cover: cover.png
-order: 11
+order: 10
 ---
 
 ![](01.gif)

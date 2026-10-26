@@ -61,6 +61,7 @@ const experiments = await getItems('experiments');
     }));
     const chips = [...home.querySelectorAll<HTMLButtonElement>('.chip')];
     const count = home.querySelector<HTMLElement>('.work .count');
+    const heading = home.querySelector<HTMLElement>('.work .heading');
     let active = '';
 
     function filter(key: string) {
@@ -73,6 +74,7 @@ const experiments = await getItems('experiments');
       void (home as HTMLElement).offsetWidth; // restart the fade
       shown.forEach(({ el }) => el.classList.add('reveal'));
       const n = shown.filter((i) => i.card).length;
+      if (heading) heading.textContent = chips.find((c) => c.dataset.filter === active)?.textContent ?? 'All';
       if (count) count.textContent = `(${String(n).padStart(2, '0')})`;
       document.dispatchEvent(new CustomEvent('view-change', { detail: { filter: true } }));
     }

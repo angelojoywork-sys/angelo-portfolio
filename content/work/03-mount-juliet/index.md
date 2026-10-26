@@ -1,5 +1,5 @@
 ---
-title: "Mount Juliet Estate: Seasonal Ads"
+title: "Mount Juliet: Meta ads"
 summary: "10 to 15 Meta campaigns in three formats for a 5-star heritage resort, in one week."
 year: 2026
 client: Mount Juliet

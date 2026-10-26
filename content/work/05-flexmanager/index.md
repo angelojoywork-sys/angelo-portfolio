@@ -1,5 +1,5 @@
 ---
-title: "FlexManager: Product Video System"
+title: "FlexManager: Motion guide"
 summary: "A template-led video system explaining 80+ software modules."
 year: 2026
 client: "FlexManager"
