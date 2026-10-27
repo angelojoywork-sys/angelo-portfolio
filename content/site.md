@@ -30,7 +30,7 @@ disciplines:
 
 # The headline on the home page.
 intro:
-  - text: Designer shaping useful experiences through listening, observation and purposeful planning.
+  - text: Designer driven by empathy, purposeful planning, and high-impact design.
     key: true
 
 # Short headline shown in the Spatial view.

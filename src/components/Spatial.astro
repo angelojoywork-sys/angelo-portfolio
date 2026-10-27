@@ -62,9 +62,11 @@ const legend = Object.entries(site.data.disciplines)
 
   <div class="ruler" role="slider" tabindex="0" aria-label="Immerse" aria-orientation="vertical" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
     <div class="ruler-track">
-      {Array.from({ length: 28 }, () => <i></i>)}
-      <span class="ruler-fill"></span>
-      <span class="ruler-mark"><em class="label">Immerse</em></span>
+      {Array.from({ length: 31 }, () => <i></i>)}
+      <em class="label stage-label" style="top:0%">Immersed</em>
+      <em class="label stage-label" style="top:50%">Float</em>
+      <em class="label stage-label" style="top:100%">Orbit</em>
+      <span class="ruler-mark" aria-hidden="true"><svg width="10" height="14" viewBox="0 0 10 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 1v12M2 4l3-3 3 3M2 10l3 3 3-3"/></svg></span>
     </div>
     <div class="ruler-dial" aria-hidden="true">
       <div class="dial-strip">{Array.from({ length: 61 }, () => <i></i>)}</div>
@@ -131,22 +133,21 @@ const legend = Object.entries(site.data.disciplines)
 
   .legend { position: absolute; right: var(--gutter); bottom: clamp(24px, 5vh, 56px); list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; align-items: flex-end; transition: opacity var(--dur-2) var(--ease); }
   .spatial.zoomed .legend { opacity: 0; pointer-events: none; }
-  .legend button { display: inline-flex; gap: 8px; align-items: center; font-size: 13px; color: var(--muted); padding: 3px 0; transition: color var(--dur-1); }
-  .legend button:hover, .legend button.on { color: var(--fg); }
+  .legend button { display: inline-flex; gap: 8px; align-items: center; font-size: 13px; color: var(--fg); padding: 3px 0; text-decoration: underline 1px transparent; text-underline-offset: 3px; transition: text-decoration-color var(--dur-2) var(--ease); }
+  .legend button:hover, .legend button.on { text-decoration-color: var(--hover); }
   .legend .sw { width: 8px; height: 8px; border-radius: 50%; border: 1px solid currentColor; transition: background var(--dur-1); }
   .legend button:hover .sw, .legend button.on .sw { background: var(--accent); border-color: var(--accent); }
 
   /* the padding is an invisible, generous hit area around the ticks */
   .ruler { position: absolute; right: calc(var(--gutter) - 14px); top: 50%; transform: translateY(-50%); padding: 14px; cursor: ns-resize; touch-action: none; outline: none; }
   .ruler-track { position: relative; display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
-  .ruler i { display: block; width: 8px; height: 1px; background: var(--line); }
-  .ruler i:nth-child(7n + 1) { width: 14px; background: var(--faint); }
-  .ruler-fill { position: absolute; right: 0; top: var(--zy, 100%); bottom: 0; width: 2px; background: var(--accent); }
-  .ruler-mark { position: absolute; right: 0; top: var(--zy, 100%); width: 22px; height: 1px; background: var(--fg); transition: width var(--dur-1) var(--ease); }
-  .ruler:hover .ruler-mark, .ruler.active .ruler-mark { width: 30px; }
-  .ruler:focus-visible .ruler-mark { background: var(--accent); width: 30px; }
-  .ruler-mark em { position: absolute; right: 38px; top: -6px; font-style: normal; transition: color var(--dur-1); }
-  .ruler:hover .ruler-mark em, .ruler.active .ruler-mark em { color: var(--fg); }
+  /* ticks swell like a dock around the marker: --w is set per tick from the immerse value */
+  .ruler i { display: block; width: calc(8px + 22px * var(--w, 0)); height: 1px; background: color-mix(in srgb, var(--fg) calc(18% + 62% * var(--w, 0)), transparent); }
+  .ruler-mark { position: absolute; right: 0; top: var(--zy, 100%); transform: translate(50%, -50%); color: var(--fg); line-height: 0; pointer-events: none; }
+  .ruler.active .ruler-mark { transform: translate(50%, -50%) scale(1.15); }
+  .ruler:focus-visible .ruler-mark { color: var(--accent); }
+  /* stage names sit beside their tick and fade as the marker leaves them */
+  .stage-label { position: absolute; right: 44px; transform: translateY(-50%); font-style: normal; white-space: nowrap; opacity: var(--lo, 0); pointer-events: none; }
   .ruler-dial { display: none; }
 
   @media (prefers-reduced-motion: reduce) { .fc-title.in, .fc-meta.in { animation: none; } }
@@ -193,6 +194,8 @@ const legend = Object.entries(site.data.disciplines)
     const tip = root.querySelector<HTMLElement>('.tip')!;
     const ruler = root.querySelector<HTMLElement>('.ruler')!;
     const track = root.querySelector<HTMLElement>('.ruler-track')!;
+    const rulerTicks = [...track.querySelectorAll<HTMLElement>('i')];
+    const stageLabels = [...track.querySelectorAll<HTMLElement>('.stage-label')];
     const caption = root.querySelector<HTMLElement>('.caption')!;
     const title = root.querySelector<HTMLElement>('.stitle')!;
     const fcap = root.querySelector<HTMLElement>('.fcap')!;
@@ -493,6 +496,11 @@ const legend = Object.entries(site.data.disciplines)
       else if (imm < 0.25) root.classList.remove('zoomed');
       root.style.setProperty('--imm', ease.toFixed(3));
       ruler.style.setProperty('--zy', ((1 - clamp01(imm)) * 100).toFixed(2) + '%');
+      if (!phone.matches) {
+        const v = clamp01(imm);
+        rulerTicks.forEach((t, i) => { const d = ((1 - i / (rulerTicks.length - 1)) - v) / 0.11; t.style.setProperty('--w', Math.exp(-d * d).toFixed(3)); });
+        stageLabels.forEach((l, i) => l.style.setProperty('--lo', Math.max(0, 1 - Math.abs(v - [1, 0.5, 0][i]) / 0.2).toFixed(3)));
+      }
       // the dial tracks the finger directly while dragging, the spring-smoothed value otherwise
       ruler.style.setProperty('--zf', (rulerId >= 0 && phone.matches ? immT : clamp01(imm)).toFixed(4));
       if (dialV && rulerId < 0) {

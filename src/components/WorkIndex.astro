@@ -59,9 +59,11 @@ const used = Object.entries(site.data.disciplines).filter(([k]) => work.some((w)
   .bar { display: flex; align-items: center; justify-content: space-between; gap: 12px 20px; flex-wrap: wrap; margin-bottom: var(--space-3); }
   .count { color: var(--faint); }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-right: auto; }
-  .chip { font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); transition: all var(--dur-1) var(--ease); }
-  .chip:hover { color: var(--fg); border-color: var(--faint); }
-  .chip[aria-pressed='true'] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+  .chips { gap: 6px 20px; }
+  /* same treatment as the header nav links: plain text, underline only on hover / selected */
+  .chip { position: relative; font-size: 14px; padding: 0; color: var(--fg); }
+  .chip::after { content: ''; position: absolute; left: 0; right: 0; bottom: -3px; height: 1px; background: var(--hover); box-shadow: 0 0 8px var(--accent-glow); transform: scaleX(0); transform-origin: right; transition: transform var(--dur-2) var(--ease); }
+  .chip:hover::after, .chip[aria-pressed='true']::after { transform: scaleX(1); transform-origin: left; }
   .layout { display: inline-flex; gap: 2px; }
   .layout button { padding: 6px; color: var(--faint); border-radius: 4px; }
   .layout button[aria-pressed='true'] { color: var(--fg); background: var(--surface); }
