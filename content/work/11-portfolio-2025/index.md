@@ -12,7 +12,7 @@ hideCover: true
 gap: tight
 study:
   product:
-    name: "Design Portfolio 2025"
+    name: "Portfolio 2025"
     description: "A personal presentation of 2025 graphic work, blending creativity, innovation and visual storytelling."
   details:
     - { value: "Presentation portfolio", label: "surface" }

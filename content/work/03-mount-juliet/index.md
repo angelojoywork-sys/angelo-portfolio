@@ -13,7 +13,7 @@ note: "One template, three ratios, fifteen campaigns. The system did the heavy l
 bg: "#373A36"
 study:
   product:
-    name: "Mount Juliet Estate"
+    name: "Mount Juliet"
     description: "Seasonal Meta advertising campaigns for a 5-star heritage resort in County Kilkenny, designed to drive audience engagement and bookings with an elevated, timeless look."
   details:
     - { value: "Paid social, Meta", label: "surface" }

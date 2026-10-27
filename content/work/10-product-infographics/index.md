@@ -11,7 +11,7 @@ cover: cover.jpg
 order: 9
 study:
   product:
-    name: "Product Infographics"
+    name: "Infographics"
     description: "Feature-led infographics that make products easy to compare at a glance, including a poster explaining an end-to-end fibre-optic connection."
   details:
     - { value: "Infographic & print poster", label: "surface" }
