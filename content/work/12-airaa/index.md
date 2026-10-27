@@ -9,7 +9,7 @@ tools: [Figma, Procreate, Miro, HTML/CSS/JS]
 disciplines: [digital]
 cover: cover.mp4
 link: { label: "View the full case study on Behance", url: "https://www.behance.net/gallery/248798001/Airaa-Flight-booking-UX-case-study" }
-embed: /prototypes/airaa/
+embed: /prototypes/airaa/index.html
 note: "Price stays on screen at every step, because price visibility was the one thing users would not compromise on."
 bg: "#0e5a41"
 order: 120
