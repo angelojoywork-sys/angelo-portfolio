@@ -5,8 +5,7 @@ year: 2026
 type: Shader & motion
 tools: [Framer, WebGL]
 disciplines: [motion]
-cover: cover.png
+cover: cover.mp4
 order: 1
 ---
 
-<!-- TODO: Behance video, re-upload to Vimeo: https://www-ccv.adobe.io/v1/player/ccv/376qmQPNPZk/embed?bgcolor=%23191919&lazyLoading=true&api_key=BehancePro2View -->
