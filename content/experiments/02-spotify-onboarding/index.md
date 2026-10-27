@@ -7,5 +7,6 @@ tools: [Figma]
 disciplines: [digital]
 cover: cover.mp4
 order: 2
+note: "Daily UI 1. A sign-up is a first impression, so I kept each screen to one decision."
 ---
 

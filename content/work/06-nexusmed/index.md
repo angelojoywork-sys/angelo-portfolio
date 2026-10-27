@@ -12,6 +12,7 @@ order: 6
 bg: "#1E205D"
 hideCover: true
 gap: none
+note: "I audited their existing deck first, so the new identity kept the workflows people already relied on."
 study:
   product:
     name: "NexusMed"

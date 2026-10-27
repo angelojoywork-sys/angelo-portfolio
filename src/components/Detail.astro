@@ -271,7 +271,7 @@ const media: Media[] = item.gallery;
   .story :global(a) { color: var(--fg); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--faint); transition: text-decoration-color var(--dur-1); }
   .story :global(a:hover) { text-decoration-color: var(--hover); }
   .story :global(ul) { padding-left: 1.2em; margin: 0 0 1em; }
-  .story > :global(:is(p:has(img), figure, .embed, .embed-linkedin)) { grid-column: 1 / -1; margin: clamp(24px, 4vw, 48px) 0; }
+  .story > :global(:is(p:has(img), figure, .embed, .embed-linkedin)) { grid-column: 1 / -1; margin: clamp(8px, 1.2vw, 16px) 0; }
   .story > :global(p:has(img) + p:has(img)) { margin-top: 0; }
   .story :global(.img-grid) { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; align-items: start; margin: clamp(24px, 4vw, 48px) 0; }
   .story :global(.img-grid p) { margin: 0 !important; }
@@ -293,7 +293,7 @@ const media: Media[] = item.gallery;
     .story { font-size: 16px; }
   }
 
-  .gallery { display: grid; gap: clamp(16px, 2vw, 28px); }
+  .gallery { display: grid; gap: clamp(12px, 1.5vw, 24px); }
   .fig { margin: 0; }
   .fig .frame { border-radius: 2px; }
   .fig :global(img) { width: 100%; height: auto; }

@@ -7,4 +7,5 @@ tools: [Procreate]
 disciplines: [graphic]
 cover: cover.png
 order: 8
+note: "After a lot of template-driven work, this is where the hand shows. The imperfect line is the point."
 ---

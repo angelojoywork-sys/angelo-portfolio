@@ -7,5 +7,6 @@ tools: [Framer]
 disciplines: [motion]
 cover: cover.mp4
 order: 3
+note: "I treated the logo as a surface: shaders add depth and movement without changing the mark."
 ---
 

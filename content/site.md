@@ -16,8 +16,9 @@ photo: /portrait.jpg
 links:
   - label: LinkedIn
     url: https://www.linkedin.com/in/angelo-joy/
-  - label: Résumé · PDF
-    url: /resume.pdf
+  # Résumé hidden for now. Uncomment to show it again (needs public/resume.pdf):
+  # - label: Résumé · PDF
+  #   url: /resume.pdf
 
 # The disciplines you work in. The short word on the left is a "key"
 # you use in projects (disciplines: [graphic, motion]) and in the hero below.

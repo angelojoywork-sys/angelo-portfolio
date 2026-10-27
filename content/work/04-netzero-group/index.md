@@ -9,7 +9,7 @@ tools: [InDesign, Photoshop]
 disciplines: [graphic]
 cover: cover.jpeg
 order: 4
-note: "The brand's angled notch became the thread that ties every panel together."
+note: "The angled notch did two jobs: it made the cover feel owned and pulled the reviews out of a dense tri-fold."
 bg: "#315A51"
 study:
   product:
