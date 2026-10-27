@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Airaa: flight booking prototype</title>
+<style>
+  @font-face {
+    font-family: "Schibsted Grotesk"; font-style: normal; font-weight: 400 700; font-display: swap;
+    src: url("fonts/Schibsted.woff2") format("woff2");
+  }
+  :root {
+    --ground: #f2f4f1;
+    --panel: #ffffff;
+    --line: #d5dcd7;
+    --line-soft: #e6ebe7;
+    --ink: #0e1914;
+    --ink-2: #3f4e47;
+    --ink-3: #5e6d66;
+    --brand: #0e5a41;
+    --brand-deep: #0a4531;
+    --brand-soft: #e3f0e9;
+    --brand-line: #a9cdbb;
+    --error: #b3261e;
+    --price: #a8470f;
+    --r-ctl: 10px;
+    --r-panel: 14px;
+    --ease: cubic-bezier(.16, 1, .3, 1);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    font-family: "Schibsted Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 15px; line-height: 1.45; color: var(--ink); background: var(--ground);
+    -webkit-font-smoothing: antialiased;
+    scrollbar-color: var(--line) transparent; scrollbar-width: thin;
+  }
+  ::selection { background: var(--brand); color: #fff; }
+  button, input, select { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 6px; }
+  .ic { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .ic.sm { width: 16px; height: 16px; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* shell */
+  .top { background: var(--panel); border-bottom: 1px solid var(--line); }
+  .top .in { max-width: 1160px; margin: 0 auto; padding: 0 32px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+  .logo { display: flex; align-items: center; gap: 10px; border: 0; background: none; padding: 0; font-weight: 650; font-size: 22px; letter-spacing: -.03em; }
+  .logo svg { width: 30px; height: 30px; }
+  .links { display: flex; gap: 28px; color: var(--ink-2); font-weight: 500; font-size: 14px; }
+  main { max-width: 1160px; margin: 0 auto; padding: 0 32px 72px; }
+  .enter { animation: rise .26s var(--ease); }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+  @media (prefers-reduced-motion: reduce) { .enter { animation: none; } * { transition: none !important; } }
+
+  h1 { font-size: 28px; line-height: 1.15; letter-spacing: -.025em; font-weight: 650; margin: 0 0 6px; text-wrap: balance; }
+  h1:focus { outline: none; }
+  h2 { font-size: 17px; letter-spacing: -.01em; font-weight: 620; margin: 0; }
+  h3 { font-size: 15px; font-weight: 620; margin: 0; }
+  .sub { color: var(--ink-2); margin: 0 0 24px; max-width: 62ch; }
+  .muted { color: var(--ink-3); }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-panel); }
+
+  /* buttons + fields */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding: 0 20px; border: 1px solid var(--brand); border-radius: var(--r-ctl); background: var(--brand); color: #fff; font-weight: 600; transition: background .15s, border-color .15s; white-space: nowrap; }
+  .btn:hover { background: var(--brand-deep); border-color: var(--brand-deep); }
+  .btn:disabled { background: var(--line-soft); border-color: var(--line-soft); color: var(--ink-3); cursor: not-allowed; }
+  .btn.line { background: var(--panel); color: var(--ink); border-color: var(--line); }
+  .btn.line:hover { border-color: var(--ink); background: var(--panel); }
+  .btn.sm { height: 36px; padding: 0 14px; font-size: 14px; }
+  .btn.on { background: var(--brand-soft); color: var(--brand-deep); border-color: var(--brand); }
+  .field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .field input, .field select { width: 100%; height: 44px; border: 1px solid var(--line); border-radius: var(--r-ctl); padding: 0 12px; background: var(--panel); }
+  .field input::placeholder { color: var(--ink-3); }
+  .field input:hover, .field select:hover { border-color: var(--ink-3); }
+  .field input:focus, .field select:focus { border-color: var(--brand); outline: 2px solid var(--brand); outline-offset: -1px; }
+  .field .bad { border-color: var(--error); }
+  .err { display: flex; gap: 6px; align-items: center; color: var(--error); font-size: 13px; margin-top: 6px; }
+  .err .ic { width: 14px; height: 14px; }
+  .qty { display: inline-flex; align-items: center; gap: 4px; }
+  .qty b { min-width: 28px; text-align: center; }
+  .qty button { width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); display: grid; place-items: center; }
+  .qty button:hover:not(:disabled) { border-color: var(--ink); }
+  .qty button:disabled { color: var(--line); cursor: not-allowed; }
+  .tag { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: var(--brand-soft); color: var(--brand-deep); }
+
+  /* home */
+  .band { background: var(--brand); color: #fff; margin: 0 calc(50% - 50vw); padding: 56px calc(50vw - 50% + 0px) 112px; }
+  .band-in { max-width: 1096px; margin: 0 auto; padding: 0 0; }
+  .band h1 { font-size: 44px; max-width: 14ch; color: #fff; }
+  .band p { color: #cfe6da; font-size: 17px; margin: 12px 0 0; max-width: 46ch; }
+  .search { margin: -72px 0 0; padding: 22px; position: relative; display: grid; grid-template-columns: 1fr auto 1fr 1fr 1fr; gap: 12px; align-items: end; }
+  .seg { display: inline-flex; padding: 3px; background: var(--ground); border-radius: var(--r-ctl); grid-column: 1 / -1; width: max-content; }
+  .seg span { padding: 6px 14px; font-weight: 600; font-size: 14px; border-radius: 8px; }
+  .seg span.on { background: var(--panel); box-shadow: 0 0 0 1px var(--line); }
+  .seg span.off { color: var(--ink-3); }
+  .swap { width: 44px; height: 44px; border: 1px solid var(--line); border-radius: var(--r-ctl); background: var(--panel); display: grid; place-items: center; }
+  .swap:hover { border-color: var(--ink); }
+  .paxbox { display: flex; align-items: center; justify-content: space-between; height: 44px; border: 1px solid var(--line); border-radius: var(--r-ctl); padding: 0 6px 0 12px; background: var(--panel); }
+  .search .go { grid-column: 3 / -1; justify-self: end; min-width: 200px; }
+  .fares { margin-top: 40px; }
+  .fares h2 { margin-bottom: 4px; }
+  .fare { display: grid; grid-template-columns: 1fr auto auto; gap: 24px; align-items: center; width: 100%; padding: 16px 4px; border: 0; border-bottom: 1px solid var(--line); background: none; text-align: left; }
+  .fare:hover .route { text-decoration: underline; text-underline-offset: 4px; }
+  .fare .route { font-weight: 600; }
+  .fare .px { font-size: 18px; font-weight: 650; }
+  .fare:first-of-type { border-top: 1px solid var(--line); }
+  .note { font-size: 13px; color: var(--ink-3); margin-top: 14px; }
+
+  /* flow bar */
+  .flowbar { position: sticky; top: 0; z-index: 20; background: var(--panel); border-bottom: 1px solid var(--line); margin: 0 calc(50% - 50vw); }
+  .flowbar .in { max-width: 1160px; margin: 0 auto; padding: 10px 32px; display: flex; align-items: center; gap: 24px; min-height: 68px; position: relative; }
+  .tripline { flex: 1; min-width: 0; }
+  .tripline b { font-size: 17px; letter-spacing: -.01em; display: inline-flex; align-items: center; gap: 8px; }
+  .tripline .meta { color: var(--ink-2); font-size: 14px; }
+  .tripline .meta button { border: 0; background: none; padding: 0; color: var(--brand); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; margin-left: 8px; }
+  .totalbtn { border: 0; background: none; text-align: right; padding: 4px 0; }
+  .totalbtn small { display: flex; justify-content: flex-end; align-items: center; gap: 4px; color: var(--ink-2); font-size: 12px; font-weight: 600; }
+  .totalbtn strong { font-size: 24px; letter-spacing: -.02em; line-height: 1.1; font-weight: 650; }
+  .totalbtn .ic { transition: transform .2s var(--ease); }
+  .totalbtn[aria-expanded="true"] .ic { transform: rotate(180deg); }
+  .brk { position: absolute; right: 32px; top: calc(100% + 8px); width: 340px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-panel); padding: 16px 18px; box-shadow: 0 12px 32px rgba(14, 25, 20, .12); }
+  .brk .r, .sumrow { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; font-size: 14px; }
+  .brk .r.t, .sumrow.t { border-top: 1px solid var(--line); margin-top: 8px; padding-top: 12px; font-weight: 650; font-size: 16px; }
+
+  .steps { display: flex; gap: 4px; margin: 22px 0 28px; border-bottom: 1px solid var(--line); }
+  .step { display: inline-flex; align-items: center; gap: 8px; padding: 12px 16px; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; background: none; font-weight: 600; color: var(--ink-3); }
+  .step .n { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid currentColor; display: grid; place-items: center; font-size: 12px; }
+  .step.done { color: var(--ink); }
+  .step.done .n { background: var(--brand); border-color: var(--brand); color: #fff; }
+  .step.done .n .ic { width: 13px; height: 13px; stroke-width: 2.5; }
+  .step.cur { color: var(--brand); border-bottom-color: var(--brand); }
+  .step:disabled { cursor: not-allowed; }
+  .step:not(:disabled):hover { color: var(--ink); }
+  .step.cur:hover { color: var(--brand); }
+
+  /* flights */
+  .legbar { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin: 0 0 12px; }
+  .sorts { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; color: var(--ink-2); }
+  .sorts button { border: 1px solid var(--line); background: var(--panel); padding: 6px 12px; border-radius: 8px; font-weight: 600; font-size: 13px; }
+  .sorts button[aria-pressed="true"] { border-color: var(--brand); background: var(--brand-soft); color: var(--brand-deep); }
+  .dates { display: grid; grid-template-columns: 40px repeat(5, 1fr) 40px; gap: 8px; margin-bottom: 14px; }
+  .dates button { min-height: 58px; border: 1px solid var(--line); border-radius: var(--r-ctl); background: var(--panel); font-weight: 600; line-height: 1.25; padding: 6px 4px; }
+  .dates button small { display: block; font-weight: 500; font-size: 12px; color: var(--ink-3); }
+  .dates button:hover { border-color: var(--ink); }
+  .dates button[aria-pressed="true"] { border-color: var(--brand); box-shadow: inset 0 0 0 1px var(--brand); background: var(--brand-soft); color: var(--brand-deep); }
+  .dates .arrow { display: grid; place-items: center; padding: 0; }
+  .flight { display: grid; grid-template-columns: 1fr 150px 120px; gap: 20px; align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-panel); padding: 16px 20px; margin-bottom: 10px; }
+  .flight.sel { border-color: var(--brand); box-shadow: inset 0 0 0 1px var(--brand); }
+  .tm { display: grid; grid-template-columns: auto 1fr auto; gap: 16px; align-items: center; }
+  .tm .t { font-size: 22px; font-weight: 650; letter-spacing: -.02em; line-height: 1; }
+  .tm .a { font-size: 12px; font-weight: 600; color: var(--ink-3); margin-top: 4px; letter-spacing: .04em; }
+  .path { text-align: center; font-size: 12px; color: var(--ink-2); }
+  .path .ln { height: 1px; background: var(--ink-3); position: relative; margin: 6px 0; }
+  .path .ln::before, .path .ln::after { content: ""; position: absolute; top: -3px; width: 7px; height: 7px; border: 1px solid var(--ink-3); border-radius: 50%; background: var(--panel); }
+  .path .ln::before { left: 0; } .path .ln::after { right: 0; }
+  .fno { font-size: 12px; color: var(--ink-3); margin-top: 8px; }
+  .px { text-align: right; font-size: 28px; font-weight: 650; letter-spacing: -.025em; line-height: 1; color: var(--price); }
+  .px small { display: block; font-size: 12px; font-weight: 500; color: var(--ink-3); letter-spacing: 0; line-height: 1.35; margin-top: 6px; }
+  .rcpt { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 10px; font-size: 12px; font-weight: 500; color: var(--ink-2); }
+  .rcpt span { display: inline-flex; align-items: center; gap: 4px; }
+  .rcpt .ic { width: 13px; height: 13px; stroke-width: 2.2; color: var(--brand); }
+  .rcpt .no, .rcpt .no .ic { color: var(--ink-3); }
+  .btn.lg { width: 100%; height: 48px; margin-top: 18px; }
+  .totalbtn strong { color: var(--price); }
+
+  /* seats */
+  .seatwrap { display: grid; grid-template-columns: 260px 1fr 260px; gap: 28px; align-items: start; }
+  .legtabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: var(--ground); padding: 3px; border-radius: var(--r-ctl); margin-bottom: 18px; }
+  .legtabs button { border: 0; background: none; padding: 8px 6px; border-radius: 8px; font-weight: 600; font-size: 13px; color: var(--ink-2); }
+  .legtabs button[aria-pressed="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 0 0 1px var(--line); }
+  .key { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; font-size: 14px; }
+  .key li { display: flex; align-items: center; gap: 10px; }
+  .fuse { width: 330px; margin: 0 auto; padding: 44px 26px 32px; background: var(--panel); border: 1px solid var(--line); border-radius: 150px 150px 28px 28px / 120px 120px 28px 28px; }
+  .fuse .front { text-align: center; font-size: 12px; font-weight: 600; color: var(--ink-3); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 18px; }
+  .band-label { text-align: center; font-size: 12px; font-weight: 600; color: var(--brand-deep); margin: 0 0 6px; }
+  .srow { display: grid; grid-template-columns: repeat(3, 34px) 26px repeat(3, 34px); gap: 6px; justify-content: center; margin-bottom: 6px; align-items: center; }
+  .srow .rn { text-align: center; font-size: 12px; color: var(--ink-3); }
+  .srow.gap { margin-top: 20px; }
+  .seat { width: 34px; height: 34px; border-radius: 8px 8px 5px 5px; border: 1.5px solid var(--ink-3); background: var(--panel); display: grid; place-items: center; padding: 0; color: #fff; }
+  .seat.leg { border-color: var(--brand); background: var(--brand-soft); }
+  .seat:not(:disabled):hover { border-color: var(--ink); transform: translateY(-1px); }
+  .seat.mine { background: var(--brand); border-color: var(--brand); }
+  .seat.mine .ic { width: 16px; height: 16px; stroke-width: 2.5; }
+  .seat:disabled { background: var(--ground); border-color: var(--line); color: var(--ink-3); cursor: not-allowed; }
+  .seat:disabled .ic { width: 14px; height: 14px; }
+  .key .seat { width: 26px; height: 26px; pointer-events: none; }
+  .slot { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--line-soft); font-size: 14px; }
+  .slot:last-child { border-bottom: 0; }
+
+  /* bags + extras */
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .bagcard { padding: 20px; }
+  .bagcard h2 { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+  .bagcard .grp { font-size: 13px; font-weight: 600; color: var(--ink-2); margin: 18px 0 8px; display: flex; align-items: center; gap: 8px; }
+  .opt { display: grid; grid-template-columns: 22px 1fr auto; gap: 12px; align-items: center; width: 100%; text-align: left; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r-ctl); background: var(--panel); margin-bottom: 8px; }
+  .opt:hover { border-color: var(--ink); }
+  .opt[aria-checked="true"] { border-color: var(--brand); box-shadow: inset 0 0 0 1px var(--brand); background: var(--brand-soft); }
+  .radio { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--ink-3); display: grid; place-items: center; }
+  .opt[aria-checked="true"] .radio { border-color: var(--brand); background: var(--brand); color: #fff; }
+  .radio .ic { width: 12px; height: 12px; stroke-width: 3; opacity: 0; }
+  .opt[aria-checked="true"] .radio .ic { opacity: 1; }
+  .opt b { display: block; font-size: 14px; }
+  .opt span.d { font-size: 13px; color: var(--ink-2); }
+  .opt .p { font-weight: 650; font-size: 14px; }
+  .chk { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r-ctl); }
+  .deal { display: grid; grid-template-columns: 44px 1fr auto auto; gap: 16px; align-items: center; padding: 18px 20px; margin-bottom: 12px; }
+  .deal .ico { width: 44px; height: 44px; border-radius: 12px; background: var(--brand-soft); color: var(--brand-deep); display: grid; place-items: center; }
+  .deal p { margin: 2px 0 0; font-size: 14px; color: var(--ink-2); }
+  .foot { display: flex; justify-content: flex-end; margin-top: 8px; }
+
+  /* pay */
+  .paywrap { display: grid; grid-template-columns: 1fr 380px; gap: 28px; align-items: start; }
+  .stack { display: grid; gap: 20px; }
+  .form { padding: 22px; }
+  .form h2 { margin-bottom: 16px; }
+  .fg { display: grid; gap: 14px; }
+  .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .ph { display: grid; grid-template-columns: 104px 1fr; gap: 10px; }
+  .summary { padding: 22px; position: sticky; top: 92px; }
+  .summary h2 { margin-bottom: 14px; }
+  .sec { padding: 12px 0; border-top: 1px solid var(--line-soft); }
+  .sec .hd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .sec .hd button { border: 0; background: none; padding: 0; color: var(--brand); font-weight: 600; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; }
+  .sec .hd span { font-size: 12px; font-weight: 650; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); }
+  .sumrow { color: var(--ink-2); }
+  .sumrow b { color: var(--ink); font-weight: 600; }
+  .brandrow { display: flex; gap: 8px; margin-bottom: 14px; }
+  .brandrow span { border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; font-size: 12px; font-weight: 650; color: var(--ink-2); }
+
+  /* confirmation */
+  .conf { max-width: 640px; margin: 56px auto 0; text-align: center; }
+  .seal { width: 64px; height: 64px; border-radius: 50%; background: var(--brand); color: #fff; display: grid; place-items: center; margin: 0 auto 20px; }
+  .seal .ic { width: 30px; height: 30px; stroke-width: 2.5; }
+  .stub { margin-top: 28px; text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-panel); position: relative; }
+  .stub .tp { padding: 22px 24px; display: grid; gap: 6px; }
+  .stub .bt { padding: 18px 24px 22px; border-top: 1.5px dashed var(--line); display: grid; gap: 4px; }
+  .stub .bt { position: relative; }
+  .stub .bt::before, .stub .bt::after { content: ""; position: absolute; top: -10px; width: 18px; height: 18px; border-radius: 50%; background: var(--ground); border: 1px solid var(--line); }
+  .stub .bt::before { left: -10px; clip-path: inset(0 0 0 50%); }
+  .stub .bt::after { right: -10px; clip-path: inset(0 50% 0 0); }
+  .route { font-size: 22px; font-weight: 650; letter-spacing: -.02em; }
+  .ref { font-size: 26px; font-weight: 650; letter-spacing: .14em; }
+  .lbl { font-size: 12px; font-weight: 600; color: var(--ink-3); text-transform: uppercase; letter-spacing: .06em; }
+
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 10px 16px; border-radius: var(--r-ctl); font-size: 14px; z-index: 40; opacity: 0; pointer-events: none; transition: opacity .2s; }
+  .toast.show { opacity: 1; }
+
+  /* hero + route art */
+  .band { background: radial-gradient(760px 380px at 88% -8%, #2f8a67 0%, rgba(47, 138, 103, 0) 62%), radial-gradient(640px 460px at 6% 125%, #06352a 0%, rgba(6, 53, 42, 0) 66%), linear-gradient(135deg, #0e5a41 0%, #0a4936 100%); position: relative; overflow: hidden; }
+  .band-in { display: grid; grid-template-columns: 1fr minmax(280px, 440px); gap: 32px; align-items: center; }
+  .route-art { width: 100%; height: auto; overflow: visible; }
+  .route-art .arc { fill: none; stroke: rgba(255, 255, 255, .6); stroke-width: 1.6; stroke-dasharray: 2 7; stroke-linecap: round; animation: dash 20s linear infinite; }
+  @keyframes dash { to { stroke-dashoffset: -180; } }
+  .route-art text { fill: #fff; font-size: 13px; font-weight: 650; letter-spacing: .1em; }
+  .route-art .pt { fill: #fff; }
+  .route-art .halo { fill: rgba(255, 255, 255, .22); transform-box: fill-box; transform-origin: center; animation: halo 2.8s ease-out infinite; }
+  @keyframes halo { from { transform: scale(.4); opacity: 1; } to { transform: scale(1.7); opacity: 0; } }
+
+  /* destination tiles */
+  .dests { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-top: 14px; }
+  .dest { position: relative; overflow: hidden; border: 0; border-radius: var(--r-panel); min-height: 172px; padding: 16px; text-align: left; color: #fff; display: flex; flex-direction: column; justify-content: flex-end; background: linear-gradient(160deg, var(--a), var(--b)); transition: transform .28s var(--ease), box-shadow .28s var(--ease); }
+  .dest::before { content: attr(data-code); position: absolute; top: 10px; right: 14px; font-size: 56px; font-weight: 700; letter-spacing: -.04em; line-height: 1; color: rgba(255, 255, 255, .16); transition: transform .45s var(--ease), color .25s; }
+  .dest::after { content: ""; position: absolute; inset: 0; background: radial-gradient(150px 110px at 100% 0, rgba(255, 255, 255, .2), transparent 70%); pointer-events: none; }
+  .dest:hover { transform: translateY(-4px); box-shadow: 0 16px 30px rgba(14, 25, 20, .2); }
+  .dest:hover::before { transform: translateX(-4px) scale(1.07); color: rgba(255, 255, 255, .28); }
+  .dest:active { transform: translateY(-1px) scale(.99); }
+  .dest b, .dest .d, .dest .p { position: relative; z-index: 1; }
+  .dest b { font-size: 19px; letter-spacing: -.015em; }
+  .dest .d { font-size: 13px; color: rgba(255, 255, 255, .82); }
+  .dest .p { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; font-weight: 650; }
+  .dest .go { width: 30px; height: 30px; border-radius: 50%; background: rgba(255, 255, 255, .18); display: grid; place-items: center; transition: background .2s, color .2s, transform .3s var(--ease); }
+  .dest:hover .go { background: #fff; color: var(--brand); transform: translateX(3px); }
+
+  /* states + micro-interactions */
+  .btn { transition: background .15s, border-color .15s, transform .12s var(--ease); }
+  .btn:active:not(:disabled) { transform: scale(.97); }
+  .btn .ic { transition: transform .22s var(--ease); }
+  .btn:hover:not(:disabled) .ic:last-child { transform: translateX(3px); }
+  .btn.busy { pointer-events: none; }
+  .btn.busy:disabled { background: var(--brand); border-color: var(--brand); color: #fff; }
+  .spin { width: 16px; height: 16px; border: 2px solid rgba(255, 255, 255, .35); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; flex: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .sk { background: linear-gradient(90deg, var(--line-soft) 0%, #f4f7f5 50%, var(--line-soft) 100%); background-size: 200% 100%; animation: shimmer 1.2s linear infinite; border-radius: 8px; }
+  @keyframes shimmer { to { background-position: -200% 0; } }
+  .flight { transition: border-color .15s, box-shadow .2s, transform .22s var(--ease), background .3s; }
+  .flight:hover:not(.sel):not(.skel) { border-color: var(--ink-3); transform: translateY(-1px); }
+  .flight.sel { background: linear-gradient(90deg, var(--brand-soft), var(--panel) 48%); }
+  .flight.skel { pointer-events: none; }
+  .pulse { animation: pop .36s var(--ease); }
+  @keyframes pop { 0% { transform: scale(.82); } 55% { transform: scale(1.08); } 100% { transform: scale(1); } }
+  .pulse .ic path { stroke-dasharray: 26; animation: draw2 .4s .05s var(--ease) both; }
+  @keyframes draw2 { from { stroke-dashoffset: 26; } to { stroke-dashoffset: 0; } }
+  .shake { animation: shake .32s; }
+  @keyframes shake { 20%, 60% { transform: translateX(-3px); } 40%, 80% { transform: translateX(3px); } }
+  .seat { position: relative; transition: transform .15s var(--ease), border-color .15s, background .15s; }
+  .seat.taken { background: var(--ground); border-color: var(--line); color: var(--ink-3); cursor: not-allowed; }
+  .seat.taken .ic { width: 14px; height: 14px; }
+  .seat[data-tip]:hover::after, .seat[data-tip]:focus-visible::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 6px; white-space: nowrap; z-index: 5; pointer-events: none; }
+  .totalbtn { position: relative; }
+  .delta { position: absolute; right: 0; top: -4px; font-size: 13px; font-weight: 650; color: var(--brand-deep); background: var(--brand-soft); padding: 1px 8px; border-radius: 99px; animation: floatup 1.2s var(--ease) forwards; pointer-events: none; }
+  .delta.neg { color: var(--ink-2); background: var(--line-soft); }
+  @keyframes floatup { 0% { opacity: 0; transform: translateY(8px); } 20% { opacity: 1; } 100% { opacity: 0; transform: translateY(-24px); } }
+  .hint { font-size: 13px; color: var(--ink-2); display: flex; align-items: center; gap: 6px; }
+  #bar.stuck .flowbar { box-shadow: 0 8px 22px rgba(14, 25, 20, .08); }
+  .steps { position: relative; }
+  .steps .prog { position: absolute; left: 0; bottom: -1px; height: 2px; background: var(--brand-line); width: var(--to); animation: grow .6s var(--ease); pointer-events: none; }
+  @keyframes grow { from { width: var(--from); } }
+  .field input.ok:not([type="date"]) { border-color: var(--brand-line); background: #fbfdfc url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230e5a41' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") no-repeat right 12px center / 16px; padding-right: 36px; }
+  .seal { animation: pop .5s var(--ease); }
+  .seal .ic path { stroke-dasharray: 26; stroke-dashoffset: 26; animation: draw .5s .25s var(--ease) forwards; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  .stub { animation: rise .55s .15s var(--ease) both; }
+  @media (max-width: 900px) {
+    .band-in { grid-template-columns: 1fr; } .route-art { display: none; }
+    .dests { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (prefers-reduced-motion: reduce) { .route-art .arc, .route-art .halo, .sk, .spin, .seal, .stub, .pulse, .delta { animation: none !important; } }
+
+  @media (max-width: 900px) {
+    .top .in, main, .flowbar .in { padding-left: 16px; padding-right: 16px; }
+    .links { display: none; }
+    .band h1 { font-size: 32px; }
+    .search { grid-template-columns: 1fr 1fr; } .swap { display: none; }
+    .search .go { grid-column: 1 / -1; width: 100%; min-width: 0; }
+    .steps { overflow-x: auto; } .step { padding: 12px 10px; } .step .n { display: none; }
+    .flowbar .in { flex-wrap: wrap; gap: 8px 16px; } .tripline { flex-basis: 100%; }
+    .brk { right: 16px; left: 16px; width: auto; }
+    .flight { grid-template-columns: 1fr 80px; } .flight .btn { grid-column: 1 / -1; }
+    .seatwrap, .paywrap, .two, .deal { grid-template-columns: 1fr; }
+    .summary { position: static; }
+    .dates { grid-template-columns: 36px repeat(5, 1fr) 36px; gap: 4px; }
+  }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-plane" viewBox="0 0 24 24"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+    <symbol id="i-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-swap" viewBox="0 0 24 24"><path d="M7 7h13M16 3l4 4-4 4M17 17H4M8 13l-4 4 4 4"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+    <symbol id="i-bag" viewBox="0 0 24 24"><path d="M4 8h16v12H4zM9 8V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V8"/></symbol>
+    <symbol id="i-case" viewBox="0 0 24 24"><path d="M7 7h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2zM9 7V4h6v3M9 11v6M15 11v6"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6zM9 12l2 2 4-4"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 8v5M12 16.5v.01M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18"/></symbol>
+  </defs>
+</svg>
+
+<header class="top"><div class="in">
+  <button class="logo" id="logo" aria-label="Airaa home">
+    <svg viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#0e5a41"/><path d="M8 21 15 8l7 13M10.5 16.5h9" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    airaa
+  </button>
+  <nav class="links" aria-label="Site"><span>Book</span><span>Manage trip</span><span>Check-in</span><span>Help</span></nav>
+</div></header>
+<div id="bar"></div>
+<main id="view"></main>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const STEPS = [
+  { id: 'flights', label: 'Flights' }, { id: 'seats', label: 'Seats' }, { id: 'bags', label: 'Bags' },
+  { id: 'extras', label: 'Extras' }, { id: 'pay', label: 'Review & pay' },
+];
+const CITIES = { Dublin: 'DUB', London: 'LON', Paris: 'PAR', Amsterdam: 'AMS', Madrid: 'MAD', Lisbon: 'LIS', Barcelona: 'BCN', Rome: 'ROM' };
+const POPULAR = [['London', 30, '1h 15m', '#1d7a58', '#0b4a36'], ['Amsterdam', 41, '1h 55m', '#2a6f73', '#0d3f4a'], ['Paris', 44, '1h 45m', '#3d7a3a', '#14411f'], ['Madrid', 58, '2h 50m', '#1f6a5e', '#0a3b3a'], ['Lisbon', 62, '2h 55m', '#2b6f4a', '#0f3b28']];
+const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const ROWS = 12;
+const PRICES = { seatFront: 12, seatStd: 6, priority: 30, checkIn: 30, fast: 6, ins: 14 };
+const TAKEN = new Set(['1B', '2E', '3A', '3F', '5C', '5D', '6A', '7E', '8B', '8C', '9F', '10D', '11A', '12E']);
+
+const ic = (n, c = '') => `<svg class="ic ${c}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+const money = n => '€' + n.toFixed(2);
+const eur = n => '€' + Math.round(n);
+const pad = n => String(n).padStart(2, '0');
+const addDays = (iso, d) => { const t = new Date(iso + 'T12:00:00'); t.setDate(t.getDate() + d); return t.toISOString().slice(0, 10); };
+const fmt = iso => new Date(iso + 'T12:00:00').toLocaleDateString('en-IE', { day: 'numeric', month: 'short' });
+const fmtLong = iso => new Date(iso + 'T12:00:00').toLocaleDateString('en-IE', { weekday: 'short', day: 'numeric', month: 'short' });
+const dow = iso => new Date(iso + 'T12:00:00').toLocaleDateString('en-IE', { weekday: 'short' });
+const code = c => CITIES[c];
+
+const S = {
+  step: 'home', maxStep: -1, open: false,
+  from: 'Dublin', to: 'London', out: '2027-02-13', ret: '2027-03-20', pax: 1,
+  fOut: null, fRet: null, sort: 'price',
+  seats: { out: [], ret: [] }, seatLeg: 'out',
+  cabin: { out: 'basic', ret: 'basic' }, check: { out: 0, ret: 0 },
+  fast: { out: false, ret: false }, ins: { out: false, ret: false },
+  p: { name: '', dob: '', email: '', cc: '+353', phone: '' },
+  card: { num: '', exp: '', cvv: '', holder: '' },
+  errors: {}, ref: '', busy: {}, pulse: null, lastTotal: 0, prevPct: undefined, prevEnabled: undefined,
+};
+
+/* ---------- data + pricing ---------- */
+function flightsFor(from, to, date) {
+  const d = new Date(date + 'T12:00:00').getDate();
+  const base = [['06:05', 75, 30], ['08:55', 80, 50], ['12:40', 75, 38], ['18:25', 85, 44]];
+  return base.map(([t, dur, price], i) => {
+    const [h, m] = t.split(':').map(Number);
+    const end = h * 60 + m + dur;
+    return { id: `${from}-${to}-${date}-${i}`, dep: t, arr: `${pad(Math.floor(end / 60) % 24)}:${pad(end % 60)}`, mins: dur,
+      dur: `${Math.floor(dur / 60)}h ${pad(dur % 60)}m`, price: price + ((d + i) % 3) * 4, from, to, no: `AR ${210 + i * 7 + (from === S.from ? 0 : 100)}` };
+  });
+}
+const lowest = (from, to, date) => Math.min(...flightsFor(from, to, date).map(f => f.price));
+const sorted = list => [...list].sort((a, b) => S.sort === 'price' ? a.price - b.price || a.dep.localeCompare(b.dep) : a.dep.localeCompare(b.dep));
+const seatPrice = id => (parseInt(id) <= 3 ? PRICES.seatFront : PRICES.seatStd);
+function totals() {
+  const t = { flights: 0, seats: 0, bags: 0, extras: 0 };
+  ['out', 'ret'].forEach(k => {
+    const f = k === 'out' ? S.fOut : S.fRet;
+    if (f) t.flights += f.price * S.pax;
+    t.seats += S.seats[k].reduce((a, s) => a + seatPrice(s), 0);
+    t.bags += (S.cabin[k] === 'priority' ? PRICES.priority : 0) + S.check[k] * PRICES.checkIn;
+    t.extras += (S.fast[k] ? PRICES.fast * S.pax : 0) + (S.ins[k] ? PRICES.ins * S.pax : 0);
+  });
+  t.all = t.flights + t.seats + t.bags + t.extras;
+  return t;
+}
+const legName = k => k === 'out' ? `${S.from} to ${S.to}` : `${S.to} to ${S.from}`;
+const legCode = k => k === 'out' ? `${code(S.from)} → ${code(S.to)}` : `${code(S.to)} → ${code(S.from)}`;
+const paxLabel = () => `${S.pax} adult${S.pax > 1 ? 's' : ''}`;
+
+/* ---------- chrome ---------- */
+const $ = s => document.querySelector(s);
+const view = $('#view'), barEl = $('#bar');
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2200); }
+function tween(el, a, b) {
+  if (!el) return;
+  if (a === b || reduceMotion()) { el.textContent = money(b); return; }
+  const t0 = performance.now();
+  const step = () => { const k = Math.min(1, Math.max(0, (performance.now() - t0) / 420)), e = 1 - Math.pow(1 - k, 3); el.textContent = money(a + (b - a) * e); if (k < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+  setTimeout(() => { el.textContent = money(b); }, 480);
+}
+function go(step) { S.step = step; S.open = false; S.prevEnabled = undefined; const i = STEPS.findIndex(s => s.id === step); if (i > S.maxStep) S.maxStep = i; render(true); window.scrollTo(0, 0); }
+
+function stepper() {
+  const cur = STEPS.findIndex(s => s.id === S.step);
+  const pct = (cur + 1) / STEPS.length * 100, from = S.prevPct ?? pct; S.prevPct = pct;
+  return `<nav class="steps" aria-label="Booking steps">${STEPS.map((s, i) => {
+    const done = i < cur || (i <= S.maxStep && i !== cur);
+    const ok = i <= S.maxStep || i === cur;
+    return `<button class="step ${i === cur ? 'cur' : done ? 'done' : ''}" data-go="${s.id}" ${ok ? '' : 'disabled'} ${i === cur ? 'aria-current="step"' : ''}><span class="n">${done ? ic('check') : i + 1}</span>${s.label}</button>`;
+  }).join('')}<span class="prog" style="--from:${from}%;--to:${pct}%"></span></nav>`;
+}
+function flowbar(label, enabled, action, done, hint) {
+  const t = totals();
+  const rows = [['Flights', t.flights], ['Seats', t.seats], ['Bags', t.bags], ['Extras', t.extras]].filter(r => r[1] > 0);
+  barEl.innerHTML = `<div class="flowbar"><div class="in">
+    <div class="tripline"><b>${code(S.from)} ${ic('swap', 'sm')} ${code(S.to)}</b>
+      <div class="meta">${fmtLong(S.out)} – ${fmtLong(S.ret)} · ${paxLabel()}<button data-go="home">Edit search</button></div></div>
+    <button class="totalbtn" id="tot" aria-expanded="${S.open}" aria-controls="brk"><small>Trip total ${ic('down', 'sm')}</small><strong id="totv">${money(S.lastTotal)}</strong></button>
+    ${!done && !enabled && hint ? `<span class="hint">${ic('alert', 'sm')}${hint}</span>` : ''}
+    ${done ? '' : `<button class="btn" id="next" ${enabled ? '' : 'disabled'}>${label}${ic('arrow')}</button>`}
+    ${S.open ? `<div class="brk" id="brk">${rows.length ? rows.map(r => `<div class="r"><span>${r[0]}</span><span>${money(r[1])}</span></div>`).join('') : '<div class="r"><span class="muted">Choose flights to start your total</span></div>'}<div class="r t"><span>Total</span><span>${money(t.all)}</span></div></div>` : ''}
+  </div></div>`;
+  if (!done) {
+    $('#next').onclick = action;
+    if (enabled && S.prevEnabled === false) $('#next').classList.add('pulse');
+    S.prevEnabled = enabled;
+  }
+  tween($('#totv'), S.lastTotal, t.all);
+  if (t.all !== S.lastTotal) {
+    const dl = t.all - S.lastTotal, c = document.createElement('span');
+    c.className = 'delta' + (dl < 0 ? ' neg' : ''); c.textContent = (dl > 0 ? '+' : '−') + money(Math.abs(dl));
+    $('#tot').appendChild(c);
+  }
+  S.lastTotal = t.all;
+  $('#tot').onclick = () => { S.open = !S.open; flowbar(label, enabled, action, done, hint); };
+}
+
+/* ---------- views ---------- */
+function vHome() {
+  barEl.innerHTML = '';
+  const opt = sel => Object.keys(CITIES).map(c => `<option ${c === sel ? 'selected' : ''}>${c}</option>`).join('');
+  view.innerHTML = `
+    <section class="band"><div class="band-in"><div><h1 tabindex="-1">Fares you can read at a glance.</h1><p>Search once. Pick flights, seats and bags in one straight line, with your total beside every choice.</p></div>
+      <svg class="route-art" viewBox="0 0 440 220" aria-hidden="true">
+        <path id="arc" class="arc" d="M40 170 C 130 20, 310 20, 400 120"/>
+        <circle class="halo" cx="40" cy="170" r="14"/><circle class="halo" cx="400" cy="120" r="14" style="animation-delay:1.4s"/>
+        <circle class="pt" cx="40" cy="170" r="4"/><circle class="pt" cx="400" cy="120" r="4"/>
+        <text id="t-from" x="40" y="198" text-anchor="middle">${code(S.from)}</text><text id="t-to" x="400" y="148" text-anchor="middle">${code(S.to)}</text>
+        <g id="plane-art"><g transform="rotate(-45) translate(-12 -12)"><use href="#i-plane" width="24" height="24" fill="#fff" fill-opacity=".18" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></g><animateMotion dur="8s" repeatCount="indefinite" rotate="auto" calcMode="spline" keyTimes="0;1" keyPoints="0;1" keySplines=".45 .05 .25 1"><mpath href="#arc"/></animateMotion></g>
+      </svg></div></section>
+    <form class="panel search" id="search">
+      <div class="seg" aria-hidden="true"><span class="on">Round trip</span><span class="off">One way</span></div>
+      <div class="field"><label for="from">From</label><select id="from">${opt(S.from)}</select></div>
+      <button type="button" class="swap" id="swap" aria-label="Swap airports">${ic('swap')}</button>
+      <div class="field"><label for="to">To</label><select id="to">${opt(S.to)}</select><div id="e-route"></div></div>
+      <div class="field"><label for="out">Depart</label><input type="date" id="out" value="${S.out}"></div>
+      <div class="field"><label for="ret">Return</label><input type="date" id="ret" value="${S.ret}"><div id="e-date"></div></div>
+      <div class="field" style="grid-column: 1 / 3"><label>Travellers</label><div class="paxbox"><span id="paxl"></span><span class="qty"><button type="button" id="pm" aria-label="Fewer travellers">${ic('minus', 'sm')}</button><button type="button" id="pp" aria-label="More travellers">${ic('plus', 'sm')}</button></span></div></div>
+      <button class="btn go" type="submit">Search flights ${ic('arrow')}</button>
+    </form>
+    <section class="fares" aria-labelledby="pf"><h2 id="pf">Popular from Dublin</h2><p class="muted" style="margin:0 0 12px">Lowest one-way fares, direct flights.</p>
+      <div class="dests">${POPULAR.map(([c, p, d, a, b]) => `<button class="dest" data-dest="${c}" data-code="${code(c)}" style="--a:${a};--b:${b}"><b>${c}</b><span class="d">Direct · ${d}</span><span class="p"><span>from ${eur(p)}</span><span class="go">${ic('arrow', 'sm')}</span></span></button>`).join('')}</div>
+      <p class="note">Illustrative fares for a design prototype. Nothing here can be booked.</p></section>`;
+  const upd = () => { $('#paxl').textContent = paxLabel(); $('#pm').disabled = S.pax <= 1; $('#pp').disabled = S.pax >= 4; };
+  upd();
+  $('#pm').onclick = () => { S.pax = Math.max(1, S.pax - 1); upd(); };
+  $('#pp').onclick = () => { S.pax = Math.min(4, S.pax + 1); upd(); };
+  const lab = () => { $('#t-from').textContent = code($('#from').value); $('#t-to').textContent = code($('#to').value); };
+  ['from', 'to'].forEach(id => $('#' + id).addEventListener('change', lab));
+  if (reduceMotion()) { const p = $('#plane-art'); if (p) p.remove(); }
+  $('#swap').onclick = () => { const f = $('#from').value; $('#from').value = $('#to').value; $('#to').value = f; lab(); };
+  view.querySelectorAll('[data-dest]').forEach(b => b.onclick = () => { $('#from').value = 'Dublin'; $('#to').value = b.dataset.dest; lab(); $('#search').scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: 'center' }); toast(`Dublin to ${b.dataset.dest} filled in. Pick your dates.`); });
+  $('#search').onsubmit = e => {
+    e.preventDefault();
+    const from = $('#from').value, to = $('#to').value, out = $('#out').value, ret = $('#ret').value;
+    const e1 = from === to ? 'Choose a different destination' : '', e2 = !out || !ret ? 'Choose both dates' : ret < out ? 'Return must be after departure' : '';
+    $('#e-route').innerHTML = e1 ? `<div class="err">${ic('alert')}${e1}</div>` : '';
+    $('#e-date').innerHTML = e2 ? `<div class="err">${ic('alert')}${e2}</div>` : '';
+    if (e1 || e2) return;
+    const routeChanged = from !== S.from || to !== S.to, anyChanged = routeChanged || out !== S.out || ret !== S.ret;
+    if (routeChanged) S.seats = { out: [], ret: [] };
+    if (anyChanged) S.fOut = S.fRet = null;
+    const changeNote = !anyChanged || S.maxStep < 0 ? '' : routeChanged ? 'Route changed, so your flights and seats were cleared. Bags and extras are kept.' : 'Dates changed. Choose your flights again; seats, bags and extras are kept.';
+    Object.assign(S, { from, to, out, ret });
+    const btn = $('#search .go'); btn.classList.add('busy'); btn.disabled = true; btn.innerHTML = '<span class="spin"></span>Searching flights';
+    setTimeout(() => { S.busy = { out: true, ret: true }; go('flights'); if (changeNote) toast(changeNote); setTimeout(() => { S.busy = {}; if (S.step === 'flights') render(); }, 700); }, 350);
+  };
+}
+
+function dateStrip(key) {
+  const c = S[key], f = key === 'out' ? S.from : S.to, t = key === 'out' ? S.to : S.from;
+  const days = [-2, -1, 0, 1, 2].map(o => addDays(c, o));
+  return `<div class="dates" role="group" aria-label="Choose date, ${legName(key)}"><button class="arrow" data-shift="${key}:-1" aria-label="Earlier dates">${ic('left')}</button>${days.map(d => `<button data-date="${key}:${d}" aria-pressed="${d === c}">${dow(d)} ${fmt(d)}<small>from ${eur(lowest(f, t, d))}</small></button>`).join('')}<button class="arrow" data-shift="${key}:1" aria-label="Later dates">${ic('right')}</button></div>`;
+}
+function flightRows(key) {
+  if (S.busy[key]) return [0, 1, 2, 3].map(() => `<div class="flight skel" aria-hidden="true"><div><div class="sk" style="height:26px;width:62%"></div><div class="sk" style="height:12px;width:28%;margin-top:12px"></div></div><div class="sk" style="height:28px"></div><div class="sk" style="height:36px"></div></div>`).join('');
+  const list = sorted(flightsFor(key === 'out' ? S.from : S.to, key === 'out' ? S.to : S.from, S[key]));
+  const sel = key === 'out' ? S.fOut : S.fRet;
+  const min = Math.min(...list.map(f => f.price));
+  return list.map(f => { const on = sel && sel.id === f.id; return `<div class="flight ${on ? 'sel' : ''}">
+    <div><div class="tm"><div><div class="t">${f.dep}</div><div class="a">${code(f.from)}</div></div>
+      <div class="path">${f.dur}<div class="ln"></div>Direct</div>
+      <div><div class="t">${f.arr}</div><div class="a">${code(f.to)}</div></div></div>
+      <div class="fno">${f.no}${f.price === min ? ' <span class="tag">Lowest fare</span>' : ''}</div>
+      <div class="rcpt"><span>${ic('check')}1 small bag</span><span>${ic('check')}Taxes &amp; fees</span><span class="no">${ic('x')}Seat</span><span class="no">${ic('x')}Checked bag</span></div></div>
+    <div class="px">${eur(f.price)}<small>per adult<br>${eur(Math.round(f.price * 0.82))} fare + ${eur(f.price - Math.round(f.price * 0.82))} taxes</small></div>
+    <button class="btn sm ${on ? '' : 'line'}" data-pick="${key}:${f.id}" aria-pressed="${!!on}">${on ? ic('check', 'sm') + 'Selected' : 'Select'}</button></div>`; }).join('');
+}
+function vFlights() {
+  view.innerHTML = `${stepper()}<div class="enterwrap">
+    <div class="legbar"><div><h1 tabindex="-1">Choose your flights</h1><p class="sub" style="margin:0">Prices are per adult, taxes included.</p></div>
+      <div class="sorts" role="group" aria-label="Sort flights">Sort by <button data-sort="price" aria-pressed="${S.sort === 'price'}">Lowest price</button><button data-sort="time" aria-pressed="${S.sort === 'time'}">Earliest</button></div></div>
+    <h2 style="margin:24px 0 12px">${legName('out')} <span class="muted" style="font-weight:500">· ${fmtLong(S.out)}</span></h2>${dateStrip('out')}${flightRows('out')}
+    <h2 style="margin:32px 0 12px">${legName('ret')} <span class="muted" style="font-weight:500">· ${fmtLong(S.ret)}</span></h2>${dateStrip('ret')}${flightRows('ret')}</div>`;
+  flowbar('Continue to seats', !!(S.fOut && S.fRet), () => go('seats'), false, !S.fOut && !S.fRet ? 'Choose an outbound and a return flight' : !S.fOut ? 'Choose an outbound flight' : 'Choose a return flight');
+}
+
+function seatBtn(id, k) {
+  const mine = S.seats[k].includes(id), taken = TAKEN.has(id) && !mine, legroom = parseInt(id) <= 3;
+  const st = taken ? 'unavailable' : mine ? 'selected' : legroom ? `extra legroom ${eur(PRICES.seatFront)}` : `standard ${eur(PRICES.seatStd)}`;
+  const tip = `${id} · ${taken ? 'Unavailable' : mine ? 'Your seat' : legroom ? 'Extra legroom ' + eur(PRICES.seatFront) : 'Standard ' + eur(PRICES.seatStd)}`;
+  return `<button class="seat ${legroom ? 'leg' : ''} ${mine ? 'mine' : ''} ${taken ? 'taken' : ''}" data-seat="${id}" data-tip="${tip}" ${taken ? 'aria-disabled="true"' : ''} aria-label="Seat ${id}, ${st}" aria-pressed="${mine}">${taken ? ic('x') : mine ? ic('check') : ''}</button>`;
+}
+function vSeats() {
+  const k = S.seatLeg, rows = [];
+  for (let r = 1; r <= ROWS; r++) {
+    const cs = 'ABCDEF'.split('').map(c => seatBtn(r + c, k));
+    if (r === 1) rows.push(`<div class="band-label">Extra legroom · ${eur(PRICES.seatFront)}</div>`);
+    if (r === 4) rows.push(`<div class="band-label" style="margin-top:14px;color:var(--ink-3)">Standard · ${eur(PRICES.seatStd)}</div>`);
+    rows.push(`<div class="srow ${r === 7 ? 'gap' : ''}">${cs.slice(0, 3).join('')}<span class="rn">${r}</span>${cs.slice(3).join('')}</div>`);
+  }
+  const slot = key => `<div class="slot"><span>${key === 'out' ? 'Outbound' : 'Return'}</span><b>${S.seats[key].join(', ') || 'None'}</b></div>`;
+  const st = totals().seats, has = Object.values(S.seats).some(a => a.length);
+  view.innerHTML = `${stepper()}<h1 tabindex="-1">Choose your seats</h1><p class="sub">Optional. Pick up to ${S.pax} seat${S.pax > 1 ? 's' : ''} per flight, or skip and we’ll assign them at check-in.</p>
+    <div class="seatwrap">
+      <div class="panel" style="padding:18px"><div class="legtabs" role="group" aria-label="Flight">${['out', 'ret'].map(l => `<button data-leg="${l}" aria-pressed="${k === l}">${legCode(l)}</button>`).join('')}</div>
+        <ul class="key"><li><span class="seat leg"></span>Extra legroom ${eur(PRICES.seatFront)}</li><li><span class="seat"></span>Standard ${eur(PRICES.seatStd)}</li><li><span class="seat mine">${ic('check')}</span>Your seat</li><li><span class="seat" style="background:var(--ground);border-color:var(--line);color:var(--ink-3)">${ic('x')}</span>Unavailable</li></ul></div>
+      <div class="fuse"><div class="front">Front of aircraft</div>${rows.join('')}</div>
+      <div class="panel" style="padding:18px"><h2 style="margin-bottom:6px">Your seats</h2>${slot('out')}${slot('ret')}<div class="slot"><span>Seat total</span><b>${money(st)}</b></div></div>
+    </div>`;
+  flowbar(has ? 'Continue to bags' : 'Skip seats', true, () => go('bags'));
+}
+
+function vBags() {
+  const card = k => `<section class="panel bagcard" aria-labelledby="b-${k}"><h2 id="b-${k}">${ic('plane', 'sm')}${legName(k)}</h2>
+    <div class="grp">${ic('bag', 'sm')} Cabin bag</div><div role="radiogroup" aria-label="Cabin bag, ${legName(k)}">
+      <button class="opt" role="radio" aria-checked="${S.cabin[k] === 'basic'}" data-cabin="${k}:basic"><span class="radio">${ic('check')}</span><span><b>Basic</b><span class="d">1 small bag, 40 × 30 × 20 cm</span></span><span class="p">Included</span></button>
+      <button class="opt" role="radio" aria-checked="${S.cabin[k] === 'priority'}" data-cabin="${k}:priority"><span class="radio">${ic('check')}</span><span><b>Priority</b><span class="d">Priority boarding plus a 10 kg cabin bag</span></span><span class="p">+${eur(PRICES.priority)}</span></button></div>
+    <div class="grp">${ic('case', 'sm')} Checked bag, up to 20 kg</div>
+    <div class="chk"><span>${S.check[k]} bag${S.check[k] === 1 ? '' : 's'} <span class="muted">· ${eur(PRICES.checkIn)} each</span></span><span class="qty"><button data-chk="${k}:-1" aria-label="Remove a checked bag, ${legName(k)}" ${S.check[k] ? '' : 'disabled'}>${ic('minus', 'sm')}</button><b data-qty="${k}">${S.check[k]}</b><button data-chk="${k}:1" aria-label="Add a checked bag, ${legName(k)}" ${S.check[k] >= 3 ? 'disabled' : ''}>${ic('plus', 'sm')}</button></span></div></section>`;
+  view.innerHTML = `${stepper()}<h1 tabindex="-1">Add bags</h1><p class="sub">Every fare includes one small under-seat bag. Add more only if you need them; it costs more at the airport.</p><div class="two">${card('out')}${card('ret')}</div>`;
+  flowbar('Continue to extras', true, () => go('extras'));
+}
+
+function vExtras() {
+  const toggle = (store, k, price) => `<button class="btn sm ${S[store][k] ? 'on' : 'line'}" data-extra="${store}:${k}" aria-pressed="${S[store][k]}">${S[store][k] ? ic('check', 'sm') + 'Added' : 'Add'} · ${legCode(k).replace(' → ', '–')}</button>`;
+  const deal = (icon, title, desc, store, price) => `<section class="panel deal"><div class="ico">${ic(icon)}</div><div><h3>${title}</h3><p>${desc}</p><p class="muted">${eur(price)} per adult, per flight${S.pax > 1 ? ` (${money(price * S.pax)} for ${S.pax})` : ''}</p></div>${toggle(store, 'out', price)}${toggle(store, 'ret', price)}</section>`;
+  view.innerHTML = `${stepper()}<h1 tabindex="-1">Extras</h1><p class="sub">Optional, and offered now so they never interrupt choosing your flight. Skip them freely.</p>
+    ${deal('bolt', 'Security fast track', 'A dedicated lane through airport security.', 'fast', PRICES.fast)}
+    ${deal('shield', 'Travel insurance', 'Cover for cancellations, delays and medical costs.', 'ins', PRICES.ins)}
+    <div class="foot"><button class="btn line" id="skip">Skip extras</button></div>`;
+  flowbar('Continue to payment', true, () => go('pay'));
+  $('#skip').onclick = () => { S.fast = { out: false, ret: false }; S.ins = { out: false, ret: false }; go('pay'); };
+}
+
+const err = k => S.errors[k] ? `<div class="err">${ic('alert')}${S.errors[k]}</div>` : '';
+const inp = (id, label, grp, ph, type = 'text', extra = '') => { const key = id.split('_')[1]; return `<div class="field"><label for="${id}">${label}</label><input id="${id}" data-f="${grp}:${key}" type="${type}" placeholder="${ph}" value="${S[grp][key]}" ${extra} class="${S.errors[id] ? 'bad' : ''}" autocomplete="off" ${S.errors[id] ? 'aria-invalid="true"' : ''}>${err(id)}</div>`; };
+function summary() {
+  const t = totals(), row = (a, b) => `<div class="sumrow"><span>${a}</span><b>${b}</b></div>`;
+  const sk = k => S.seats[k].length ? S.seats[k].join(', ') : 'Not chosen';
+  return `<aside class="panel summary" aria-label="Booking summary"><h2>Booking summary</h2>
+    <div class="sec"><div class="hd"><span>Flights</span><button data-go="flights">Edit</button></div>
+      ${row(`${code(S.from)} → ${code(S.to)} · ${fmtLong(S.out)}<br><span class="muted">${S.fOut.dep}–${S.fOut.arr} · ${S.fOut.no}</span>`, money(S.fOut.price * S.pax))}
+      ${row(`${code(S.to)} → ${code(S.from)} · ${fmtLong(S.ret)}<br><span class="muted">${S.fRet.dep}–${S.fRet.arr} · ${S.fRet.no}</span>`, money(S.fRet.price * S.pax))}</div>
+    <div class="sec"><div class="hd"><span>Seats</span><button data-go="seats">Edit</button></div>${row('Outbound: ' + sk('out'), money(S.seats.out.reduce((a, s) => a + seatPrice(s), 0)))}${row('Return: ' + sk('ret'), money(S.seats.ret.reduce((a, s) => a + seatPrice(s), 0)))}</div>
+    <div class="sec"><div class="hd"><span>Bags</span><button data-go="bags">Edit</button></div>${row('Cabin: ' + (S.cabin.out === 'priority' ? 'Priority' : 'Basic') + ' / ' + (S.cabin.ret === 'priority' ? 'Priority' : 'Basic'), money(t.bags - (S.check.out + S.check.ret) * PRICES.checkIn))}${row(`Checked: ${S.check.out} / ${S.check.ret}`, money((S.check.out + S.check.ret) * PRICES.checkIn))}</div>
+    <div class="sec"><div class="hd"><span>Extras</span><button data-go="extras">Edit</button></div>${row('Fast track', money((S.fast.out + S.fast.ret) * PRICES.fast * S.pax))}${row('Insurance', money((S.ins.out + S.ins.ret) * PRICES.ins * S.pax))}</div>
+    <div class="sumrow t"><span>Total</span><span>${money(t.all)}</span></div></aside>`;
+}
+function vPay() {
+  view.innerHTML = `${stepper()}<h1 tabindex="-1">Review &amp; pay</h1><p class="sub">Check everything on the right. Edit any part in one click; your other choices stay put.</p>
+    <div class="paywrap"><div class="stack">
+      <section class="panel form"><h2>Passenger details</h2><div class="fg">
+        ${inp('p_name', 'Full name, as on passport', 'p', 'Enter name')}
+        ${inp('p_dob', 'Date of birth', 'p', 'YYYY-MM-DD', 'date')}
+        ${inp('p_email', 'Email', 'p', 'name@email.com', 'email')}
+        <div class="field"><label for="p_phone">Phone</label><div class="ph"><select id="p_cc" data-f="p:cc" aria-label="Country code">${['+353', '+44', '+33'].map(c => `<option ${S.p.cc === c ? 'selected' : ''}>${c}</option>`).join('')}</select><input id="p_phone" data-f="p:phone" placeholder="Phone number" value="${S.p.phone}" class="${S.errors.p_phone ? 'bad' : ''}" inputmode="tel" ${S.errors.p_phone ? 'aria-invalid="true"' : ''}></div>${err('p_phone')}</div></div></section>
+      <section class="panel form"><h2>Payment details</h2><div class="brandrow"><span>VISA</span><span>MASTERCARD</span><span>AMEX</span></div><div class="fg">
+        ${inp('c_num', 'Card number', 'card', '1234 5678 9012 3456', 'text', 'inputmode="numeric" maxlength="19"')}
+        <div class="g2">${inp('c_exp', 'Expiry', 'card', 'MM/YY', 'text', 'maxlength="5"')}${inp('c_cvv', 'CVV', 'card', '123', 'text', 'inputmode="numeric" maxlength="4"')}</div>
+        ${inp('c_holder', 'Name on card', 'card', 'Name on card')}</div>
+        <button class="btn lg" id="pay2">Confirm &amp; pay ${money(totals().all)}${ic('arrow')}</button>
+        <p class="note" style="text-align:center">Nothing is charged until you press this. Prototype only: no payment is taken and the card is checked for format only.</p></section></div>
+      ${summary()}</div>`;
+  const t = totals();
+  flowbar(`Confirm & pay ${money(t.all)}`, true, confirmPay);
+  $('#pay2').onclick = confirmPay;
+  view.querySelectorAll('input[data-f]').forEach(el => el.addEventListener('input', () => {
+    const [g, k] = el.dataset.f.split(':'); let v = el.value;
+    if (el.id === 'c_num') { v = v.replace(/\D/g, '').slice(0, 16).replace(/(.{4})/g, '$1 ').trim(); el.value = v; }
+    if (el.id === 'c_exp') { v = v.replace(/\D/g, '').slice(0, 4); if (v.length > 2) v = v.slice(0, 2) + '/' + v.slice(2); el.value = v; }
+    S[g][k] = v;
+    el.classList.remove('ok');
+    if (S.errors[el.id]) { delete S.errors[el.id]; el.classList.remove('bad'); el.removeAttribute('aria-invalid'); const e = el.closest('.field').querySelector('.err'); if (e) e.remove(); }
+  }));
+  view.querySelectorAll('select[data-f]').forEach(el => el.onchange = () => { S.p.cc = el.value; });
+}
+function confirmPay() {
+  const e = {};
+  if (S.p.name.trim().length < 2) e.p_name = 'Enter the passenger’s full name';
+  if (!S.p.dob) e.p_dob = 'Enter a date of birth';
+  if (!/^\S+@\S+\.\S+$/.test(S.p.email)) e.p_email = 'Enter a valid email address';
+  if (S.p.phone.replace(/\D/g, '').length < 7) e.p_phone = 'Enter a phone number with at least 7 digits';
+  if (S.card.num.replace(/\s/g, '').length < 16) e.c_num = 'Card numbers have 16 digits';
+  if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(S.card.exp)) e.c_exp = 'Use the format MM/YY';
+  if (S.card.cvv.length < 3) e.c_cvv = 'Enter 3 or 4 digits';
+  if (S.card.holder.trim().length < 2) e.c_holder = 'Enter the name on the card';
+  S.errors = e;
+  const n = Object.keys(e).length;
+  if (n) { vPay(); toast(`${n} field${n > 1 ? 's' : ''} need attention. Everything else is saved.`); const f = view.querySelector('.bad'); if (f) f.focus(); return; }
+  document.querySelectorAll('#next, #pay2').forEach(b => { b.classList.add('busy'); b.disabled = true; b.innerHTML = '<span class="spin"></span>Processing payment'; });
+  setTimeout(() => {
+    S.ref = 'AR' + Math.random().toString(36).slice(2, 6).toUpperCase() + Math.floor(10 + Math.random() * 89);
+    S.step = 'done'; render(true); window.scrollTo(0, 0);
+  }, 1400);
+}
+function vDone() {
+  barEl.innerHTML = '';
+  const t = totals();
+  view.innerHTML = `<section class="conf"><div class="seal">${ic('check')}</div><h1 tabindex="-1">Your booking is confirmed.</h1><p class="sub" style="margin:0 auto">A confirmation is on its way to ${S.p.email}.</p>
+    <div class="stub" style="--cut:calc(100% - 92px)"><div class="tp"><span class="lbl">Outbound</span><span class="route">${code(S.from)} → ${code(S.to)}</span><span>${fmtLong(S.out)} · ${S.fOut.dep}–${S.fOut.arr} · ${S.fOut.no}</span>
+      <span class="lbl" style="margin-top:10px">Return</span><span class="route">${code(S.to)} → ${code(S.from)}</span><span>${fmtLong(S.ret)} · ${S.fRet.dep}–${S.fRet.arr} · ${S.fRet.no}</span></div>
+      <div class="bt"><span class="lbl">Booking reference · ${S.p.name}${S.pax > 1 ? ' + ' + (S.pax - 1) : ''}</span><span class="ref">${S.ref}</span><span class="muted">Total paid ${money(t.all)}</span></div></div>
+    <div style="margin-top:24px"><button class="btn" id="again">Book another trip</button></div></section>`;
+  $('#again').onclick = () => { Object.assign(S, { step: 'home', maxStep: -1, fOut: null, fRet: null, seats: { out: [], ret: [] }, cabin: { out: 'basic', ret: 'basic' }, check: { out: 0, ret: 0 }, fast: { out: false, ret: false }, ins: { out: false, ret: false }, card: { num: '', exp: '', cvv: '', holder: '' }, errors: {} }); render(true); };
+}
+
+const KEYS = ['data-seat', 'data-pick', 'data-cabin', 'data-chk', 'data-extra', 'data-date', 'data-shift', 'data-leg', 'data-sort'];
+function render(animate = false) {
+  const a = document.activeElement;
+  const key = a && a.getAttribute && KEYS.map(k => a.hasAttribute(k) ? `[${k}="${a.getAttribute(k)}"]` : '').find(Boolean);
+  ({ home: vHome, flights: vFlights, seats: vSeats, bags: vBags, extras: vExtras, pay: vPay, done: vDone })[S.step]();
+  if (animate) {
+    view.classList.remove('enter'); void view.offsetWidth; view.classList.add('enter');
+    const h = view.querySelector('h1'); if (h && S.step !== 'home') h.focus({ preventScroll: true });
+  } else if (key) { const el = view.querySelector(key); if (el) el.focus({ preventScroll: true }); }
+  if (S.pulse) { const el = view.querySelector(S.pulse); if (el && !reduceMotion()) el.classList.add('pulse'); S.pulse = null; }
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-go],[data-date],[data-shift],[data-pick],[data-seat],[data-leg],[data-cabin],[data-chk],[data-extra],[data-sort]');
+  if (!t) { if (S.open && !e.target.closest('.brk,.totalbtn')) { S.open = false; render(); } return; }
+  const d = t.dataset;
+  if (d.go) { e.preventDefault(); go(d.go); return; }
+  if (d.date || d.shift) {
+    const [key, val] = (d.date || d.shift).split(':');
+    const nd = d.date ? val : addDays(S[key], +val);
+    if (nd !== S[key]) {
+      S[key] = nd; if (key === 'out') S.fOut = null; else S.fRet = null;
+      S.busy[key] = true; S.pulse = `[data-date="${key}:${nd}"]`;
+      setTimeout(() => { S.busy[key] = false; if (S.step === 'flights') render(); }, 380);
+      toast(`Date changed. Pick a new ${key === 'out' ? 'outbound' : 'return'} flight; seats, bags and extras are kept.`);
+    }
+    render(); return;
+  }
+  if (d.pick) {
+    const key = d.pick.split(':')[0], id = d.pick.slice(key.length + 1);
+    const f = flightsFor(key === 'out' ? S.from : S.to, key === 'out' ? S.to : S.from, S[key]).find(x => x.id === id);
+    if (key === 'out') S.fOut = f; else S.fRet = f;
+    S.pulse = `[data-pick="${d.pick}"]`;
+    render(); return;
+  }
+  if (d.sort) { S.sort = d.sort; render(); return; }
+  if (d.seat) {
+    if (t.classList.contains('taken')) { t.classList.remove('shake'); void t.offsetWidth; t.classList.add('shake'); toast(`Seat ${d.seat} is taken. Try another.`); return; }
+    const k = S.seatLeg, arr = S.seats[k], i = arr.indexOf(d.seat);
+    if (i >= 0) arr.splice(i, 1); else { arr.push(d.seat); if (arr.length > S.pax) arr.shift(); S.pulse = `[data-seat="${d.seat}"]`; }
+    render(); return;
+  }
+  if (d.leg) { S.seatLeg = d.leg; render(); return; }
+  if (d.cabin) { const [k, v] = d.cabin.split(':'); S.cabin[k] = v; S.pulse = `[data-cabin="${d.cabin}"]`; render(); return; }
+  if (d.chk) { const [k, n] = d.chk.split(':'); S.check[k] = Math.max(0, Math.min(3, S.check[k] + +n)); S.pulse = `[data-qty="${k}"]`; render(); return; }
+  if (d.extra) { const [s, k] = d.extra.split(':'); S[s][k] = !S[s][k]; if (S[s][k]) S.pulse = `[data-extra="${d.extra}"]`; render(); return; }
+});
+const RULES = {
+  p_name: [v => v.trim().length >= 2, 'Enter the passenger’s full name'], p_dob: [v => !!v, 'Enter a date of birth'],
+  p_email: [v => /^\S+@\S+\.\S+$/.test(v), 'Enter a valid email address'], p_phone: [v => v.replace(/\D/g, '').length >= 7, 'Enter a phone number with at least 7 digits'],
+  c_num: [v => v.replace(/\s/g, '').length === 16, 'Card numbers have 16 digits'], c_exp: [v => /^(0[1-9]|1[0-2])\/\d{2}$/.test(v), 'Use the format MM/YY'],
+  c_cvv: [v => v.length >= 3, 'Enter 3 or 4 digits'], c_holder: [v => v.trim().length >= 2, 'Enter the name on the card'],
+};
+document.addEventListener('focusout', e => {
+  const el = e.target, r = el.id && RULES[el.id];
+  if (!r || S.step !== 'pay' || !el.value) return;
+  const field = el.closest('.field'), old = field.querySelector('.err'); if (old) old.remove();
+  if (r[0](el.value)) { el.classList.remove('bad'); el.removeAttribute('aria-invalid'); el.classList.add('ok'); delete S.errors[el.id]; }
+  else { el.classList.remove('ok'); el.classList.add('bad'); el.setAttribute('aria-invalid', 'true'); S.errors[el.id] = r[1]; field.insertAdjacentHTML('beforeend', `<div class="err">${ic('alert')}${r[1]}</div>`); }
+});
+window.addEventListener('scroll', () => barEl.classList.toggle('stuck', scrollY > 4), { passive: true });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && S.open) { S.open = false; render(); } });
+$('#logo').onclick = () => { if (S.step !== 'home') { S.step = 'home'; S.open = false; render(true); } };
+
+/* Deep link into a step, e.g. index.html#step=seats (choices are pre-filled so the step has content) */
+(function () {
+  const m = location.hash.match(/step=(\w+)/), st = m && m[1];
+  const idx = STEPS.findIndex(s => s.id === st);
+  if (!st || (idx < 0 && st !== 'done')) return;
+  const at = st === 'done' ? 5 : idx;
+  S.fOut = flightsFor(S.from, S.to, S.out)[0]; S.fRet = flightsFor(S.to, S.from, S.ret)[1];
+  if (at >= 1) S.seats = { out: ['2A'], ret: ['4C'] };
+  if (at >= 3) { S.cabin.out = 'priority'; S.check.ret = 1; }
+  if (at >= 4) S.fast.out = true;
+  if (at >= 4 && /filled/.test(location.hash) || st === 'done') {
+    S.p = { name: 'Angelo Joy', dob: '1993-01-01', email: 'angelo@example.com', cc: '+353', phone: '0894754628' };
+    S.card = { num: '4242 4242 4242 4242', exp: '12/28', cvv: '123', holder: 'Angelo Joy' };
+  }
+  S.maxStep = Math.min(at, STEPS.length - 1); S.step = st; S.ref = 'AR7K2Q41'; S.lastTotal = totals().all;
+  if (idx >= 0) S.prevPct = (idx + 1) / STEPS.length * 100;
+})();
+render();
+</script>
+</body>
+</html>
