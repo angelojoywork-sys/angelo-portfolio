@@ -10,7 +10,7 @@ disciplines: [graphic, digital]
 cover: cover.png
 hideCover: true
 order: 7
-note: "30 posts by 30 people had to read as one movement. The badge did that."
+note: "Thirty different people would post this, so the badge, type and wavy texture had to hold it together."
 bg: "#111111"
 study:
   product:

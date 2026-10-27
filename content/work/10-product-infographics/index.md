@@ -9,6 +9,7 @@ tools: [Illustrator, Photoshop]
 disciplines: [graphic]
 cover: cover.jpg
 order: 9
+note: "Numbered callouts turn a spec sheet into a route: you follow the cable from the pole to the house."
 study:
   product:
     name: "Infographics"

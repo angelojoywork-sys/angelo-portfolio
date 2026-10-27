@@ -9,7 +9,7 @@ tools: [Adobe InDesign, Illustrator, Photoshop]
 disciplines: [graphic]
 cover: cover.jpg
 order: 2
-note: "Two days, two languages, and a 1:10 scale file. Leaving the QR code off was the easy call."
+note: "Two days left no room for decoration. One strict hierarchy, and no QR code, kept the press ads premium."
 bg: "#00464E"
 study:
   product:

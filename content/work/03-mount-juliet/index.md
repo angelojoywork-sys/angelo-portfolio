@@ -9,7 +9,7 @@ tools: [Illustrator]
 disciplines: [graphic]
 cover: cover.jpg
 order: 3
-note: "One template, three ratios, fifteen campaigns. The system did the heavy lifting."
+note: "Fifteen campaigns in a week only works as a system: one layout logic carried across three ratios."
 bg: "#373A36"
 study:
   product:

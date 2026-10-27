@@ -7,5 +7,6 @@ tools: [After Effects]
 disciplines: [motion]
 cover: cover.mp4
 order: 4
+note: "The type is the whole message, so timing and easing carry the personality, not extra graphics."
 ---
 

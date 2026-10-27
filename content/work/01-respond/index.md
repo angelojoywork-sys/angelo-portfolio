@@ -9,7 +9,7 @@ tools: [Illustrator, Photoshop, InDesign]
 disciplines: [graphic, digital]
 cover: cover.jpg
 order: 1
-note: "A QR code did more for these banners than any extra line of copy could."
+note: "Banners get a few seconds of attention, so a QR code carried the detail and let the copy stay short."
 bg: "#008765"
 study:
   product:

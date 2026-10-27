@@ -10,6 +10,7 @@ cover: cover.png
 order: 10
 hideCover: true
 gap: tight
+note: "I wanted the year to read as a story, so oversized type sets the pace and the projects follow."
 study:
   product:
     name: "Portfolio 2025"

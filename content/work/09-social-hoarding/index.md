@@ -9,6 +9,7 @@ tools: [Illustrator, Photoshop]
 disciplines: [graphic]
 cover: cover.png
 order: 8
+note: "One visual system stretched from a square post to a site hoarding. Type and flowing shapes did the scaling."
 study:
   product:
     name: "Social & Print"

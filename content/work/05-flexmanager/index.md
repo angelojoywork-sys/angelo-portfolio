@@ -9,7 +9,7 @@ tools: [After Effects, Illustrator, Premiere Pro, Claude, ElevenLabs]
 disciplines: [motion, video]
 cover: cover.jpg
 order: 5
-note: "Templates first, videos second. The drag-and-drop library is what made 80+ modules possible."
+note: "With 80+ modules, the real product was the template library, not any single video."
 bg: "#424242"
 hideCover: true
 study:
