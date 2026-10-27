@@ -19,10 +19,10 @@ study:
     - { value: "Individual designer", label: "team" }
     - { value: "Information design · Illustration · Layout", label: "scope" }
   problem:
-    subtitle: "Technical Products, Quick to Grasp"
+    subtitle: "Complex, Made Clear"
     body: "Multi-part technical products are hard to understand from a list of specifications."
   solution:
-    subtitle: "A Numbered, Visual Explanation"
+    subtitle: "Numbered and Visual"
     body: "I built an annotated scene of the whole system, with numbered callouts linking each component to a labelled product image and name."
   result:
     subtitle: "Clearer Comparison"

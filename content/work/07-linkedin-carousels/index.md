@@ -28,7 +28,7 @@ study:
     subtitle: "A Loud, Warm System"
     body: "An unapologetic palette of acid yellow-green, hot pink, black and white shifts colour from slide to slide. Wavy, organic backgrounds push back on the hard edges STEM is usually shown with. A scalloped, flower-like badge appears in the logo, the day counter, the icons and the watermark, so the series is recognisable before a word is read. Heavy blackletter (TAN Nimbus) gives gravitas and a rounded retro serif (TAN Kindred) keeps it warm. The carousel runs profile, about me, what I’m working on, recent wins, quote, connect, like a mini magazine feature."
   result:
-    subtitle: "A Template People Are Proud to Post"
+    subtitle: "A Template to Be Proud Of"
     body: "A template contributors were proud to post, which made the women being featured feel celebrated."
   impact:
     - { value: "30", label: "Posts by 30 contributors" }

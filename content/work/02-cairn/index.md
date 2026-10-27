@@ -24,7 +24,7 @@ study:
     subtitle: "Two Days, Two Languages"
     body: "The launch needed premium press ads, an estate sign and bilingual (English and Irish) hoardings within a two-day turnaround. All of it had to stay on brand, appeal to prospective buyers and carry the mandatory Irish housing disclosures, including BER ratings and legal information."
   solution:
-    subtitle: "Clean, Premium, Legible at a Distance"
+    subtitle: "Premium and Legible"
     body: "I studied Cairn’s brand guidelines and existing press ads, then built a strict typographic hierarchy in InDesign over a coastal texture from the Hampden Hill website. I left QR codes out on purpose to keep the reading experience clean, using a website URL and the tagline “Built for Good” in a bottom brand band instead. The hoardings use high-contrast alternating panels, very large type and careful spacing, with text kept clear of panel joints and headerboards. Irish translations were verified with native speakers, and every large-format file was built at 1:10 scale with vector artwork, proper bleed and correct colour profiles."
   result:
     subtitle: "Delivered in Two Days"

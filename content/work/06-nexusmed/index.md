@@ -22,10 +22,10 @@ study:
     - { value: "Individual designer", label: "team" }
     - { value: "Identity · Typography · Colour · Presentation templates", label: "scope" }
   problem:
-    subtitle: "Calm, Credible, Consistent"
+    subtitle: "Calm and Credible"
     body: "The company needed an identity that feels trustworthy and human, and a way to carry it across its existing presentation workflows without breaking them."
   solution:
-    subtitle: "A Soft, Structured System"
+    subtitle: "A Soft, Clear System"
     body: "I built a palette of deep navy, clear blue, lavender and a lime accent, set entirely in Inter, where emphasis comes from weight and never from colour, underline or italics. Glassy 3D forms add a modern, optimistic tone. I reviewed the existing presentation deck to decide what to retain, update or create from scratch, giving a structural blueprint that preserved vital legacy workflows while integrating the new identity."
   result:
     subtitle: "A Ready-to-Use Identity"
