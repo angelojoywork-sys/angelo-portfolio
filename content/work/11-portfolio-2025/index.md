@@ -10,6 +10,24 @@ cover: cover.png
 order: 10
 hideCover: true
 gap: tight
+study:
+  product:
+    name: "Design Portfolio 2025"
+    description: "A personal presentation of 2025 graphic work, blending creativity, innovation and visual storytelling."
+  details:
+    - { value: "Presentation portfolio", label: "surface" }
+    - { value: "Designer", label: "role" }
+    - { value: "Individual designer", label: "team" }
+    - { value: "Layout · Illustration · Typography", label: "scope" }
+  problem:
+    subtitle: "Work Needing a Narrative"
+    body: "A collection of varied projects needed to read as one story, not a folder of files."
+  solution:
+    subtitle: "Loud Type, Quiet Narrative"
+    body: "I used oversized condensed display type, a purple and yellow palette, 3D shapes and my own illustration, then sequenced the work as a creative journey."
+  result:
+    subtitle: "A Cohesive Showcase"
+    body: "A single presentation that shows the range of the year’s work with one consistent voice."
 ---
 
 ![](01.gif)
@@ -31,7 +49,6 @@ gap: tight
 ![](09.png)
 
 ![](10.gif)
-
 
 ![](12.gif)
 

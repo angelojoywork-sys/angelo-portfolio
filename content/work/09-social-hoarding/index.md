@@ -9,6 +9,24 @@ tools: [Illustrator, Photoshop]
 disciplines: [graphic]
 cover: cover.png
 order: 8
+study:
+  product:
+    name: "Social & Print"
+    description: "A self-initiated set of social posts, carousels and large-format site hoardings, designed in one visual language."
+  details:
+    - { value: "Social & large format", label: "surface" }
+    - { value: "Designer", label: "role" }
+    - { value: "Individual designer", label: "team" }
+    - { value: "Layout · Typography · Visual system", label: "scope" }
+  problem:
+    subtitle: "One Language, Many Formats"
+    body: "The aim was to see whether a single bold visual language could hold up from a square social post to a large-format hoarding."
+  solution:
+    subtitle: "Bold Type, Fluid Form"
+    body: "I paired large, high-contrast typography with flowing gradient shapes, then adapted the same system across announcement posts, carousels and site hoardings."
+  result:
+    subtitle: "A Flexible System"
+    body: "A consistent set of assets that scales from the feed to the site hoarding."
 ---
 
 ![](01.png)

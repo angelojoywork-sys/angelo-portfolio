@@ -11,24 +11,36 @@ cover: cover.jpg
 order: 1
 note: "A QR code did more for these banners than any extra line of copy could."
 bg: "#008765"
+study:
+  product:
+    name: "Respond"
+    description: "A recruitment campaign for one of Ireland’s largest not-for-profit housing associations. It attracts certified early-years practitioners to Respond’s nationwide Early Learning & School-Aged Care services across print and social."
+  details:
+    - { value: "Print & social campaign", label: "surface" }
+    - { value: "Lead Designer, project at Originate", label: "role" }
+    - { value: "Individual designer", label: "team" }
+    - { value: "Visual hierarchy · Image compositing · Layout", label: "scope" }
+  problem:
+    subtitle: "Trust, Without the Clutter"
+    body: "Respond’s brand has to earn the trust of tenants, local authorities and the wider community. The campaign needed to communicate workforce benefits across print and digital while holding strictly to brand guidelines, and banners risked becoming walls of text."
+  solution:
+    subtitle: "One Visual System, Four Formats"
+    body: "I designed roll-up banners (for recruitment and parent outreach), an A4 poster, a DL leaflet and social media graphics. Relatable, human-centric imagery conveys opportunity and community, in a modern, trend-forward look that stays inside the brand. A QR code with the URL replaced text-heavy copy and bridges the banner to the landing page. Built in InDesign, Photoshop (Firefly, Nano Banana) and Illustrator."
+  result:
+    subtitle: "Delivered and Well Received"
+    body: "Every print and digital asset was delivered on time, and the client appreciated the modern aesthetic that still followed the guidelines. The campaign is scheduled for a future rollout, so success was measured through client satisfaction and deliverables."
+  impact:
+    - { value: "4 formats", label: "One cohesive campaign system" }
+    - { value: "Approved", label: "Strong client appreciation" }
+    - { value: "Print → Web", label: "QR code links banners to the landing page" }
 ---
 
-Respond is one of Ireland’s largest not-for-profit housing associations, providing social and affordable homes and support services to families and individuals. Its brand has to earn the trust of tenants, local authorities, and the wider community.
-
-At Originate, I designed a suite of recruitment creatives to communicate Respond’s workforce benefits and attract certified practitioners to its nationwide Early Learning & School-Aged Care services in the ELSAC recruitment campaign.
-
 ![Roll-up banners](01.jpg)
-
-Spanning roll-up banners (tailored for recruitment and parent outreach), A4 poster, DL leaflet, and social media graphics. Responsible for the overall visual hierarchy, image compositing, and layout execution. I used tools such as Adobe InDesign, Photoshop (Firefly, Nano banana), Illustrator to succeed in my exciting challenge to maintain strict brand adherence while effectively communicating across print and digital formats to engage early childhood educators, local families, and community members.
 
 ![A4 poster and DL leaflet](02.jpg)
 
 ![Social media graphics](03.jpg)
 
-The campaign is scheduled for a future rollout, so success was measured through direct client satisfaction and deliverables. I delivered all print and digital assets on time, earning strong client appreciation for introducing a modern, trend-forward aesthetic that stood out while strictly adhering to Respond’s brand guidelines.
-
 ![Campaign applications](04.jpg)
-
-By strategically integrating a QR code with the URL, I solved the issue of text-heavy banners, ensuring a seamless user experience for scanning and accessibility. During this project, I learned the value of capitalizing on relatable, human-centric imagery to convey core messages of opportunity and community, and how thoughtful UX adjustments, like QR codes, can bridge physical print assets with digital landing pages effectively.
 
 ![QR code on banner](05.jpg)
