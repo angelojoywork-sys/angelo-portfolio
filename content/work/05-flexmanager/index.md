@@ -22,13 +22,13 @@ study:
     - { value: "Individual designer", label: "team" }
     - { value: "Strategy · Scripting · Motion · Filming · Audio", label: "scope" }
   problem:
-    subtitle: "80+ Modules, No Time to Read"
+    subtitle: "80+ Modules, No Time"
     body: "FlexManager is a B2B platform with 80+ modules, each with detailed feature descriptions on its website. To drive sales and awareness on LinkedIn, Instagram and Facebook, it had to be communicated fast and visually, in a way a busy professional understands within seconds. Copying feature text was not an option: the content had to be simplified for each platform without losing the depth of what the product does."
   solution:
-    subtitle: "A Repeatable Video System"
+    subtitle: "A Repeatable System"
     body: "I owned the whole pipeline, from strategy and scripting to motion design, filming and audio. Each module began with stakeholder meetings on the key features, then scripting and moodboarding in Miro and Microsoft Whiteboard for leadership sign-off. I filmed outdoor footage, set up AV equipment, built icons in Illustrator and animated in After Effects. Voiceovers use three brand-approved ElevenLabs voices, with music and sound effects from Envato. To scale across 80+ modules, I built a drag-and-drop library of After Effects templates, consistent easing, line icons, intros and outros, and backgrounds."
   result:
-    subtitle: "A Full Suite, Working"
+    subtitle: "A Full Video Suite"
     body: "A full suite of instructional and promotional videos, each tailored to LinkedIn, Instagram and Facebook, turning feature-heavy content into short videos that sell the product. Engagement grew across the social channels and the content began generating leads."
   impact:
     - { value: "80+", label: "Modules explained with one template system" }

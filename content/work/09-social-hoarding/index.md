@@ -19,7 +19,7 @@ study:
     - { value: "Individual designer", label: "team" }
     - { value: "Layout · Typography · Visual system", label: "scope" }
   problem:
-    subtitle: "One Language, Many Formats"
+    subtitle: "One Voice, Many Formats"
     body: "The aim was to see whether a single bold visual language could hold up from a square social post to a large-format hoarding."
   solution:
     subtitle: "Bold Type, Fluid Form"

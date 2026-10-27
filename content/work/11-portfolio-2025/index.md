@@ -20,10 +20,10 @@ study:
     - { value: "Individual designer", label: "team" }
     - { value: "Layout · Illustration · Typography", label: "scope" }
   problem:
-    subtitle: "Work Needing a Narrative"
+    subtitle: "A Story, Not a Folder"
     body: "A collection of varied projects needed to read as one story, not a folder of files."
   solution:
-    subtitle: "Loud Type, Quiet Narrative"
+    subtitle: "Loud Type, Quiet Story"
     body: "I used oversized condensed display type, a purple and yellow palette, 3D shapes and my own illustration, then sequenced the work as a creative journey."
   result:
     subtitle: "A Cohesive Showcase"

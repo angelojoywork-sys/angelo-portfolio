@@ -21,10 +21,10 @@ study:
     - { value: "Individual designer", label: "team" }
     - { value: "Visual hierarchy · Image compositing · Layout", label: "scope" }
   problem:
-    subtitle: "Trust, Without the Clutter"
+    subtitle: "Trust, Without Clutter"
     body: "Respond’s brand has to earn the trust of tenants, local authorities and the wider community. The campaign needed to communicate workforce benefits across print and digital while holding strictly to brand guidelines, and banners risked becoming walls of text."
   solution:
-    subtitle: "One Visual System, Four Formats"
+    subtitle: "One System, Four Formats"
     body: "I designed roll-up banners (for recruitment and parent outreach), an A4 poster, a DL leaflet and social media graphics. Relatable, human-centric imagery conveys opportunity and community, in a modern, trend-forward look that stays inside the brand. A QR code with the URL replaced text-heavy copy and bridges the banner to the landing page. Built in InDesign, Photoshop (Firefly, Nano Banana) and Illustrator."
   result:
     subtitle: "Delivered and Well Received"

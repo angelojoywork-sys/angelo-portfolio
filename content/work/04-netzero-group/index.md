@@ -21,10 +21,10 @@ study:
     - { value: "Individual designer", label: "team" }
     - { value: "Layout · Brand application · Print production", label: "scope" }
   problem:
-    subtitle: "Technical Content, Earned Trust"
+    subtitle: "Technical, Yet Trusted"
     body: "Technical product tiers, customer reviews and SEAI grant information had to sit in one clear hierarchy. The brochure also needed to build immediate trust, transparency and a sense of proven reliability while staying true to NetZero’s brand."
   solution:
-    subtitle: "Structure and a Signature Notch"
+    subtitle: "One Notch, Three Panels"
     body: "In InDesign I set up three equal 99mm panels with precise gutters and print bleed. The cover pairs a residential solar hero image with the logo and the brand’s angled-corner notch. The back carries “Switch it up with a supplier you can trust” with contact details and a QR code. A contrasting review section, with the same notch, draws the eye to testimonials. Charcoal text, forest-green accents, balanced line icons and neutral photography keep every panel consistent."
   result:
     subtitle: "Credible and Cohesive"
