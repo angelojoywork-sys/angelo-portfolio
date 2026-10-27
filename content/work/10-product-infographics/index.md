@@ -9,6 +9,24 @@ tools: [Illustrator, Photoshop]
 disciplines: [graphic]
 cover: cover.jpg
 order: 9
+study:
+  product:
+    name: "Product Infographics"
+    description: "Feature-led infographics that make products easy to compare at a glance, including a poster explaining an end-to-end fibre-optic connection."
+  details:
+    - { value: "Infographic & print poster", label: "surface" }
+    - { value: "Designer", label: "role" }
+    - { value: "Individual designer", label: "team" }
+    - { value: "Information design · Illustration · Layout", label: "scope" }
+  problem:
+    subtitle: "Technical Products, Quick to Grasp"
+    body: "Multi-part technical products are hard to understand from a list of specifications."
+  solution:
+    subtitle: "A Numbered, Visual Explanation"
+    body: "I built an annotated scene of the whole system, with numbered callouts linking each component to a labelled product image and name."
+  result:
+    subtitle: "Clearer Comparison"
+    body: "A scannable layout where viewers can follow the system and each part without reading dense text."
 ---
 
 ![](01.jpg)

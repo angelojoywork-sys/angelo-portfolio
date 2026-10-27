@@ -12,38 +12,40 @@ hideCover: true
 order: 7
 note: "30 posts by 30 people had to read as one movement. The badge did that."
 bg: "#111111"
+study:
+  product:
+    name: "30 Women 30 Stories"
+    description: "A grassroots LinkedIn campaign in which contributors each share a carousel post spotlighting a woman in STEM from their own network."
+  details:
+    - { value: "LinkedIn carousels", label: "surface" }
+    - { value: "Designer", label: "role" }
+    - { value: "Individual designer", label: "team" }
+    - { value: "Campaign identity · Typography · Template system", label: "scope" }
+  problem:
+    subtitle: "30 Posts, One Movement"
+    body: "The identity had to be bold enough to stop a scroll, and cohesive enough that 30 posts by 30 different people still read as one unified movement."
+  solution:
+    subtitle: "A Loud, Warm System"
+    body: "An unapologetic palette of acid yellow-green, hot pink, black and white shifts colour from slide to slide. Wavy, organic backgrounds push back on the hard edges STEM is usually shown with. A scalloped, flower-like badge appears in the logo, the day counter, the icons and the watermark, so the series is recognisable before a word is read. Heavy blackletter (TAN Nimbus) gives gravitas and a rounded retro serif (TAN Kindred) keeps it warm. The carousel runs profile, about me, what I’m working on, recent wins, quote, connect, like a mini magazine feature."
+  result:
+    subtitle: "A Template People Are Proud to Post"
+    body: "A template contributors were proud to post, which made the women being featured feel celebrated."
+  impact:
+    - { value: "30", label: "Posts by 30 contributors" }
+    - { value: "1 movement", label: "One badge, one font system, one texture" }
+    - { value: "6 slides", label: "A magazine-style story structure" }
 ---
-
-## 30 Women 30 Stories
-
-30 Women 30 Stories is a grassroots LinkedIn campaign where contributors each share a carousel post spotlighting a woman in STEM from their own network. My job was to create a visual identity bold enough to stop a scroll, and cohesive enough that 30 different posts, posted by 30 different people, still felt like one unified movement.
-
-The energy had to be loud.
 
 ![](01.png)
 
-The palette, acid yellow-green, hot pink, and crisp black and white, is unapologetic and warm. It says: these women are brilliant and they take up space and they don't need to tone it down. The colors shift across slides (yellow to orange to pink to lime), giving each card its own personality and emotion.
-
-The wavy, organic backgrounds were a deliberate choice over grids or clean geometry. Those rippling diagonal lines justify growing/evolving. STEM is often visualised with hard edges and sharp angles. The curves push back on that, bringing softness and energy into a space.
-
 ![](02.png)
-
-The scalloped, flower-like badge shape became the visual heartbeat of the whole system, appearing in the logo, the day counter, the icons, and the watermark. It's retro without being nostalgic, playful without being childish. It gave the series a stamp of its own: something you'd recognise mid-scroll before you'd even read a word.
-
-For typography, I paired a heavy blackletter (TAN Nimbus) - influenced display font for "WOMEN" with a rounded retro serif (TAN Kindred) for the numerals and body copy. The blackletter nods to history and gravitas, these stories matter, while the rounded serif keeps it warm and approachable. Together they hold the tension the campaign lives in: serious subject, joyful delivery.
 
 ![](03.png)
 
 ![](04.png)
 
-The carousel structure itself (profile → about me → what I'm working on → recent wins → quote → connect) was designed to feel like a mini-magazine feature, not a LinkedIn form.
-
-Each slide has its own colour and purpose, but the badge, the font system, and the wavy texture hold it all together across every contributor's feed.
-
 ![](05.png)
 
 ![](06.png)
-
-The goal was to have a template that contributors would be proud to post. Something that made the women being featured feel celebrated.
 
 ![](07.png)

@@ -11,24 +11,30 @@ cover: cover.jpeg
 order: 4
 note: "The brand's angled notch became the thread that ties every panel together."
 bg: "#315A51"
+study:
+  product:
+    name: "NetZero Group"
+    description: "A promotional A4 tri-fold brochure for one of Ireland’s leading sustainable-energy providers, aimed at homeowners and business owners who want to lower high energy bills."
+  details:
+    - { value: "Print: A4 tri-fold brochure", label: "surface" }
+    - { value: "Designer", label: "role" }
+    - { value: "Individual designer", label: "team" }
+    - { value: "Layout · Brand application · Print production", label: "scope" }
+  problem:
+    subtitle: "Technical Content, Earned Trust"
+    body: "Technical product tiers, customer reviews and SEAI grant information had to sit in one clear hierarchy. The brochure also needed to build immediate trust, transparency and a sense of proven reliability while staying true to NetZero’s brand."
+  solution:
+    subtitle: "Structure and a Signature Notch"
+    body: "In InDesign I set up three equal 99mm panels with precise gutters and print bleed. The cover pairs a residential solar hero image with the logo and the brand’s angled-corner notch. The back carries “Switch it up with a supplier you can trust” with contact details and a QR code. A contrasting review section, with the same notch, draws the eye to testimonials. Charcoal text, forest-green accents, balanced line icons and neutral photography keep every panel consistent."
+  result:
+    subtitle: "Credible and Cohesive"
+    body: "A clear, on-brand brochure that organises complex energy information into a trustworthy visual hierarchy, ready for print."
+  impact:
+    - { value: "3 panels", label: "A4 tri-fold, 99mm each" }
+    - { value: "1 notch", label: "Brand motif tying every panel together" }
+    - { value: "Trust", label: "Reviews, grants and contact details in one flow" }
 ---
-
-NetZero Group is a leading provider of sustainable energy and decarbonisation solutions in Ireland, uniting specialist companies to deliver large-scale retrofits, solar installations, and advanced heating technologies. Partnering with businesses, local authorities, and residential property owners, NetZero Group drives Ireland's green transition by engineering high-efficiency systems that maximise energy performance and long-term reliability.
-
-I designed a comprehensive promotional brochure for NetZero Group. The project was targeted at Irish homeowners and business owners seeking to lower high energy bills, requiring a design that establishes immediate trust, transparency, and proven reliability in renewable energy technology.
-
-My design showcases strong brand consistency by integrating their established color schemes, typography, and layout structure. The core design challenge was organising technical product tiers, customer reviews, and SEAI grant information into a clear, on brand, trustworthy visual hierarchy.
-
-Working in Adobe InDesign, I established the document layout for a standard A4 tri-fold brochure, dividing the canvas into three equal 99mm panels with precise vertical height, column gutters, and standard print bleed.
-
-I designed the front outside cover to act as an immediate trust-builder, featuring a high-impact hero image of residential solar panels, prominent headline typography, and the NetZero Group logo anchored by their signature geometric brand notch (an angled corner badge derived from their visual identity).
 
 ![Front and back cover](01.jpg)
 
-On the back outside cover, I integrated the core brand messaging—"Switch it up with a supplier you can trust", alongside essential conversion details, including contact numbers, physical address, and a clean QR code.
-
-For the inner fold panels, I structured a dedicated review section using a contrasting background color paired with the brand's signature angled corner detail to draw the eye to customer testimonials. I utilized bold accent typography to highlight star ratings and key reviewer quotes.
-
 ![Inner panels](02.jpg)
-
-I maintained strict visual consistency throughout the brochure by pairing backgrounds with dark charcoal body text and forest green brand accents. I selected line icons with balanced stroke weights and carefully curated neutral-toned photography for each panel to match the clean, professional aesthetic of a sustainable energy provider.

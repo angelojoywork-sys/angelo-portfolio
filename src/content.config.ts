@@ -31,6 +31,18 @@ const site = defineCollection({
   }),
 });
 
+// Case-study cards: Product, Details, Problem / Solution / Result, Impact.
+// Add a `study:` block to a project's index.md to show them; projects without one render as before.
+const chapter = z.object({ subtitle: z.string(), body: z.string() });
+const study = z.object({
+  product: z.object({ name: z.string(), description: z.string() }),
+  details: z.array(z.object({ value: z.string(), label: z.string() })).default([]),
+  problem: chapter,
+  solution: chapter,
+  result: chapter,
+  impact: z.array(z.object({ value: z.string(), label: z.string() })).max(3).default([]),
+});
+
 const entry = z.object({
   title: z.string(),
   summary: z.string(),
@@ -48,6 +60,7 @@ const entry = z.object({
   link: z.object({ label: z.string(), url: z.string() }).nullish(),
   embed: z.union([z.string(), z.array(z.string())]).nullish(),
   note: z.string().nullish(),
+  study: study.nullish(),
   // background colour for the case study page, e.g. "#008765"
   bg: z.string().nullish(),
   order: z.number().default(100),

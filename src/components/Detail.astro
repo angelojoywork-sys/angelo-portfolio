@@ -11,13 +11,17 @@ const site = await getSite();
 const { Content } = await render(item.body);
 const d = item.data;
 
+const study = d.study;
+// the Details card already covers type and role, so the header only repeats them when there is no study
 const meta = [
   ['Client', d.client],
-  ['Project type', d.type],
-  ['Role', d.role],
+  ...(study ? [] : [['Project type', d.type], ['Role', d.role]]),
   ['Tools', d.tools.join(', ')],
   ['Credits', d.credits],
 ].filter(([, v]) => v) as [string, string][];
+const chapters = study
+  ? ([['Problem', study.problem], ['Solution', study.solution], ['Result', study.result]] as const)
+  : [];
 
 const disc = d.disciplines.map((k) => site.data.disciplines[k] ?? k);
 
@@ -54,6 +58,41 @@ const media: Media[] = item.gallery;
         <video src={cover.src} autoplay muted loop playsinline />
       )}
     </figure>
+  )}
+
+  {study && (
+    <section class="study" aria-label="Case study">
+      <div class="col">
+        <div class="card">
+          <h2 class="h">Product <em>{study.product.name}</em></h2>
+          <p class="copy">{study.product.description}</p>
+        </div>
+        {study.details.length > 0 && (
+          <div class="card">
+            <h2 class="h">Details</h2>
+            <dl class="rows">
+              {study.details.map((r) => <div><dt>{r.value}</dt><dd>{r.label}</dd></div>)}
+            </dl>
+          </div>
+        )}
+      </div>
+      <div class="card chapters">
+        {chapters.map(([name, c]) => (
+          <section>
+            <h2 class="h">{name} <em>{c.subtitle}</em></h2>
+            <p class="copy">{c.body}</p>
+          </section>
+        ))}
+      </div>
+      {study.impact.length > 0 && (
+        <div class="card impact">
+          <h2 class="h">Impact</h2>
+          <ul class="stats" data-count={study.impact.length}>
+            {study.impact.map((s) => <li><strong>{s.value}</strong><span>{s.label}</span></li>)}
+          </ul>
+        </div>
+      )}
+    </section>
   )}
 
   <div class="story">
@@ -160,7 +199,42 @@ const media: Media[] = item.gallery;
   .meta dd { margin: 0; color: var(--muted); font-size: 14px; }
 
   .hero { margin: 0 0 clamp(48px, 8vh, 96px); aspect-ratio: 3 / 2; border-radius: 2px; }
-  .hero :global(img), .hero video { width: 100%; height: 100%; object-fit: cover; }
+  .hero :global(img) { width: 100%; height: 100%; object-fit: cover; }
+  /* videos show uncropped at their native ratio (portrait clips are capped to the viewport height) */
+  .hero:has(video) { aspect-ratio: auto; background: #000; }
+  .hero video { display: block; width: 100%; height: auto; max-height: 90vh; object-fit: contain; }
+
+  /* Case-study cards */
+  .study { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0 0 clamp(32px, 6vh, 64px); align-items: stretch; }
+  .col { display: grid; gap: 12px; align-content: start; }
+  .card { background: var(--surface); border-radius: 28px; padding: clamp(24px, 3.4vw, 44px); }
+  .h { margin: 0 0 20px; font-family: var(--display); font-weight: 500; font-size: clamp(24px, 2.6vw, 34px); line-height: 1.1; letter-spacing: -0.02em; color: var(--fg); }
+  .h em { margin-left: 0.35em; font-style: italic; font-weight: 400; color: var(--faint); }
+  .copy { margin: 0; color: var(--muted); font-size: 17px; line-height: 1.6; text-wrap: pretty; }
+  .rows { margin: 0; display: grid; }
+  .rows > div { padding: 20px 0; border-top: 1px solid var(--line); }
+  .rows > div:first-child { padding-top: 4px; border-top: 0; }
+  .rows > div:last-child { padding-bottom: 0; }
+  .rows dt { font-size: 16px; font-weight: 500; color: var(--fg); line-height: 1.4; }
+  .rows dd { margin: 4px 0 0; color: var(--muted); font-size: 16px; }
+  .chapters { display: grid; gap: 0; align-content: start; }
+  .chapters section { padding: 32px 0; border-top: 1px solid var(--line); }
+  .chapters section:first-child { padding-top: 0; border-top: 0; }
+  .chapters section:last-child { padding-bottom: 0; }
+  .chapters .h { margin-bottom: 14px; }
+  .impact { grid-column: 1 / -1; }
+  .stats { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); }
+  .stats[data-count='1'] { --n: 1; } .stats[data-count='2'] { --n: 2; }
+  .stats li { display: grid; gap: 8px; align-content: start; padding: 8px 24px; border-left: 1px solid var(--line); }
+  .stats li:first-child { padding-left: 0; border-left: 0; }
+  .stats strong { font-family: var(--display); font-weight: 500; font-style: italic; font-size: clamp(30px, 3.3vw, 44px); line-height: 1.05; letter-spacing: -0.03em; color: var(--fg); text-wrap: balance; overflow-wrap: break-word; min-width: 0; }
+  .stats span { color: var(--muted); font-size: 15px; line-height: 1.4; }
+  @media (max-width: 860px) {
+    .study { grid-template-columns: minmax(0, 1fr); }
+    .stats { grid-template-columns: minmax(0, 1fr); }
+    .stats li, .stats li:first-child { padding: 20px 0; border-left: 0; border-top: 1px solid var(--line); }
+    .stats li:first-child { padding-top: 0; border-top: 0; }
+  }
 
   .story { color: var(--muted); font-size: 17px; line-height: 1.6; margin-bottom: clamp(24px, 4vw, 48px); align-items: start; }
   .story > :global(*) { grid-column: 1; }

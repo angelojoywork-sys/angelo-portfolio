@@ -12,35 +12,33 @@ order: 5
 note: "Templates first, videos second. The drag-and-drop library is what made 80+ modules possible."
 bg: "#424242"
 hideCover: true
+study:
+  product:
+    name: "FlexManager"
+    description: "A compliance software system that offers an expansive range of distinct processes in a single solution. I built the video system that explains it."
+  details:
+    - { value: "B2B social & video", label: "surface" }
+    - { value: "Art Director & Multimedia Designer", label: "role" }
+    - { value: "Individual designer", label: "team" }
+    - { value: "Strategy · Scripting · Motion · Filming · Audio", label: "scope" }
+  problem:
+    subtitle: "80+ Modules, No Time to Read"
+    body: "FlexManager is a B2B platform with 80+ modules, each with detailed feature descriptions on its website. To drive sales and awareness on LinkedIn, Instagram and Facebook, it had to be communicated fast and visually, in a way a busy professional understands within seconds. Copying feature text was not an option: the content had to be simplified for each platform without losing the depth of what the product does."
+  solution:
+    subtitle: "A Repeatable Video System"
+    body: "I owned the whole pipeline, from strategy and scripting to motion design, filming and audio. Each module began with stakeholder meetings on the key features, then scripting and moodboarding in Miro and Microsoft Whiteboard for leadership sign-off. I filmed outdoor footage, set up AV equipment, built icons in Illustrator and animated in After Effects. Voiceovers use three brand-approved ElevenLabs voices, with music and sound effects from Envato. To scale across 80+ modules, I built a drag-and-drop library of After Effects templates, consistent easing, line icons, intros and outros, and backgrounds."
+  result:
+    subtitle: "A Full Suite, Working"
+    body: "A full suite of instructional and promotional videos, each tailored to LinkedIn, Instagram and Facebook, turning feature-heavy content into short videos that sell the product. Engagement grew across the social channels and the content began generating leads."
+  impact:
+    - { value: "80+", label: "Modules explained with one template system" }
+    - { value: "↑ Engagement", label: "Growth across social channels" }
+    - { value: "↑ Leads", label: "Leads received from the content" }
 ---
 
 https://vimeo.com/1141059004/6f0a863ef1
 
-FlexManager is a compliance software system that offers an expansive range of distinct processes in a single solution.
-
-## Problem
-
-Flexmanager is a B2B platform with 80+ modules, each with detailed feature descriptions living on their website.
-
-To drive sales and awareness through LinkedIn, Instagram, and Facebook, the product needed to be communicated in a way that was fast, visual, and digestible, not a wall of text.
-
-The core challenge was translating highly technical, feature-rich content into short-form video content that a busy professional could understand within seconds. Simply copying feature descriptions onto social media wasn't an option, the content needed to be simplified, engaging, and tailored for each platform without losing the depth of what the product actually does.
-
-## Solution
-
-Wearing multiple hats across the entire production pipeline, I built a scalable video content system from scratch, handling everything from strategy and scripting to motion design, filming, and audio.
-
-Each module went through a structured workflow, stakeholder meetings were held to align on the key features worth highlighting, followed by scripting and moodboarding in Miro and Microsoft Whiteboard for leadership sign-off, covering video durations and social media snippet planning.
-
 https://vimeo.com/1161727726/77fea03353
-
-From there, I took full ownership of production, filming outdoor footage, setting up AV equipment, creating icons and graphics in Illustrator, and bringing everything to life through motion design and editing in After Effects.
-
-Voiceovers were generated through ElevenLabs with three brand-approved voices selected for consistency, and background music and sound effects were sourced from Envato.
-
-To make the process repeatable across 80+ modules, I built a library of reusable After Effects templates, consistent easing animations, line icons, intro and outro sequences, and background elements, all designed as drag-and-drop components to speed up future production without sacrificing brand consistency.
-
-The output was a full suite of instructional and promotional videos, each tailored for LinkedIn, Instagram, and Facebook, turning complex, feature-heavy content into short, digestible videos that could actually sell the product.
 
 https://vimeo.com/1167671624/6908b2319d
 
