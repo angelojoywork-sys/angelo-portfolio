@@ -68,7 +68,7 @@ const media: Media[] = item.gallery;
   )}
 
   {study && (
-    <section class="study" aria-label="Case study" style={`--n:${headingChars}`}>
+    <section class="study" aria-label="Case study" style={`--hc:${headingChars}`}>
       <div class="col">
         <div class="card">
           <h2 class="h">Product <em>{study.product.name}</em></h2>
@@ -217,7 +217,7 @@ const media: Media[] = item.gallery;
   /* Product sizes to its text; Details stretches so the left column ends level with the right card */
   .col { display: grid; gap: 12px; grid-template-rows: auto 1fr; }
   .card { background: var(--surface); border-radius: 28px; padding: var(--pad); }
-  .h { margin: 0 0 20px; font-family: var(--display); font-weight: 500; font-size: clamp(20px, calc((50cqi - 6px - 2 * var(--pad)) / (var(--n) * 0.6)), 34px); line-height: 1.1; letter-spacing: -0.02em; color: var(--fg); }
+  .h { margin: 0 0 20px; font-family: var(--display); font-weight: 500; font-size: clamp(20px, calc((50cqi - 6px - 2 * var(--pad)) / (var(--hc) * 0.6)), 34px); line-height: 1.1; letter-spacing: -0.02em; color: var(--fg); }
   .h em { margin-left: 0.35em; font-style: italic; font-weight: 400; color: var(--faint); }
   .copy { margin: 0; color: var(--muted); font-size: 17px; line-height: 1.6; text-wrap: pretty; }
   .col .card:last-child { display: flex; flex-direction: column; }
