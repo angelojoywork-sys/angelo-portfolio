@@ -39,7 +39,7 @@ const ogImage = image ? new URL(image, Astro.site).href : undefined;
     <ClientRouter />
     <script is:inline>
       function applyTheme() {
-        try { if (sessionStorage.getItem('theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); else document.documentElement.removeAttribute('data-theme'); } catch {}
+        try { if (sessionStorage.getItem('theme') === 'light') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', 'dark'); } catch { document.documentElement.setAttribute('data-theme', 'dark'); }
         try { document.documentElement.classList.toggle('thinking', localStorage.getItem('thinking') === '1'); } catch {}
       }
       try { localStorage.removeItem('theme'); } catch {}
