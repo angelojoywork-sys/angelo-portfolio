@@ -1,6 +1,6 @@
 ---
 import { getSite } from '../lib/content';
-import Puppy from './Puppy.astro';
+import Breathe from './Breathe.astro';
 const site = await getSite();
 const headline = site.data.intro.map((s) => s.text).join(' ');
 ---
@@ -14,7 +14,7 @@ const headline = site.data.intro.map((s) => s.text).join(' ');
     {site.data.available && <div><dt class="label">Status</dt><dd><span class="avail"></span>{site.data.available}</dd></div>}
   </dl>
 
-  <Puppy />
+  <Breathe />
 </section>
 
 <style>

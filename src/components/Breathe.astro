@@ -1,0 +1,383 @@
+---
+// Breathe: a small abstract orb that breathes on its own. Tap it, pick 2-10 minutes and a rhythm,
+// close your eyes. The orb swells and settles on screen; a soft tone rises and falls and (on Android)
+// a faint buzz marks each breath, so the session works with eyes shut.
+const durations = [2, 3, 5, 7, 10];
+const patterns = [
+  { id: 'calm', name: 'Calm', note: 'In 4, out 6' },
+  { id: 'even', name: 'Even', note: 'In 5, out 5' },
+  { id: 'box', name: 'Box', note: '4, 4, 4, 4' },
+];
+---
+
+<div class="breathe">
+  <button type="button" class="open" aria-haspopup="dialog">
+    <span class="mini" aria-hidden="true"><i></i><i></i><i></i></span>
+    <span class="copy">
+      <span class="title">Take a breath</span>
+      <span class="label">2 to 10 minutes, eyes closed</span>
+    </span>
+  </button>
+
+  <dialog class="sheet" aria-label="Guided breathing">
+    <button type="button" class="close" aria-label="Close">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12"></path></svg>
+    </button>
+
+    <!-- 1. choose -->
+    <form class="step setup" data-step="setup">
+      <h2 class="h">How long do you<br />want to sit?</h2>
+      <fieldset class="chips" aria-label="Minutes">
+        {durations.map((m) => (
+          <label class="chip">
+            <input type="radio" name="mins" value={m} checked={m === 3} />
+            <span><b>{m}</b> min</span>
+          </label>
+        ))}
+      </fieldset>
+      <fieldset class="chips pat" aria-label="Rhythm">
+        {patterns.map((p, i) => (
+          <label class="chip">
+            <input type="radio" name="pattern" value={p.id} checked={i === 0} />
+            <span><b>{p.name}</b><small>{p.note}</small></span>
+          </label>
+        ))}
+      </fieldset>
+      <button type="submit" class="go">Begin</button>
+      <p class="fine">Find somewhere comfortable. Sound on helps, but it works without.</p>
+    </form>
+
+    <!-- 2. session -->
+    <div class="step session" data-step="session" hidden>
+      <div class="orb" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i><i class="core"></i></div>
+      <p class="phase" aria-live="polite"></p>
+      <div class="hud">
+        <span class="left" aria-label="Time left">0:00</span>
+        <button type="button" class="mute" aria-pressed="false">Sound on</button>
+        <button type="button" class="end">End</button>
+      </div>
+    </div>
+
+    <!-- 3. done -->
+    <div class="step done" data-step="done" hidden>
+      <h2 class="h">Thanks for<br />pausing.</h2>
+      <p class="fine sum"></p>
+      <div class="row">
+        <button type="button" class="go again">Sit again</button>
+        <button type="button" class="ghost back">See the work</button>
+      </div>
+    </div>
+  </dialog>
+</div>
+
+<style>
+  .breathe { position: relative; }
+
+  /* ---- the resting trigger in the hero ---- */
+  .open {
+    display: flex; align-items: center; gap: var(--space-3);
+    width: 100%; height: 140px; padding: 0; text-align: left;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .mini { position: relative; flex: none; width: 88px; height: 88px; display: grid; place-items: center; }
+  .mini i { position: absolute; inset: 0; border-radius: 50%; animation: mini 9s ease-in-out infinite; }
+  .mini i:nth-child(1) { background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--accent) 70%, #fff), var(--accent) 60%, var(--electric)); filter: blur(.5px); scale: .56; }
+  .mini i:nth-child(2) { border: 1px solid var(--accent); opacity: .45; animation-delay: -.5s; }
+  .mini i:nth-child(3) { border: 1px solid var(--accent); opacity: .2; animation-delay: -1s; }
+  @keyframes mini { 0%, 100% { transform: scale(.7); } 44% { transform: scale(1); } }
+  .copy { display: flex; flex-direction: column; gap: 4px; }
+  .title { font-family: var(--display); font-weight: 500; font-size: clamp(22px, 2vw, 28px); letter-spacing: -.01em; color: var(--fg); transition: color var(--dur-2) var(--ease); }
+  .open:hover .title, .open:focus-visible .title { color: var(--hover); }
+  .open:hover .mini i:nth-child(1), .open:focus-visible .mini i:nth-child(1) { filter: blur(.5px) brightness(1.12); }
+
+  /* ---- the dimmed sheet: always dark so it reads as "lights down" in either theme ---- */
+  .sheet {
+    --ink: #ecebe6; --ink-2: #9a98a3; --ink-3: #4b4a55;
+    position: fixed; inset: 0; width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0;
+    background: #08080c; color: var(--ink); overflow: hidden;
+  }
+  .sheet::backdrop { background: #08080c; }
+  .sheet[open] { animation: sheet-in .6s var(--ease) both; }
+  @keyframes sheet-in { from { opacity: 0; } }
+  .step { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-4); padding: var(--space-4); text-align: center; }
+  .step[hidden] { display: none; }
+  .step:not([hidden]) { animation: step-in .7s var(--ease) both; }
+  @keyframes step-in { from { opacity: 0; transform: translateY(10px); } }
+
+  .h { margin: 0; font-family: var(--display); font-weight: 500; font-size: clamp(34px, 6vw, 64px); line-height: 1.04; letter-spacing: -.025em; text-wrap: balance; }
+  .fine { margin: 0; font-size: 13px; color: var(--ink-2); max-width: 30em; }
+
+  .close {
+    position: absolute; top: var(--space-3); right: var(--space-3); z-index: 3;
+    width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%;
+    color: var(--ink-2); border: 1px solid var(--ink-3); transition: color var(--dur-1), border-color var(--dur-1);
+  }
+  .close:hover, .close:focus-visible { color: var(--ink); border-color: var(--ink-2); }
+
+  .chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; border: 0; margin: 0; padding: 0; min-width: 0; }
+  .chip { position: relative; cursor: pointer; }
+  .chip input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .chip span {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    min-width: 72px; padding: 12px 20px; border-radius: 999px; border: 1px solid var(--ink-3);
+    font-size: 14px; color: var(--ink-2); transition: all var(--dur-1) var(--ease);
+  }
+  .chip b { font-weight: 500; font-size: 18px; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .pat .chip span { border-radius: 18px; padding: 10px 20px; min-width: 112px; }
+  .pat .chip b { font-size: 15px; }
+  .chip small { font-size: 12px; color: var(--ink-2); }
+  .chip:hover span { border-color: var(--ink-2); }
+  .chip input:checked + span { background: var(--ink); border-color: var(--ink); color: #08080c; }
+  .chip input:checked + span b, .chip input:checked + span small { color: #08080c; }
+  .chip input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  .go, .ghost { padding: 14px 36px; border-radius: 999px; font-size: 15px; font-weight: 500; transition: transform var(--dur-1) var(--ease), background var(--dur-1), border-color var(--dur-1); }
+  .go { background: var(--accent); color: var(--accent-ink); box-shadow: 0 0 40px var(--accent-glow); }
+  .go:hover { transform: translateY(-1px); }
+  .ghost { border: 1px solid var(--ink-3); color: var(--ink); }
+  .ghost:hover { border-color: var(--ink-2); }
+  .row { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+  .sheet :is(button, input):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  /* ---- the session orb: --p (0 to 1) is set every frame by the script ---- */
+  .session { --p: 0; gap: var(--space-6); }
+  .orb { position: relative; width: min(64vmin, 440px); aspect-ratio: 1; display: grid; place-items: center; }
+  .orb i { position: absolute; inset: 0; border-radius: 50%; will-change: transform, opacity; }
+  .orb .core {
+    background: radial-gradient(circle at 36% 30%, color-mix(in srgb, var(--accent) 55%, #fff) 0%, var(--accent) 38%, var(--electric) 100%);
+    transform: scale(calc(.34 + var(--p) * .52));
+    box-shadow: 0 0 calc(40px + var(--p) * 110px) calc(var(--p) * 22px) color-mix(in srgb, var(--accent) calc(24% + var(--p) * 30%), transparent);
+  }
+  /* slow-turning blobs behind the core give the orb a soft, uneven halo */
+  .orb .b1, .orb .b2, .orb .b3 { mix-blend-mode: screen; filter: blur(28px); opacity: calc(.18 + var(--p) * .4); }
+  .orb .b1 { background: radial-gradient(closest-side at 30% 40%, var(--accent), transparent 70%); transform: scale(calc(.5 + var(--p) * .5)) rotate(calc(var(--p) * 40deg)); animation: drift 19s linear infinite; }
+  .orb .b2 { background: radial-gradient(closest-side at 70% 60%, var(--electric), transparent 70%); transform: scale(calc(.46 + var(--p) * .5)); animation: drift 27s linear infinite reverse; }
+  .orb .b3 { background: radial-gradient(closest-side at 50% 80%, #9d7bff, transparent 70%); transform: scale(calc(.4 + var(--p) * .45)); animation: drift 33s linear infinite; }
+  @keyframes drift { to { rotate: 360deg; } }
+  .session.ending .orb { opacity: 0; transition: opacity 2.4s ease; }
+
+  .phase { margin: 0; min-height: 1.5em; font-family: var(--display); font-size: clamp(22px, 3vw, 30px); color: var(--ink-2); transition: opacity 1.4s ease; }
+  .phase.dim { opacity: 0; }
+
+  .hud { position: absolute; left: 0; right: 0; bottom: var(--space-4); display: flex; align-items: center; justify-content: center; gap: var(--space-4); font-size: 13px; color: var(--ink-3); transition: opacity 1.2s ease; }
+  .hud.dim { opacity: .0; }
+  .hud:hover, .hud:focus-within { opacity: 1; }
+  .hud .left { font-variant-numeric: tabular-nums; min-width: 3em; color: var(--ink-2); }
+  .hud button { color: var(--ink-2); padding: 8px 4px; border-bottom: 1px solid transparent; }
+  .hud button:hover { color: var(--ink); border-color: var(--ink-2); }
+
+  /* reduced motion: no scaling or drifting; breath is shown by brightness and the phase words alone */
+  @media (prefers-reduced-motion: reduce) {
+    .mini i, .orb i { animation: none !important; }
+    .orb .core { transform: scale(.7); opacity: calc(.45 + var(--p) * .55); }
+    .orb .b1, .orb .b2, .orb .b3 { transform: scale(.8); }
+    .step:not([hidden]), .sheet[open] { animation: none; }
+  }
+</style>
+
+<script>
+  type Phase = { name: string; secs: number; to: number };
+  const PATTERNS: Record<string, Phase[]> = {
+    calm: [{ name: 'Breathe in', secs: 4, to: 1 }, { name: 'Breathe out', secs: 6, to: 0 }],
+    even: [{ name: 'Breathe in', secs: 5, to: 1 }, { name: 'Breathe out', secs: 5, to: 0 }],
+    box: [{ name: 'Breathe in', secs: 4, to: 1 }, { name: 'Hold', secs: 4, to: 1 }, { name: 'Breathe out', secs: 4, to: 0 }, { name: 'Hold', secs: 4, to: 0 }],
+  };
+  const LEAD_IN = 5; // seconds to settle and close your eyes before the first breath
+  const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const ease = (t: number) => 0.5 - Math.cos(Math.PI * t) / 2;
+  const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.max(0, Math.ceil(s) % 60)).padStart(2, '0')}`;
+
+  function mount(root: HTMLElement) {
+    if (root.dataset.bound) return;
+    root.dataset.bound = '1';
+    const $ = <T extends HTMLElement>(s: string) => root.querySelector<T>(s)!;
+    const dlg = $<HTMLDialogElement>('dialog');
+    const steps = [...root.querySelectorAll<HTMLElement>('.step')];
+    const show = (name: string) => steps.forEach((s) => (s.hidden = s.dataset.step !== name));
+    const session = $('.session');
+    const phaseEl = $('.phase');
+    const hud = $('.hud');
+    const leftEl = $('.left');
+    const muteBtn = $<HTMLButtonElement>('.mute');
+    const form = $<HTMLFormElement>('.setup');
+
+    // remember the last choice
+    try {
+      const saved = JSON.parse(localStorage.getItem('breathe') || '{}');
+      if (saved.mins) form.querySelector<HTMLInputElement>(`input[name=mins][value="${saved.mins}"]`)!.checked = true;
+      if (saved.pattern) form.querySelector<HTMLInputElement>(`input[name=pattern][value="${saved.pattern}"]`)!.checked = true;
+    } catch {}
+
+    let raf = 0, running = false, muted = false;
+    let ctx: AudioContext | null = null, pad: { g: GainNode; o: OscillatorNode[]; f: BiquadFilterNode } | null = null;
+    let wake: WakeLockSentinel | null = null;
+    let hudTimer = 0;
+
+    // ---------- sound: one soft chord whose pitch, brightness and volume swell with the breath ----------
+    function audioStart() {
+      if (muted) return;
+      const AC = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AC) return;
+      ctx = ctx || new AC();
+      ctx.resume();
+      const g = ctx.createGain(); g.gain.value = 0;
+      const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 500; f.Q.value = 0.3;
+      const o = [130.81, 196.0, 261.63].map((hz, i) => {
+        const osc = ctx!.createOscillator(); osc.type = i === 2 ? 'triangle' : 'sine'; osc.frequency.value = hz;
+        const og = ctx!.createGain(); og.gain.value = [0.5, 0.35, 0.18][i];
+        osc.connect(og).connect(f); osc.start(); return osc;
+      });
+      f.connect(g).connect(ctx.destination);
+      pad = { g, o, f };
+    }
+    function audioPhase(ph: Phase, len: number) {
+      if (!ctx || !pad) return;
+      const t = ctx.currentTime, up = ph.to === 1;
+      const hold = ph.name === 'Hold';
+      if (hold) return;
+      pad.g.gain.cancelScheduledValues(t);
+      pad.g.gain.setValueAtTime(pad.g.gain.value, t);
+      pad.g.gain.linearRampToValueAtTime(up ? 0.11 : 0.025, t + len);
+      pad.f.frequency.cancelScheduledValues(t);
+      pad.f.frequency.setValueAtTime(pad.f.frequency.value, t);
+      pad.f.frequency.linearRampToValueAtTime(up ? 1400 : 420, t + len);
+      const base = [130.81, 196.0, 261.63];
+      pad.o.forEach((osc, i) => {
+        osc.frequency.cancelScheduledValues(t);
+        osc.frequency.setValueAtTime(osc.frequency.value, t);
+        osc.frequency.linearRampToValueAtTime(base[i] * (up ? 1.125 : 1), t + len);
+      });
+    }
+    function bell() {
+      if (!ctx || muted) return;
+      const t = ctx.currentTime;
+      [528, 792, 1056].forEach((hz, i) => {
+        const o = ctx!.createOscillator(), g = ctx!.createGain();
+        o.type = 'sine'; o.frequency.value = hz;
+        g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.09 / (i + 1), t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 4.5);
+        o.connect(g).connect(ctx!.destination); o.start(t); o.stop(t + 4.6);
+      });
+    }
+    function audioStop(fade = 1.2) {
+      if (!ctx || !pad) return;
+      const t = ctx.currentTime, p = pad;
+      p.g.gain.cancelScheduledValues(t); p.g.gain.setValueAtTime(p.g.gain.value, t); p.g.gain.linearRampToValueAtTime(0, t + fade);
+      setTimeout(() => { p.o.forEach((o) => { try { o.stop(); } catch {} }); p.g.disconnect(); }, fade * 1000 + 100);
+      pad = null;
+    }
+
+    // ---------- session ----------
+    function setP(p: number) { session.style.setProperty('--p', p.toFixed(4)); }
+    function buzz(ms: number) { try { navigator.vibrate?.(ms); } catch {} }
+
+    async function begin() {
+      const data = new FormData(form);
+      const mins = Number(data.get('mins')) || 3;
+      const key = String(data.get('pattern') || 'calm');
+      const phases = PATTERNS[key];
+      try { localStorage.setItem('breathe', JSON.stringify({ mins, pattern: key })); } catch {}
+      const total = mins * 60;
+      const cycle = phases.reduce((a, p) => a + p.secs, 0);
+
+      show('session');
+      session.classList.remove('ending');
+      hud.classList.remove('dim');
+      phaseEl.classList.remove('dim');
+      setP(0);
+      leftEl.textContent = fmt(total);
+      phaseEl.textContent = 'Close your eyes';
+      running = true;
+      audioStart();
+      try { wake = (await navigator.wakeLock?.request('screen')) ?? null; } catch {}
+      clearTimeout(hudTimer);
+      hudTimer = window.setTimeout(() => { hud.classList.add('dim'); }, 6000);
+
+      const t0 = performance.now();
+      let idx = 0, phaseStart = 0, from = 0, phaseDone = -1, breaths = 0, finished = false;
+
+      const tick = (now: number) => {
+        if (!running) return;
+        const el = (now - t0) / 1000 - LEAD_IN;
+        leftEl.textContent = fmt(total - Math.max(0, el));
+        if (el < 0) { raf = requestAnimationFrame(tick); return; }
+
+        // the clock decides when to stop; the breath in progress is allowed to finish
+        const atEnd = el >= total;
+        const pos = el % cycle;
+        let acc = 0, i = 0;
+        while (i < phases.length - 1 && pos >= acc + phases[i].secs) { acc += phases[i].secs; i++; }
+        const k = Math.floor(el / cycle) * phases.length + i; // unique id for this phase
+        if (k !== phaseDone && atEnd && i === 0) { finish(Math.floor(el / cycle)); return; }
+        if (k !== phaseDone) {
+          phaseDone = k; idx = i; phaseStart = el - (pos - acc);
+          from = Number(getComputedStyle(session).getPropertyValue('--p')) || 0;
+          const ph = phases[i];
+          if (breaths < phases.length * 2) { phaseEl.textContent = ph.name; breaths++; if (breaths === phases.length * 2) setTimeout(() => phaseEl.classList.add('dim'), ph.secs * 1000 - 600); }
+          audioPhase(ph, ph.secs);
+          if (ph.name !== 'Hold') buzz(ph.to === 1 ? 40 : 18);
+        }
+        const ph = phases[idx];
+        const t = Math.min(1, (el - phaseStart) / ph.secs);
+        setP(from + (ph.to - from) * ease(t));
+        raf = requestAnimationFrame(tick);
+      };
+
+      function finish(cycles: number) {
+        finished = true;
+        session.classList.add('ending');
+        phaseEl.classList.remove('dim');
+        phaseEl.textContent = '';
+        audioStop(2.5);
+        setTimeout(() => { bell(); buzz(120); }, 900);
+        setTimeout(() => {
+          if (!running) return;
+          stop(false);
+          root.querySelector('.sum')!.textContent = `${mins} minute${mins > 1 ? 's' : ''}, ${cycles} breaths.`;
+          show('done');
+        }, 3000);
+      }
+      raf = requestAnimationFrame(tick);
+    }
+
+    function stop(closeSheet: boolean) {
+      running = false;
+      cancelAnimationFrame(raf);
+      clearTimeout(hudTimer);
+      audioStop(0.6);
+      wake?.release().catch(() => {}); wake = null;
+      if (closeSheet && dlg.open) dlg.close();
+    }
+
+    // ---------- wiring ----------
+    $('.open').addEventListener('click', () => {
+      show('setup');
+      document.documentElement.style.overflow = 'hidden';
+      dlg.showModal();
+    });
+    form.addEventListener('submit', (e) => { e.preventDefault(); begin(); });
+    $('.close').addEventListener('click', () => stop(true));
+    $('.end').addEventListener('click', () => { stop(false); show('setup'); });
+    $('.again').addEventListener('click', () => show('setup'));
+    $('.back').addEventListener('click', () => stop(true));
+    dlg.addEventListener('close', () => { stop(false); document.documentElement.style.overflow = ''; });
+    dlg.addEventListener('cancel', () => stop(false)); // Esc
+    muteBtn.addEventListener('click', () => {
+      muted = !muted;
+      muteBtn.setAttribute('aria-pressed', String(muted));
+      muteBtn.textContent = muted ? 'Sound off' : 'Sound on';
+      if (muted) audioStop(0.4);
+      else if (running) audioStart();
+    });
+    // any movement or tap in a session brings the controls back for a moment
+    session.addEventListener('pointermove', () => {
+      hud.classList.remove('dim');
+      clearTimeout(hudTimer);
+      hudTimer = window.setTimeout(() => hud.classList.add('dim'), 3000);
+    });
+    document.addEventListener('visibilitychange', () => { if (document.hidden && running && ctx) ctx.suspend(); else if (running && ctx) ctx.resume(); });
+  }
+
+  document.addEventListener('astro:page-load', () => {
+    document.querySelectorAll<HTMLElement>('.breathe').forEach(mount);
+  });
+</script>
